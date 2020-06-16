@@ -1,0 +1,399 @@
+/*
+ * Copyright (c) 2020 SAP SE or an SAP affiliate company. All rights reserved. This file is licensed under the Apache Software License, v. 2 except as noted otherwise in the LICENSE file
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
+package gcp
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"strings"
+	"time"
+
+	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/apis"
+	"github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/apis/validation"
+	errors2 "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/errors"
+	v1alpha1 "github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
+	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
+	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
+	"github.com/pkg/errors"
+	"golang.org/x/net/context"
+	compute "google.golang.org/api/compute/v1"
+	"google.golang.org/api/googleapi"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog"
+)
+
+const providerPrefix = "gce://"
+
+// CreateMachineUtil method is used to create a GCP machine
+func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName string, providerSpec *api.GCPProviderSpec, secrets *corev1.Secret) (string, error) {
+	ctx, computeService, err := ms.SPI.NewComputeService(secrets)
+	if err != nil {
+		return "", err
+	}
+
+	project, err := extractProject(secrets.Data[api.GCPServiceAccountJSON])
+	if err != nil {
+		return "", err
+	}
+	var (
+		zone = providerSpec.Zone
+
+		instance = &compute.Instance{
+			CanIpForward:       providerSpec.CanIPForward,
+			DeletionProtection: providerSpec.DeletionProtection,
+			Labels:             providerSpec.Labels,
+			MachineType:        fmt.Sprintf("zones/%s/machineTypes/%s", zone, providerSpec.MachineType),
+			Name:               machineName,
+			Scheduling: &compute.Scheduling{
+				AutomaticRestart:  &providerSpec.Scheduling.AutomaticRestart,
+				OnHostMaintenance: providerSpec.Scheduling.OnHostMaintenance,
+				Preemptible:       providerSpec.Scheduling.Preemptible,
+			},
+			Tags: &compute.Tags{
+				Items: providerSpec.Tags,
+			},
+		}
+	)
+
+	if providerSpec.Description != nil {
+		instance.Description = *providerSpec.Description
+	}
+
+	var disks = []*compute.AttachedDisk{}
+	for _, disk := range providerSpec.Disks {
+		var attachedDisk compute.AttachedDisk
+		autoDelete := false
+		if disk.AutoDelete == nil || *disk.AutoDelete == true {
+			autoDelete = true
+		}
+		if disk.Type == "SCRATCH" {
+			attachedDisk = compute.AttachedDisk{
+				AutoDelete: autoDelete,
+				Type:       disk.Type,
+				Interface:  disk.Interface,
+				InitializeParams: &compute.AttachedDiskInitializeParams{
+					DiskType: fmt.Sprintf("zones/%s/diskTypes/%s", zone, "local-ssd"),
+				},
+			}
+		} else {
+			attachedDisk = compute.AttachedDisk{
+				AutoDelete: autoDelete,
+				Boot:       disk.Boot,
+				InitializeParams: &compute.AttachedDiskInitializeParams{
+					DiskSizeGb:  disk.SizeGb,
+					DiskType:    fmt.Sprintf("zones/%s/diskTypes/%s", zone, disk.Type),
+					Labels:      disk.Labels,
+					SourceImage: disk.Image,
+				},
+			}
+		}
+		disks = append(disks, &attachedDisk)
+	}
+	instance.Disks = disks
+
+	var metadataItems = []*compute.MetadataItems{}
+	metadataItems = append(metadataItems, getUserData(string(secrets.Data["userData"])))
+
+	for _, metadata := range providerSpec.Metadata {
+		metadataItems = append(metadataItems, &compute.MetadataItems{
+			Key:   metadata.Key,
+			Value: metadata.Value,
+		})
+	}
+	instance.Metadata = &compute.Metadata{
+		Items: metadataItems,
+	}
+
+	var networkInterfaces = []*compute.NetworkInterface{}
+	for _, nic := range providerSpec.NetworkInterfaces {
+		computeNIC := &compute.NetworkInterface{}
+
+		if nic.DisableExternalIP == false {
+			// When DisableExternalIP is false, implies Attach an external IP to VM
+			computeNIC.AccessConfigs = []*compute.AccessConfig{{}}
+		}
+		if len(nic.Network) != 0 {
+			computeNIC.Network = fmt.Sprintf("projects/%s/global/networks/%s", project, nic.Network)
+		}
+		if len(nic.Subnetwork) != 0 {
+			computeNIC.Subnetwork = fmt.Sprintf("regions/%s/subnetworks/%s", providerSpec.Region, nic.Subnetwork)
+		}
+		networkInterfaces = append(networkInterfaces, computeNIC)
+	}
+	instance.NetworkInterfaces = networkInterfaces
+
+	var serviceAccounts = []*compute.ServiceAccount{}
+	for _, sa := range providerSpec.ServiceAccounts {
+		serviceAccounts = append(serviceAccounts, &compute.ServiceAccount{
+			Email:  sa.Email,
+			Scopes: sa.Scopes,
+		})
+	}
+	instance.ServiceAccounts = serviceAccounts
+
+	operation, err := computeService.Instances.Insert(project, zone, instance).Context(ctx).Do()
+	if err != nil {
+		return "", err
+	}
+
+	if err := waitUntilOperationCompleted(computeService, project, zone, operation.Name); err != nil {
+		return "", err
+	}
+
+	return encodeMachineID(project, zone, machineName), nil
+}
+
+func encodeMachineID(project, zone, name string) string {
+	if name == "" {
+		return ""
+	}
+	return fmt.Sprintf("%s/%s/%s/%s", providerPrefix, project, zone, name)
+}
+
+func decodeMachineID(id string) (string, string, string, error) {
+	gceSplit := strings.Split(id, "gce:///")
+	if len(gceSplit) != 2 {
+		return "", "", "", fmt.Errorf("Invalid format of machine id: %s", id)
+	}
+
+	gce := strings.Split(gceSplit[1], "/")
+	if len(gce) != 3 {
+		return "", "", "", fmt.Errorf("Invalid format of machine id: %s", id)
+	}
+
+	return gce[0], gce[1], gce[2], nil
+}
+
+// DeleteMachineUtil deletes a VM by name
+func (ms *MachinePlugin) DeleteMachineUtil(ctx context.Context, machineName string, providerID string, providerSpec *api.GCPProviderSpec, secrets *corev1.Secret) (string, error) {
+	ctx, computeService, err := ms.SPI.NewComputeService(secrets)
+	if err != nil {
+		return "", err
+	}
+
+	project, err := extractProject(secrets.Data[api.GCPServiceAccountJSON])
+	if err != nil {
+		return "", err
+	}
+
+	zone := providerSpec.Zone
+
+	result, err := getVMs(ctx, machineName, providerSpec, secrets, project, computeService)
+	if err != nil {
+		return "", err
+	} else if len(result) == 0 {
+		return "", &errors2.MachineNotFoundError{Name: machineName}
+	}
+
+	operation, err := computeService.Instances.Delete(project, zone, machineName).Context(ctx).Do()
+	if err != nil {
+		if ae, ok := err.(*googleapi.Error); ok && ae.Code == http.StatusNotFound {
+			return "", nil
+		}
+		return "", err
+	}
+
+	return encodeMachineID(project, zone, machineName), waitUntilOperationCompleted(computeService, project, zone, operation.Name)
+}
+
+// GetMachineStatusUtil checks for existence of VM by name
+func (ms *MachinePlugin) GetMachineStatusUtil(ctx context.Context, machineName string, providerID string, providerSpec *api.GCPProviderSpec, secrets *corev1.Secret) (string, error) {
+	ctx, computeService, err := ms.SPI.NewComputeService(secrets)
+	if err != nil {
+		return "", err
+	}
+
+	project, err := extractProject(secrets.Data[api.GCPServiceAccountJSON])
+	if err != nil {
+		return "", err
+	}
+	zone := providerSpec.Zone
+
+	result, err := getVMs(ctx, machineName, providerSpec, secrets, project, computeService)
+	if err != nil {
+		return "", err
+	} else if len(result) == 0 {
+		// No running instance exists with the given machine-ID
+		return "", &errors2.MachineNotFoundError{Name: machineName}
+	}
+
+	return encodeMachineID(project, zone, machineName), nil
+}
+
+// ListMachinesUtil lists all VMs in the DC or folder
+func (ms *MachinePlugin) ListMachinesUtil(ctx context.Context, providerSpec *api.GCPProviderSpec, secrets *corev1.Secret) (map[string]string, error) {
+	ctx, computeService, err := ms.SPI.NewComputeService(secrets)
+	if err != nil {
+		return nil, err
+	}
+
+	project, err := extractProject(secrets.Data[api.GCPServiceAccountJSON])
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := getVMs(ctx, "", providerSpec, secrets, project, computeService)
+	if err != nil {
+		return nil, err
+	} else if len(result) == 0 {
+		// No running instance exists
+		return nil, &errors2.MachineNotFoundError{}
+	}
+
+	return result, nil
+}
+
+func getVMs(ctx context.Context, machineID string, providerSpec *api.GCPProviderSpec, secrets *corev1.Secret, project string, computeService *compute.Service) (map[string]string, error) {
+	listOfVMs := make(map[string]string)
+
+	searchClusterName := ""
+	searchNodeRole := ""
+
+	for _, key := range providerSpec.Tags {
+		if strings.Contains(key, "kubernetes-io-cluster-") {
+			searchClusterName = key
+		} else if strings.Contains(key, "kubernetes-io-role-") {
+			searchNodeRole = key
+		}
+	}
+
+	if searchClusterName == "" || searchNodeRole == "" {
+		return listOfVMs, nil
+	}
+
+	zone := providerSpec.Zone
+
+	req := computeService.Instances.List(project, zone)
+	if err := req.Pages(ctx, func(page *compute.InstanceList) error {
+		for _, server := range page.Items {
+			clusterName := ""
+			nodeRole := ""
+
+			for _, key := range server.Tags.Items {
+				if strings.Contains(key, "kubernetes-io-cluster-") {
+					clusterName = key
+				} else if strings.Contains(key, "kubernetes-io-role-") {
+					nodeRole = key
+				}
+			}
+
+			if clusterName == searchClusterName && nodeRole == searchNodeRole {
+				instanceID := server.Name
+
+				if machineID == "" {
+					listOfVMs[encodeMachineID(project, zone, instanceID)] = server.Name
+				} else if machineID == instanceID {
+					listOfVMs[encodeMachineID(project, zone, instanceID)] = server.Name
+					klog.V(3).Infof("Found machine with name: %q", server.Name)
+					break
+				}
+			}
+		}
+		return nil
+	}); err != nil {
+		return listOfVMs, err
+	}
+
+	return listOfVMs, nil
+}
+
+// decodeProviderSpecAndSecret converts request parameters to api.ProviderSpec
+func decodeProviderSpecAndSecret(machineClass *v1alpha1.MachineClass, secret *corev1.Secret) (*api.GCPProviderSpec, error) {
+	var (
+		providerSpec *api.GCPProviderSpec
+	)
+
+	// Extract providerSpec
+	err := json.Unmarshal(machineClass.ProviderSpec.Raw, &providerSpec)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	//Validate the Spec and Secrets
+	ValidationErr := validation.ValidateGCPProviderSpec(providerSpec, secret)
+	if ValidationErr != nil {
+		err = fmt.Errorf("Error while validating ProviderSpec %v", ValidationErr)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return providerSpec, nil
+}
+
+func prepareErrorf(err error, format string, args ...interface{}) error {
+	var (
+		code    codes.Code
+		wrapped error
+	)
+	switch err.(type) {
+	case *errors2.MachineNotFoundError:
+		code = codes.NotFound
+		wrapped = err
+	default:
+		code = codes.Internal
+		wrapped = errors.Wrap(err, fmt.Sprintf(format, args...))
+	}
+	klog.V(2).Infof(wrapped.Error())
+	return status.Error(code, wrapped.Error())
+}
+
+func extractProject(serviceaccount []byte) (string, error) {
+	var j struct {
+		Project string `json:"project_id"`
+	}
+	if err := json.Unmarshal(serviceaccount, &j); err != nil {
+		return "Error", err
+	}
+	return j.Project, nil
+}
+
+func waitUntilOperationCompleted(computeService *compute.Service, project, zone, operationName string) error {
+	return wait.Poll(5*time.Second, 300*time.Second, func() (bool, error) {
+		op, err := computeService.ZoneOperations.Get(project, zone, operationName).Do()
+		if err != nil {
+			return false, err
+		}
+		klog.V(3).Infof("Waiting for operation to be completed... (status: %s)", op.Status)
+		if op.Status == "DONE" {
+			if op.Error == nil {
+				return true, nil
+			}
+			var err []error
+			for _, opErr := range op.Error.Errors {
+				err = append(err, fmt.Errorf("%s", *opErr))
+			}
+			return false, fmt.Errorf("The following errors occurred: %+v", err)
+		}
+		return false, nil
+	})
+}
+
+func getUserData(userData string) *compute.MetadataItems {
+	if strings.HasPrefix(userData, "#cloud-config") {
+		return &compute.MetadataItems{
+			Key:   "user-data",
+			Value: &userData,
+		}
+	}
+
+	return &compute.MetadataItems{
+		Key:   "startup-script",
+		Value: &userData,
+	}
+}

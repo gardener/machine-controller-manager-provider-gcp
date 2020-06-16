@@ -1,0 +1,47 @@
+apiVersion: machine.sapcloud.io/v1alpha1
+kind: MachineClass
+metadata:
+  name: test-mc
+  namespace: default # Namespace where the controller would watch
+providerSpec:
+  canIpForward: true # Allows this instance to send and receive packets with non-matching destination or source IPs
+  deletionProtection: false # DeletionProtection: Whether the resource should be protected against deletion
+  description: Machine of shoot ash created by Machine-Controller-Manager. # Description of this resource
+  disks: # Array of disks associated with this instance
+    - autoDelete: true # Specifies whether the disk will be auto-deleted when the instance is deleted
+      boot: true # Indicates that this is a boot disk
+      sizeGb: 50 # Size of disk
+      type: pd-standard # Specifies the type of the disk
+      image: projects/coreos-cloud/global/images/coreos-stable-1688-5-3-v20180403 # Disk image name
+      labels:
+        name: test-mc # Label assigned to the disk
+  labels:
+    name: test-mc # Label assigned to the instance
+  machineType: n1-standard-2 # Type of GCP instance to launch
+  metadata: # Metadata key-value pairs
+    - key: ash
+      value: my-value
+  networkInterfaces:
+    - network: network-name # Network name to attach the instance to
+      subnetwork: sub-net-name # Subnet name to attach the instance to
+  scheduling:
+    automaticRestart: true # Automatic restart of instance
+    onHostMaintenance: MIGRATE # Host maintainance
+    preemptible: false # Instance is premeptiable
+  secretRef: # Kubernetes secret containing values for provider secrets and user-data
+    name: "test-secret" # Name of the secret
+    namespace: "default" # Namespace of secret
+  serviceAccounts:
+    - email: default@project.iam.gserviceaccount.com # Service account email
+      scopes: # List of scopes
+        - https://www.googleapis.com/auth/compute
+  tags:
+    - kubernetes-io-cluster-test-mc # This is mandatory as the safety controller uses this tag to identify VMs created by this controller.
+    - kubernetes-io-role-mcm # This is mandatory as the safety controller uses this tag to identify VMs created by this controller.
+    - test-mc # A set of additional tags attached to a machine (optional)
+    #- key2 # A set of additional tags attached to a machine (optional)
+  region: europe-west1 # Region to attach the instanc
+  zone: europe-west1-b
+secretRef: # If required
+  name: test-secret
+  namespace: default # Namespace where the controller would watch
