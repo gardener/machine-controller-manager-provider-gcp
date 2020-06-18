@@ -26,7 +26,6 @@ import (
 	"os"
 
 	"github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp"
-	"github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/internal"
 	_ "github.com/gardener/machine-controller-manager/pkg/util/client/metrics/prometheus" // for client metric registration
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/app"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/app/options"
@@ -46,7 +45,7 @@ func main() {
 	logs.InitLogs()
 	defer logs.FlushLogs()
 
-	driver := gcp.NewGCPPlugin(&internal.PluginSPIImpl{})
+	driver := gcp.NewGCPPlugin(&gcp.PluginSPIImpl{})
 
 	if err := app.Run(s, driver); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
