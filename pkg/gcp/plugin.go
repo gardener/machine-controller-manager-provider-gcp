@@ -24,7 +24,10 @@ package gcp
 import (
 	"context"
 
+	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/apis"
+	"golang.org/x/oauth2/google"
 	compute "google.golang.org/api/compute/v1"
+	"google.golang.org/api/option"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -35,10 +38,31 @@ type PluginSPI interface {
 	NewComputeService(secrets *corev1.Secret) (context.Context, *compute.Service, error)
 }
 
-// MachinePlugin implements the cmi.MachineServer
-// It also implements the pluginSPI interface
+// MachinePlugin implements the driver.Driver
+// It also implements the PluginSPI interface
 type MachinePlugin struct {
 	SPI PluginSPI
+}
+
+// PluginSPIImpl is the real implementation of PluginSPI interface
+// that makes the calls to the provider SDK
+type PluginSPIImpl struct{}
+
+// NewComputeService returns an instance of the compute service
+func (spi *PluginSPIImpl) NewComputeService(secrets *corev1.Secret) (context.Context, *compute.Service, error) {
+	ctx := context.Background()
+	jwt, err := google.JWTConfigFromJSON((secrets.Data[api.GCPServiceAccountJSON]), compute.CloudPlatformScope)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	clientOption := option.WithTokenSource(jwt.TokenSource(ctx))
+	computeService, err := compute.NewService(ctx, clientOption)
+	if err != nil {
+		return nil, nil, err
+	}
+	return ctx, computeService, nil
+
 }
 
 // NewGCPPlugin returns a new Gcp plugin

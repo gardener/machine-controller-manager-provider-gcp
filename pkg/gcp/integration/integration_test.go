@@ -27,7 +27,6 @@ import (
 	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/apis"
 	validation "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/apis/validation"
 	"github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/errors"
-	"github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/internal"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/yaml"
 )
@@ -60,7 +59,7 @@ func TestPluginSPIImpl(t *testing.T) {
 		return
 	}
 
-	ms := gcp.NewGCPPlugin(&internal.PluginSPIImpl{})
+	ms := gcp.NewGCPPlugin(&gcp.PluginSPIImpl{})
 	ctx := context.TODO()
 
 	ValidationErr := validation.ValidateGCPProviderSpec(cfg.ProviderSpec, cfg.Secrets)
