@@ -1,5 +1,6 @@
 ## machine-controller-manager-provider-gcp
-Copyright (c) 2018-2019 SAP SE or an SAP affiliate company. All rights reserved.
+
+Copyright (c) 2018-2020 SAP SE or an SAP affiliate company. All rights reserved.
 
 ## Seed Source
 
