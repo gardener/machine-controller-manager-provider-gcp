@@ -25,6 +25,8 @@ import (
 	"fmt"
 
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
+	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
+	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
 	"golang.org/x/net/context"
 	"k8s.io/klog"
 )
@@ -212,4 +214,33 @@ func (ms *MachinePlugin) GetVolumeIDs(ctx context.Context, req *driver.GetVolume
 		VolumeIDs: volumeIDs,
 	}
 	return Resp, nil
+}
+
+// MigrateMachineClass converts providerMachineClass to (generic)MachineClass
+func (ms *MachinePlugin) MigrateMachineClass(ctx context.Context, req *driver.MigrateMachineClassRequest) (*driver.MigrateMachineClassResponse, error) {
+	klog.V(1).Infof("Migrate request has been recieved for %v", req.ClassSpec)
+	defer klog.V(1).Infof("Migrate request has been processed for %v", req.ClassSpec)
+
+	// Step1: Check if incoming CR is valid CR for migration
+	// In this case, the MachineClassKind to be matching
+	if req.ClassSpec.Kind != GCPMachineClassKind {
+		return nil, status.Error(codes.Internal, "Migration cannot be done for this machineClass kind")
+	}
+
+	// Step2: Create/Apply the new MachineClass CR by copying/migrating over all the fields.
+	if err := ms.createMachineClass(ctx, req); err != nil {
+		return nil, err
+	}
+
+	// Step3: Update any references to the old {Provider}MachineClass CR.
+	if err := ms.updateClassReferences(ctx, req); err != nil {
+		return nil, err
+	}
+
+	// Annotate the old {Provider}MachineClass CR with an migrated annotation.
+	if err := ms.addMigratedAnnotationForProviderMachineClass(ctx, req); err != nil {
+		return nil, err
+	}
+
+	return &driver.MigrateMachineClassResponse{}, nil
 }
