@@ -24,6 +24,7 @@ package gcp
 import (
 	"fmt"
 
+	"github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
@@ -216,31 +217,18 @@ func (ms *MachinePlugin) GetVolumeIDs(ctx context.Context, req *driver.GetVolume
 	return Resp, nil
 }
 
-// MigrateMachineClass converts providerMachineClass to (generic)MachineClass
-func (ms *MachinePlugin) MigrateMachineClass(ctx context.Context, req *driver.MigrateMachineClassRequest) (*driver.MigrateMachineClassResponse, error) {
-	klog.V(1).Infof("Migrate request has been recieved for %v", req.ClassSpec)
-	defer klog.V(1).Infof("Migrate request has been processed for %v", req.ClassSpec)
+// GenerateMachineClassForMigration converts providerSpecificMachineClass to (generic) MachineClass
+func (ms *MachinePlugin) GenerateMachineClassForMigration(ctx context.Context, req *driver.GenerateMachineClassForMigrationRequest) (*driver.GenerateMachineClassForMigrationResponse, error) {
+	klog.V(1).Infof("Migrate request has been recieved for %v", req.MachineClass.Name)
+	defer klog.V(1).Infof("Migrate request has been processed for %v", req.MachineClass.Name)
 
-	// Step1: Check if incoming CR is valid CR for migration
+	gcpMachineClass := req.ProviderSpecificMachineClass.(*v1alpha1.GCPMachineClass)
+
+	// Check if incoming CR is valid CR for migration
 	// In this case, the MachineClassKind to be matching
 	if req.ClassSpec.Kind != GCPMachineClassKind {
 		return nil, status.Error(codes.Internal, "Migration cannot be done for this machineClass kind")
 	}
 
-	// Step2: Create/Apply the new MachineClass CR by copying/migrating over all the fields.
-	if err := ms.createMachineClass(ctx, req); err != nil {
-		return nil, err
-	}
-
-	// Step3: Update any references to the old {Provider}MachineClass CR.
-	if err := ms.updateClassReferences(ctx, req); err != nil {
-		return nil, err
-	}
-
-	// Annotate the old {Provider}MachineClass CR with an migrated annotation.
-	if err := ms.addMigratedAnnotationForProviderMachineClass(ctx, req); err != nil {
-		return nil, err
-	}
-
-	return &driver.MigrateMachineClassResponse{}, nil
+	return &driver.GenerateMachineClassForMigrationResponse{}, fillUpMachineClass(gcpMachineClass, req.MachineClass)
 }
