@@ -17,8 +17,8 @@ package api
 const (
 	// GCPServiceAccountJSON is a constant for a key name that is part of the GCP cloud credentials.
 	GCPServiceAccountJSON = "serviceAccountJSON"
-	// V1alpha1 is the API version
-	V1alpha1 = "mcm.gardener.cloud/v1alpha1"
+	// APIVersionV1alpha1 is the API version for MCM
+	APIVersionV1alpha1 = "mcm.gardener.cloud/v1alpha1"
 )
 
 // GCPProviderSpec contains the fields of

@@ -81,7 +81,7 @@ func fillUpMachineClass(gcpMachineClass *v1alpha1.GCPMachineClass, machineClass 
 	}
 
 	providerSpec := &api.GCPProviderSpec{
-		APIVersion:         api.V1alpha1,
+		APIVersion:         api.APIVersionV1alpha1,
 		CanIPForward:       gcpMachineClass.Spec.CanIpForward,
 		DeletionProtection: gcpMachineClass.Spec.DeletionProtection,
 		Description:        gcpMachineClass.Spec.Description,
