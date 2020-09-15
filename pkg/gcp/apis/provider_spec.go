@@ -16,12 +16,17 @@ package api
 
 const (
 	// GCPServiceAccountJSON is a constant for a key name that is part of the GCP cloud credentials.
-	GCPServiceAccountJSON string = "serviceAccountJSON"
+	GCPServiceAccountJSON = "serviceAccountJSON"
+	// APIVersionV1alpha1 is the API version for MCM
+	APIVersionV1alpha1 = "mcm.gardener.cloud/v1alpha1"
 )
 
 // GCPProviderSpec contains the fields of
 // provider spec that the plugin expects
 type GCPProviderSpec struct {
+	// APIVersion refers to the APIVersion of the object
+	APIVersion string
+
 	// CanIpForward: Allows this instance to send and receive packets with
 	// non-matching destination or source IPs. This is required if you plan
 	// to use this instance to forward routes. For more information, see

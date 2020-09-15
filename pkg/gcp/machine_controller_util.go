@@ -39,7 +39,16 @@ import (
 	"k8s.io/klog"
 )
 
-const providerPrefix = "gce://"
+const (
+	// GCPProviderPrefix is the prefix used by the GCP provider
+	GCPProviderPrefix = "gce://"
+
+	// GCPMachineClassKind for GCPMachineClass
+	GCPMachineClassKind = "GCPMachineClass"
+
+	// MachineClassKind for MachineClass
+	MachineClassKind = "MachineClass"
+)
 
 // CreateMachineUtil method is used to create a GCP machine
 func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName string, providerSpec *api.GCPProviderSpec, secrets *corev1.Secret) (string, error) {
@@ -164,7 +173,7 @@ func encodeMachineID(project, zone, name string) string {
 	if name == "" {
 		return ""
 	}
-	return fmt.Sprintf("%s/%s/%s/%s", providerPrefix, project, zone, name)
+	return fmt.Sprintf("%s/%s/%s/%s", GCPProviderPrefix, project, zone, name)
 }
 
 func decodeMachineID(id string) (string, string, string, error) {
@@ -319,6 +328,11 @@ func decodeProviderSpecAndSecret(machineClass *v1alpha1.MachineClass, secret *co
 	var (
 		providerSpec *api.GCPProviderSpec
 	)
+
+	// If machineClass is nil
+	if machineClass == nil {
+		return nil, status.Error(codes.Internal, "MachineClass ProviderSpec is nil")
+	}
 
 	// Extract providerSpec
 	err := json.Unmarshal(machineClass.ProviderSpec.Raw, &providerSpec)

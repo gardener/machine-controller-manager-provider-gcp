@@ -33,44 +33,52 @@ import (
 )
 
 const (
-	//FailAtNotFound is the error message returned when a resource is not found
+	// TestNamaspace is the test namespace used
+	TestNamaspace string = "test"
+	// TestClassName is the test class name used
+	TestMachineClassName string = "test-mc"
+	// FailAtNotFound is the error message returned when a resource is not found
 	FailAtNotFound string = "machine codes error: code = [NotFound] message = [machine name=non-existent-dummy-machine, uuid= not found]"
-	//FailAtJSONUnmarshalling is the error message returned when an malformed JSON is sent to the plugin by the caller
+	// FailAtJSONUnmarshalling is the error message returned when an malformed JSON is sent to the plugin by the caller
 	FailAtJSONUnmarshalling string = "machine codes error: code = [Internal] message = [Machine status \"dummy-machine\" failed on decodeProviderSpecAndSecret: machine codes error: code = [Internal] message = [unexpected end of JSON input]]"
-	//CreateFailAtJSONUnmarshalling is the error message returned when an malformed JSON is sent to the plugin by the caller
+	// CreateFailAtJSONUnmarshalling is the error message returned when an malformed JSON is sent to the plugin by the caller
 	CreateFailAtJSONUnmarshalling string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on decodeProviderSpecAndSecret: machine codes error: code = [Internal] message = [unexpected end of JSON input]]"
-	//DeleteFailAtJSONUnmarshalling is the error message returned when an malformed JSON is sent to the plugin by the caller
+	// DeleteFailAtJSONUnmarshalling is the error message returned when an malformed JSON is sent to the plugin by the caller
 	DeleteFailAtJSONUnmarshalling string = "machine codes error: code = [Internal] message = [Delete machine \"dummy-machine\" failed on decodeProviderSpecAndSecret: machine codes error: code = [Internal] message = [unexpected end of JSON input]]"
-	//ListFailAtJSONUnmarshalling is the error message returned when an malformed JSON is sent to the plugin by the caller
+	// ListFailAtJSONUnmarshalling is the error message returned when an malformed JSON is sent to the plugin by the caller
 	ListFailAtJSONUnmarshalling string = "machine codes error: code = [Internal] message = [List machines failed on decodeProviderSpecAndSecret: machine codes error: code = [Internal] message = [unexpected end of JSON input]]"
-	//FailAtNoSecretsPassed is the error message returned when no secrets are passed to the the plugin by the caller
+	// FailAtNoSecretsPassed is the error message returned when no secrets are passed to the the plugin by the caller
 	FailAtNoSecretsPassed string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on decodeProviderSpecAndSecret: machine codes error: code = [Internal] message = [Error while validating ProviderSpec [Secret serviceAccountJSON is required field Secret userData is required field]]]"
-	//FailAtSecretsWithNoUserData is the error message returned when secrets map has no userdata provided by the caller
+	// FailAtSecretsWithNoUserData is the error message returned when secrets map has no userdata provided by the caller
 	FailAtSecretsWithNoUserData string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on decodeProviderSpecAndSecret: machine codes error: code = [Internal] message = [Error while validating ProviderSpec [Secret userData is required field]]]"
 	// FailAtInvalidProjectID is the error returned when an invalid project id value is provided by the caller
 	FailAtInvalidProjectID string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed: json: cannot unmarshal number into Go struct field .project_id of type string]"
-	//FailAtInvalidZonePostCall is the  error returned when a post call should fail with an invalid zone is sent in the POST call -- this is used to simulate server error
+	// FailAtInvalidZonePostCall is the  error returned when a post call should fail with an invalid zone is sent in the POST call -- this is used to simulate server error
 	FailAtInvalidZonePostCall string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed: googleapi: got HTTP response code 400 with body: Invalid post zone\n]"
-	//FailAtInvalidZoneListCall is the  error returned when a list call should fail with an invalid zone is sent in the LIST call -- this is used to simulate server error
+	// FailAtInvalidZoneListCall is the  error returned when a list call should fail with an invalid zone is sent in the LIST call -- this is used to simulate server error
 	FailAtInvalidZoneListCall string = "machine codes error: code = [Internal] message = [Machine status \"dummy-machine\" failed: googleapi: got HTTP response code 400 with body: Invalid list zone\n]"
-	//CreateFailAtInvalidZoneListCall is the  error returned when a list call should fail with an invalid zone is sent in the CREATE call -- this is used to simulate server error
+	// CreateFailAtInvalidZoneListCall is the  error returned when a list call should fail with an invalid zone is sent in the CREATE call -- this is used to simulate server error
 	CreateFailAtInvalidZoneListCall string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed: googleapi: got HTTP response code 400 with body: Invalid list zone\n]"
-	//DeleteFailAtInvalidZoneListCall is the  error returned when a list call should fail with an invalid zone is sent in the DELETE call -- this is used to simulate server error
+	// DeleteFailAtInvalidZoneListCall is the  error returned when a list call should fail with an invalid zone is sent in the DELETE call -- this is used to simulate server error
 	DeleteFailAtInvalidZoneListCall string = "machine codes error: code = [Internal] message = [Delete machine \"dummy-machine\" failed: googleapi: got HTTP response code 400 with body: Invalid list zone\n]"
-	//ListFailAtInvalidZoneListCall is the  error returned when a list call should fail with an invalid zone is sent in the LIST call -- this is used to simulate server error
+	// ListFailAtInvalidZoneListCall is the  error returned when a list call should fail with an invalid zone is sent in the LIST call -- this is used to simulate server error
 	ListFailAtInvalidZoneListCall string = "machine codes error: code = [Internal] message = [List machines failed: googleapi: got HTTP response code 400 with body: Invalid list zone\n]"
-	//FailAtMethodNotImplemented is the error returned for methods which are not yet implemented
+	// FailAtMethodNotImplemented is the error returned for methods which are not yet implemented
 	FailAtMethodNotImplemented string = "rpc error: code = Unimplemented desc = "
-	FailAtSpecValidation       string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on decodeProviderSpecAndSecret: machine codes error: code = [Internal] message = [Error while validating ProviderSpec [spec.zone: Required value: zone is required]]]"
-	FailAtNonExistingMachine   string = "rpc error: code = NotFound desc = Machine with the name \"non-existent-dummy-machine\" not found"
+	// FailAtSpecValidation fails at spec validation
+	FailAtSpecValidation string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on decodeProviderSpecAndSecret: machine codes error: code = [Internal] message = [Error while validating ProviderSpec [spec.zone: Required value: zone is required]]]"
+	// FailAtNonExistingMachine because existing machine is not found
+	FailAtNonExistingMachine string = "rpc error: code = NotFound desc = Machine with the name \"non-existent-dummy-machine\" not found"
 )
 
-var _ = Describe("MachineController", func() {
+var _ = Describe("#MachineController", func() {
 	gcpProviderSpec := []byte("{\"canIpForward\":true,\"deletionProtection\":false,\"description\":\"Machine created to test out-of-tree gcp mcm driver.\",\"disks\":[{\"autoDelete\":true,\"boot\":true,\"sizeGb\":50,\"type\":\"pd-standard\",\"image\":\"projects/coreos-cloud/global/images/coreos-stable-2135-6-0-v20190801\",\"labels\":{\"name\":\"test-mc-gcp\"}}],\"labels\":{\"name\":\"test-mc-gcp\"},\"machineType\":\"n1-standard-2\",\"metadata\":[{\"key\":\"gcp\",\"value\":\"my-value\"}],\"networkInterfaces\":[{\"network\":\"dummyShoot\",\"subnetwork\":\"dummyShoot\"}],\"scheduling\":{\"automaticRestart\":true,\"onHostMaintenance\":\"MIGRATE\",\"preemptible\":false},\"secretRef\":{\"name\":\"dummySecret\",\"namespace\":\"dummy\"},\"serviceAccounts\":[{\"email\":\"mcmDummy@dummy.com\",\"scopes\":[\"https://www.googleapis.com/auth/compute\"]}],\"tags\":[\"kubernetes-io-cluster-dummy-machine\",\"kubernetes-io-role-mcm\",\"dummy-machine\"],\"region\":\"europe-dummy\",\"zone\":\"europe-dummy\"}")
 	gcpProviderSpecValidationErr := []byte("{\"canIpForward\":true,\"deletionProtection\":false,\"description\":\"Machine created to test out-of-tree gcp mcm driver.\",\"disks\":[{\"autoDelete\":true,\"boot\":true,\"sizeGb\":50,\"type\":\"pd-standard\",\"image\":\"projects/coreos-cloud/global/images/coreos-stable-2135-6-0-v20190801\",\"labels\":{\"name\":\"test-mc-gcp\"}}],\"labels\":{\"name\":\"test-mc-gcp\"},\"machineType\":\"n1-standard-2\",\"metadata\":[{\"key\":\"gcp\",\"value\":\"my-value\"}],\"networkInterfaces\":[{\"network\":\"dummyShoot\",\"subnetwork\":\"dummyShoot\"}],\"scheduling\":{\"automaticRestart\":true,\"onHostMaintenance\":\"MIGRATE\",\"preemptible\":false},\"secretRef\":{\"name\":\"dummySecret\",\"namespace\":\"dummy\"},\"serviceAccounts\":[{\"email\":\"mcmDummy@dummy.com\",\"scopes\":[\"https://www.googleapis.com/auth/compute\"]}],\"tags\":[\"kubernetes-io-cluster-dummy-machine\",\"kubernetes-io-role-mcm\",\"dummy-machine\"],\"region\":\"europe-dummy\",\"zone\":\"\"}")
 	gcpProviderSpecNoTagsToSearch := []byte("{\"canIpForward\":true,\"deletionProtection\":false,\"description\":\"Machine created to test out-of-tree gcp mcm driver.\",\"disks\":[{\"autoDelete\":true,\"boot\":true,\"sizeGb\":50,\"type\":\"pd-standard\",\"image\":\"projects/coreos-cloud/global/images/coreos-stable-2135-6-0-v20190801\",\"labels\":{\"name\":\"test-mc-gcp\"}}],\"labels\":{\"name\":\"test-mc-gcp\"},\"machineType\":\"n1-standard-2\",\"metadata\":[{\"key\":\"gcp\",\"value\":\"my-value\"}],\"networkInterfaces\":[{\"network\":\"dummyShoot\",\"subnetwork\":\"dummyShoot\"}],\"scheduling\":{\"automaticRestart\":true,\"onHostMaintenance\":\"MIGRATE\",\"preemptible\":false},\"secretRef\":{\"name\":\"dummySecret\",\"namespace\":\"dummy\"},\"serviceAccounts\":[{\"email\":\"mcmDummy@dummy.com\",\"scopes\":[\"https://www.googleapis.com/auth/compute\"]}],\"region\":\"europe-dummy\",\"zone\":\"europe-dummy\"}")
 	gcpProviderSpecInvalidPostZone := []byte("{\"canIpForward\":true,\"deletionProtection\":false,\"description\":\"Machine created to test out-of-tree gcp mcm driver.\",\"disks\":[{\"autoDelete\":true,\"boot\":true,\"sizeGb\":50,\"type\":\"pd-standard\",\"image\":\"projects/coreos-cloud/global/images/coreos-stable-2135-6-0-v20190801\",\"labels\":{\"name\":\"test-mc-gcp\"}}],\"labels\":{\"name\":\"test-mc-gcp\"},\"machineType\":\"n1-standard-2\",\"metadata\":[{\"key\":\"gcp\",\"value\":\"my-value\"}],\"networkInterfaces\":[{\"network\":\"dummyShoot\",\"subnetwork\":\"dummyShoot\"}],\"scheduling\":{\"automaticRestart\":true,\"onHostMaintenance\":\"MIGRATE\",\"preemptible\":false},\"secretRef\":{\"name\":\"dummySecret\",\"namespace\":\"dummy\"},\"serviceAccounts\":[{\"email\":\"mcmDummy@dummy.com\",\"scopes\":[\"https://www.googleapis.com/auth/compute\"]}],\"tags\":[\"kubernetes-io-cluster-dummy-machine\",\"kubernetes-io-role-mcm\",\"dummy-machine\"],\"region\":\"europe-dummy\",\"zone\":\"invalid post\"}")
 	gcpProviderSpecInvalidListZone := []byte("{\"canIpForward\":true,\"deletionProtection\":false,\"description\":\"Machine created to test out-of-tree gcp mcm driver.\",\"disks\":[{\"autoDelete\":true,\"boot\":true,\"sizeGb\":50,\"type\":\"pd-standard\",\"image\":\"projects/coreos-cloud/global/images/coreos-stable-2135-6-0-v20190801\",\"labels\":{\"name\":\"test-mc-gcp\"}}],\"labels\":{\"name\":\"test-mc-gcp\"},\"machineType\":\"n1-standard-2\",\"metadata\":[{\"key\":\"gcp\",\"value\":\"my-value\"}],\"networkInterfaces\":[{\"network\":\"dummyShoot\",\"subnetwork\":\"dummyShoot\"}],\"scheduling\":{\"automaticRestart\":true,\"onHostMaintenance\":\"MIGRATE\",\"preemptible\":false},\"secretRef\":{\"name\":\"dummySecret\",\"namespace\":\"dummy\"},\"serviceAccounts\":[{\"email\":\"mcmDummy@dummy.com\",\"scopes\":[\"https://www.googleapis.com/auth/compute\"]}],\"tags\":[\"kubernetes-io-cluster-dummy-machine\",\"kubernetes-io-role-mcm\",\"dummy-machine\"],\"region\":\"europe-dummy\",\"zone\":\"invalid list\"}")
+	gcpProviderSpecExpectedAfterMigration := []byte("{\"APIVersion\":\"mcm.gardener.cloud/v1alpha1\",\"canIpForward\":true,\"deletionProtection\":false,\"description\":\"Machine created to test out-of-tree gcp mcm driver.\",\"disks\":[{\"autoDelete\":true,\"boot\":true,\"sizeGb\":50,\"type\":\"pd-standard\",\"interface\":\"test-interface\",\"image\":\"projects/coreos-cloud/global/images/coreos-stable-2135-6-0-v20190801\",\"labels\":{\"name\":\"test-mc-gcp\"}}],\"labels\":{\"name\":\"test-mc-gcp\"},\"machineType\":\"n1-standard-2\",\"metadata\":[{\"key\":\"gcp\",\"value\":\"my-value\"}],\"networkInterfaces\":[{\"network\":\"dummyShoot\",\"subnetwork\":\"dummyShoot\"}],\"region\":\"europe-dummy\",\"scheduling\":{\"automaticRestart\":true,\"onHostMaintenance\":\"MIGRATE\",\"preemptible\":false},\"serviceAccounts\":[{\"email\":\"mcmDummy@dummy.com\",\"scopes\":[\"https://www.googleapis.com/auth/compute\"]}],\"tags\":[\"kubernetes-io-cluster-dummy-machine\",\"kubernetes-io-role-mcm\",\"dummy-machine\"],\"zone\":\"europe-dummy\"}")
+
 	gcpPVSpec := &corev1.PersistentVolumeSpec{
 		PersistentVolumeSource: corev1.PersistentVolumeSource{
 			GCEPersistentDisk: &corev1.GCEPersistentDiskVolumeSource{
@@ -113,7 +121,7 @@ var _ = Describe("MachineController", func() {
 		fake.Instances = nil
 	})
 
-	Describe("#Create Machine", func() {
+	Describe("##CreateMachine", func() {
 		type setup struct {
 		}
 		type action struct {
@@ -255,7 +263,7 @@ var _ = Describe("MachineController", func() {
 			}),
 		)
 	})
-	Describe("#Delete Machine", func() {
+	Describe("##DeleteMachine", func() {
 		type setup struct {
 		}
 		type action struct {
@@ -328,7 +336,7 @@ var _ = Describe("MachineController", func() {
 			}),
 		)
 	})
-	Describe("#List Machines", func() {
+	Describe("##ListMachines", func() {
 		type setup struct {
 		}
 		type action struct {
@@ -437,7 +445,7 @@ var _ = Describe("MachineController", func() {
 		)
 
 	})
-	Describe("#Get MachineStatus", func() {
+	Describe("##GetMachineStatus", func() {
 		type setup struct {
 		}
 		type action struct {
@@ -570,7 +578,7 @@ var _ = Describe("MachineController", func() {
 			}),
 		)
 	})
-	Describe("#Get VolumeIDs", func() {
+	Describe("##GetVolumeIDs", func() {
 		type setup struct {
 		}
 		type action struct {
@@ -634,8 +642,149 @@ var _ = Describe("MachineController", func() {
 			}),
 		)
 	})
+	Describe("##GenerateMachineClassForMigration", func() {
+		type setup struct {
+		}
+		type action struct {
+			machineRequest *driver.GenerateMachineClassForMigrationRequest
+		}
+		type expect struct {
+			machineClass *v1alpha1.MachineClass
+			err          error
+		}
+		type data struct {
+			setup  setup
+			action action
+			expect expect
+		}
+
+		DescribeTable("###table",
+			func(data *data) {
+
+				ctx := context.Background()
+				_, err := ms.GenerateMachineClassForMigration(ctx, data.action.machineRequest)
+				if data.expect.err != nil {
+					Expect(err).To(HaveOccurred())
+					Expect(err).To(Equal(err))
+				} else {
+					Expect(err).ToNot(HaveOccurred())
+					Expect(data.action.machineRequest.MachineClass.ProviderSpec).To(Equal(data.expect.machineClass.ProviderSpec))
+					Expect(data.action.machineRequest.MachineClass.Provider).To(Equal(ProviderGCP))
+				}
+
+			},
+
+			Entry("With valid migration request", &data{
+				setup: setup{},
+				action: action{
+					machineRequest: &driver.GenerateMachineClassForMigrationRequest{
+						ProviderSpecificMachineClass: &v1alpha1.GCPMachineClass{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      TestMachineClassName,
+								Namespace: TestNamaspace,
+							},
+							Spec: v1alpha1.GCPMachineClassSpec{
+								CanIpForward:       true,
+								DeletionProtection: false,
+								Description:        getStringPtr("Machine created to test out-of-tree gcp mcm driver."),
+								Disks: []*v1alpha1.GCPDisk{
+									{
+										AutoDelete: getBoolPtr(true),
+										Boot:       true,
+										SizeGb:     50,
+										Type:       "pd-standard",
+										Interface:  "test-interface",
+										Image:      "projects/coreos-cloud/global/images/coreos-stable-2135-6-0-v20190801",
+										Labels: map[string]string{
+											"name": "test-mc-gcp",
+										},
+									},
+								},
+								Labels: map[string]string{
+									"name": "test-mc-gcp",
+								},
+								MachineType: "n1-standard-2",
+								Metadata: []*v1alpha1.GCPMetadata{
+									{
+										Key:   "gcp",
+										Value: getStringPtr("my-value"),
+									},
+								},
+								NetworkInterfaces: []*v1alpha1.GCPNetworkInterface{
+									{
+										DisableExternalIP: false,
+										Network:           "dummyShoot",
+										Subnetwork:        "dummyShoot",
+									},
+								},
+								Scheduling: v1alpha1.GCPScheduling{
+									AutomaticRestart:  true,
+									OnHostMaintenance: "MIGRATE",
+									Preemptible:       false,
+								},
+								SecretRef: &corev1.SecretReference{
+									Name:      "test-secret",
+									Namespace: TestNamaspace,
+								},
+								ServiceAccounts: []v1alpha1.GCPServiceAccount{
+									{
+										Email: "mcmDummy@dummy.com",
+										Scopes: []string{
+											"https://www.googleapis.com/auth/compute",
+										},
+									},
+								},
+								Tags: []string{
+									"kubernetes-io-cluster-dummy-machine",
+									"kubernetes-io-role-mcm",
+									"dummy-machine",
+								},
+								Region: "europe-dummy",
+								Zone:   "europe-dummy",
+							},
+						},
+						MachineClass: &v1alpha1.MachineClass{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      TestMachineClassName,
+								Namespace: TestNamaspace,
+							},
+						},
+						ClassSpec: &v1alpha1.ClassSpec{
+							Kind: GCPMachineClassKind,
+							Name: TestMachineClassName,
+						},
+					},
+				},
+				expect: expect{
+					machineClass: &v1alpha1.MachineClass{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      TestMachineClassName,
+							Namespace: TestNamaspace,
+						},
+						ProviderSpec: runtime.RawExtension{
+							Raw:    gcpProviderSpecExpectedAfterMigration,
+							Object: nil,
+						},
+						SecretRef: &corev1.SecretReference{
+							Name:      "test-secret",
+							Namespace: TestNamaspace,
+						},
+						Provider: ProviderGCP,
+					},
+				},
+			}),
+		)
+	})
 
 })
+
+func getBoolPtr(b bool) *bool {
+	return &b
+}
+
+func getStringPtr(s string) *string {
+	return &s
+}
 
 func newMachine(name string) *v1alpha1.Machine {
 	return &v1alpha1.Machine{
