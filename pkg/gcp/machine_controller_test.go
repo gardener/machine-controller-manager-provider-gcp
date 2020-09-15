@@ -79,17 +79,39 @@ var _ = Describe("#MachineController", func() {
 	gcpProviderSpecInvalidListZone := []byte("{\"canIpForward\":true,\"deletionProtection\":false,\"description\":\"Machine created to test out-of-tree gcp mcm driver.\",\"disks\":[{\"autoDelete\":true,\"boot\":true,\"sizeGb\":50,\"type\":\"pd-standard\",\"image\":\"projects/coreos-cloud/global/images/coreos-stable-2135-6-0-v20190801\",\"labels\":{\"name\":\"test-mc-gcp\"}}],\"labels\":{\"name\":\"test-mc-gcp\"},\"machineType\":\"n1-standard-2\",\"metadata\":[{\"key\":\"gcp\",\"value\":\"my-value\"}],\"networkInterfaces\":[{\"network\":\"dummyShoot\",\"subnetwork\":\"dummyShoot\"}],\"scheduling\":{\"automaticRestart\":true,\"onHostMaintenance\":\"MIGRATE\",\"preemptible\":false},\"secretRef\":{\"name\":\"dummySecret\",\"namespace\":\"dummy\"},\"serviceAccounts\":[{\"email\":\"mcmDummy@dummy.com\",\"scopes\":[\"https://www.googleapis.com/auth/compute\"]}],\"tags\":[\"kubernetes-io-cluster-dummy-machine\",\"kubernetes-io-role-mcm\",\"dummy-machine\"],\"region\":\"europe-dummy\",\"zone\":\"invalid list\"}")
 	gcpProviderSpecExpectedAfterMigration := []byte("{\"APIVersion\":\"mcm.gardener.cloud/v1alpha1\",\"canIpForward\":true,\"deletionProtection\":false,\"description\":\"Machine created to test out-of-tree gcp mcm driver.\",\"disks\":[{\"autoDelete\":true,\"boot\":true,\"sizeGb\":50,\"type\":\"pd-standard\",\"interface\":\"test-interface\",\"image\":\"projects/coreos-cloud/global/images/coreos-stable-2135-6-0-v20190801\",\"labels\":{\"name\":\"test-mc-gcp\"}}],\"labels\":{\"name\":\"test-mc-gcp\"},\"machineType\":\"n1-standard-2\",\"metadata\":[{\"key\":\"gcp\",\"value\":\"my-value\"}],\"networkInterfaces\":[{\"network\":\"dummyShoot\",\"subnetwork\":\"dummyShoot\"}],\"region\":\"europe-dummy\",\"scheduling\":{\"automaticRestart\":true,\"onHostMaintenance\":\"MIGRATE\",\"preemptible\":false},\"serviceAccounts\":[{\"email\":\"mcmDummy@dummy.com\",\"scopes\":[\"https://www.googleapis.com/auth/compute\"]}],\"tags\":[\"kubernetes-io-cluster-dummy-machine\",\"kubernetes-io-role-mcm\",\"dummy-machine\"],\"zone\":\"europe-dummy\"}")
 
-	gcpPVSpec := &corev1.PersistentVolumeSpec{
+	gcpPVSpecIntree := &corev1.PersistentVolumeSpec{
 		PersistentVolumeSource: corev1.PersistentVolumeSource{
 			GCEPersistentDisk: &corev1.GCEPersistentDiskVolumeSource{
-				PDName: "dummyPD",
+				PDName: "vol-in-tree",
+			},
+		},
+	}
+	gcpPVSpecCSI := &corev1.PersistentVolumeSpec{
+		PersistentVolumeSource: corev1.PersistentVolumeSource{
+			CSI: &corev1.CSIPersistentVolumeSource{
+				Driver:       "pd.csi.storage.gke.io",
+				VolumeHandle: "vol-csi",
+			},
+		},
+	}
+	gcpPVSpecCSIWrong := &corev1.PersistentVolumeSpec{
+		PersistentVolumeSource: corev1.PersistentVolumeSource{
+			CSI: &corev1.CSIPersistentVolumeSource{
+				Driver:       "io.kubernetes.storage.mock",
+				VolumeHandle: "vol-wrong",
+			},
+		},
+	}
+	hostPathPVSpec := &corev1.PersistentVolumeSpec{
+		PersistentVolumeSource: corev1.PersistentVolumeSource{
+			HostPath: &corev1.HostPathVolumeSource{
+				Path: "/mnt/data",
 			},
 		},
 	}
 	gcpPVSpecEmptyPD := &corev1.PersistentVolumeSpec{
 		PersistentVolumeSource: corev1.PersistentVolumeSource{},
 	}
-	gcpPVResponse := []string{"dummyPD"}
 
 	gcpProviderSecret := map[string][]byte{
 		"userData":           []byte("dummy-data"),
@@ -613,21 +635,57 @@ var _ = Describe("#MachineController", func() {
 
 			},
 
-			Entry("With valid PV list", &data{
+			Entry("With valid PV list with in-tree PV (with .spec.gcePersistentDisk)", &data{
 				action: action{
 					machineRequest: &driver.GetVolumeIDsRequest{
-						PVSpecs: []*corev1.PersistentVolumeSpec{gcpPVSpec},
+						PVSpecs: []*corev1.PersistentVolumeSpec{
+							gcpPVSpecIntree,
+							hostPathPVSpec,
+						},
 					},
 				},
 				expect: expect{
 					machineResponse: &driver.GetVolumeIDsResponse{
-						VolumeIDs: gcpPVResponse,
+						VolumeIDs: []string{"vol-in-tree"},
 					},
 					errToHaveOccurred: false,
-					errMessage:        FailAtMethodNotImplemented,
 				},
 			}),
-			Entry("With emtpy PV list", &data{
+			Entry("With valid PV list with out-of-tree PV (with .spec.csi.volumeHandle)", &data{
+				action: action{
+					machineRequest: &driver.GetVolumeIDsRequest{
+						PVSpecs: []*corev1.PersistentVolumeSpec{
+							gcpPVSpecCSI,
+							gcpPVSpecCSIWrong,
+						},
+					},
+				},
+				expect: expect{
+					machineResponse: &driver.GetVolumeIDsResponse{
+						VolumeIDs: []string{"vol-csi"},
+					},
+					errToHaveOccurred: false,
+				},
+			}),
+			Entry("With valid PV list with both in-tree & out-of-tree PV (with .spec.csi.volumeHandle)", &data{
+				action: action{
+					machineRequest: &driver.GetVolumeIDsRequest{
+						PVSpecs: []*corev1.PersistentVolumeSpec{
+							gcpPVSpecIntree,
+							gcpPVSpecCSI,
+							gcpPVSpecCSIWrong,
+							hostPathPVSpec,
+						},
+					},
+				},
+				expect: expect{
+					machineResponse: &driver.GetVolumeIDsResponse{
+						VolumeIDs: []string{"vol-in-tree", "vol-csi"},
+					},
+					errToHaveOccurred: false,
+				},
+			}),
+			Entry("With empty PV list", &data{
 				action: action{
 					machineRequest: &driver.GetVolumeIDsRequest{
 						PVSpecs: []*corev1.PersistentVolumeSpec{gcpPVSpecEmptyPD},

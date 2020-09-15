@@ -32,6 +32,11 @@ import (
 	"k8s.io/klog"
 )
 
+const (
+	// gcePDDriverName is the name of the CSI driver for GCE PD
+	gcePDDriverName = "pd.csi.storage.gke.io"
+)
+
 // CreateMachine handles a machine creation request
 // REQUIRED METHOD
 //
@@ -200,12 +205,13 @@ func (ms *MachinePlugin) GetVolumeIDs(ctx context.Context, req *driver.GetVolume
 	var volumeIDs []string
 	for i := range req.PVSpecs {
 		spec := req.PVSpecs[i]
-		if spec.GCEPersistentDisk == nil {
-			// Not an GCE volume
-			continue
+		if spec.GCEPersistentDisk != nil {
+			volumeID := spec.GCEPersistentDisk.PDName
+			volumeIDs = append(volumeIDs, volumeID)
+		} else if spec.CSI != nil && spec.CSI.Driver == gcePDDriverName && spec.CSI.VolumeHandle != "" {
+			volumeID := spec.CSI.VolumeHandle
+			volumeIDs = append(volumeIDs, volumeID)
 		}
-		volumeID := spec.GCEPersistentDisk.PDName
-		volumeIDs = append(volumeIDs, volumeID)
 	}
 
 	klog.V(2).Infof("GetVolumeIDs machines request has been processed successfully (%d/%d).", len(volumeIDs), len(req.PVSpecs))
