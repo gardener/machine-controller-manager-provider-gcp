@@ -1,9 +1,9 @@
 module github.com/gardener/machine-controller-manager-provider-gcp
 
-go 1.13
+go 1.15
 
 require (
-	github.com/gardener/machine-controller-manager v0.30.0
+	github.com/gardener/machine-controller-manager v0.35.0
 	github.com/golang/protobuf v1.3.2 // indirect
 	github.com/onsi/ginkgo v1.12.0
 	github.com/onsi/gomega v1.9.0
@@ -23,7 +23,6 @@ require (
 )
 
 replace (
-	github.com/gardener/machine-controller-manager => github.com/gardener/machine-controller-manager v0.34.3
 	github.com/prometheus/client_golang => github.com/prometheus/client_golang v0.9.2
 	k8s.io/api => k8s.io/api v0.16.8 // v0.16.8
 	k8s.io/apimachinery => k8s.io/apimachinery v0.16.8 // v0.16.8
