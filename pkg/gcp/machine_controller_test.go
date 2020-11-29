@@ -21,6 +21,7 @@ import (
 	"context"
 	"net/http"
 
+	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/apis"
 	fake "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/fake"
 	v1alpha1 "github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
@@ -48,9 +49,9 @@ const (
 	// ListFailAtJSONUnmarshalling is the error message returned when an malformed JSON is sent to the plugin by the caller
 	ListFailAtJSONUnmarshalling string = "machine codes error: code = [Internal] message = [List machines failed on decodeProviderSpecAndSecret: machine codes error: code = [Internal] message = [unexpected end of JSON input]]"
 	// FailAtNoSecretsPassed is the error message returned when no secrets are passed to the the plugin by the caller
-	FailAtNoSecretsPassed string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on decodeProviderSpecAndSecret: machine codes error: code = [Internal] message = [Error while validating ProviderSpec [Secret serviceAccountJSON is required field Secret userData is required field]]]"
+	FailAtNoSecretsPassed string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on decodeProviderSpecAndSecret: machine codes error: code = [Internal] message = [Error while validating ProviderSpec [secret serviceAccountJSON or serviceaccount.json is required field secret userData is required field]]]"
 	// FailAtSecretsWithNoUserData is the error message returned when secrets map has no userdata provided by the caller
-	FailAtSecretsWithNoUserData string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on decodeProviderSpecAndSecret: machine codes error: code = [Internal] message = [Error while validating ProviderSpec [Secret userData is required field]]]"
+	FailAtSecretsWithNoUserData string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on decodeProviderSpecAndSecret: machine codes error: code = [Internal] message = [Error while validating ProviderSpec [secret userData is required field]]]"
 	// FailAtInvalidProjectID is the error returned when an invalid project id value is provided by the caller
 	FailAtInvalidProjectID string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed: json: cannot unmarshal number into Go struct field .project_id of type string]"
 	// FailAtInvalidZonePostCall is the  error returned when a post call should fail with an invalid zone is sent in the POST call -- this is used to simulate server error
@@ -114,17 +115,17 @@ var _ = Describe("#MachineController", func() {
 	}
 
 	gcpProviderSecret := map[string][]byte{
-		"userData":           []byte("dummy-data"),
-		"serviceAccountJSON": []byte("{\"type\":\"service_account\",\"project_id\":\"sap-se-gcp-scp-k8s-dev\"}"),
+		"userData":                []byte("dummy-data"),
+		api.GCPServiceAccountJSON: []byte("{\"type\":\"service_account\",\"project_id\":\"sap-se-gcp-scp-k8s-dev\"}"),
 	}
 
 	gcpProviderSecretWithMisssingUserData := map[string][]byte{
 		//"userData":           []byte(""),
-		"serviceAccountJSON": []byte("{\"type\":\"service_account\",\"project_id\":\"sap-se-gcp-scp-k8s-dev\"}"),
+		api.GCPServiceAccountJSON: []byte("{\"type\":\"service_account\",\"project_id\":\"sap-se-gcp-scp-k8s-dev\"}"),
 	}
 	gcpProviderSecretWithoutProjectID := map[string][]byte{
-		"userData":           []byte("dummy-data"),
-		"serviceAccountJSON": []byte("{\"type\":\"service_account\",\"project_id\":10}"),
+		"userData":                []byte("dummy-data"),
+		api.GCPServiceAccountJSON: []byte("{\"type\":\"service_account\",\"project_id\":10}"),
 	}
 
 	var ms *MachinePlugin

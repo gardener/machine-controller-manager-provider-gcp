@@ -23,12 +23,14 @@ package gcp
 
 import (
 	"context"
+	"strings"
 
-	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/apis"
 	"golang.org/x/oauth2/google"
-	compute "google.golang.org/api/compute/v1"
+	"google.golang.org/api/compute/v1"
 	"google.golang.org/api/option"
 	corev1 "k8s.io/api/core/v1"
+
+	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/apis"
 )
 
 // PluginSPI provides an interface to deal with cloud provider session
@@ -49,9 +51,11 @@ type MachinePlugin struct {
 type PluginSPIImpl struct{}
 
 // NewComputeService returns an instance of the compute service
-func (spi *PluginSPIImpl) NewComputeService(secrets *corev1.Secret) (context.Context, *compute.Service, error) {
+func (spi *PluginSPIImpl) NewComputeService(secret *corev1.Secret) (context.Context, *compute.Service, error) {
 	ctx := context.Background()
-	jwt, err := google.JWTConfigFromJSON((secrets.Data[api.GCPServiceAccountJSON]), compute.CloudPlatformScope)
+	serviceAccountJSON := extractCredentialsFromData(secret.Data, api.GCPServiceAccountJSON, api.GCPAlternativeServiceAccountJSON)
+
+	jwt, err := google.JWTConfigFromJSON([]byte(serviceAccountJSON), compute.CloudPlatformScope)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -70,4 +74,15 @@ func NewGCPPlugin(pluginSPI PluginSPI) *MachinePlugin {
 	return &MachinePlugin{
 		SPI: pluginSPI,
 	}
+}
+
+// extractCredentialsFromData extracts and trims a value from the given data map. The first key that exists is being
+// returned, otherwise, the next key is tried, etc. If no key exists then an empty string is returned.
+func extractCredentialsFromData(data map[string][]byte, keys ...string) string {
+	for _, key := range keys {
+		if val, ok := data[key]; ok {
+			return strings.TrimSpace(string(val))
+		}
+	}
+	return ""
 }
