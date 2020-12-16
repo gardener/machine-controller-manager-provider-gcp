@@ -51,13 +51,13 @@ const (
 )
 
 // CreateMachineUtil method is used to create a GCP machine
-func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName string, providerSpec *api.GCPProviderSpec, secrets *corev1.Secret) (string, error) {
-	ctx, computeService, err := ms.SPI.NewComputeService(secrets)
+func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName string, providerSpec *api.GCPProviderSpec, secret *corev1.Secret) (string, error) {
+	ctx, computeService, err := ms.SPI.NewComputeService(secret)
 	if err != nil {
 		return "", err
 	}
 
-	project, err := extractProject(secrets.Data[api.GCPServiceAccountJSON])
+	project, err := extractProject(secret.Data)
 	if err != nil {
 		return "", err
 	}
@@ -118,7 +118,7 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 	instance.Disks = disks
 
 	var metadataItems = []*compute.MetadataItems{}
-	metadataItems = append(metadataItems, getUserData(string(secrets.Data["userData"])))
+	metadataItems = append(metadataItems, getUserData(string(secret.Data["userData"])))
 
 	for _, metadata := range providerSpec.Metadata {
 		metadataItems = append(metadataItems, &compute.MetadataItems{
@@ -191,20 +191,20 @@ func decodeMachineID(id string) (string, string, string, error) {
 }
 
 // DeleteMachineUtil deletes a VM by name
-func (ms *MachinePlugin) DeleteMachineUtil(ctx context.Context, machineName string, providerID string, providerSpec *api.GCPProviderSpec, secrets *corev1.Secret) (string, error) {
-	ctx, computeService, err := ms.SPI.NewComputeService(secrets)
+func (ms *MachinePlugin) DeleteMachineUtil(ctx context.Context, machineName string, _ string, providerSpec *api.GCPProviderSpec, secret *corev1.Secret) (string, error) {
+	ctx, computeService, err := ms.SPI.NewComputeService(secret)
 	if err != nil {
 		return "", err
 	}
 
-	project, err := extractProject(secrets.Data[api.GCPServiceAccountJSON])
+	project, err := extractProject(secret.Data)
 	if err != nil {
 		return "", err
 	}
 
 	zone := providerSpec.Zone
 
-	result, err := getVMs(ctx, machineName, providerSpec, secrets, project, computeService)
+	result, err := getVMs(ctx, machineName, providerSpec, secret, project, computeService)
 	if err != nil {
 		return "", err
 	} else if len(result) == 0 {
@@ -223,19 +223,19 @@ func (ms *MachinePlugin) DeleteMachineUtil(ctx context.Context, machineName stri
 }
 
 // GetMachineStatusUtil checks for existence of VM by name
-func (ms *MachinePlugin) GetMachineStatusUtil(ctx context.Context, machineName string, providerID string, providerSpec *api.GCPProviderSpec, secrets *corev1.Secret) (string, error) {
-	ctx, computeService, err := ms.SPI.NewComputeService(secrets)
+func (ms *MachinePlugin) GetMachineStatusUtil(ctx context.Context, machineName string, _ string, providerSpec *api.GCPProviderSpec, secret *corev1.Secret) (string, error) {
+	ctx, computeService, err := ms.SPI.NewComputeService(secret)
 	if err != nil {
 		return "", err
 	}
 
-	project, err := extractProject(secrets.Data[api.GCPServiceAccountJSON])
+	project, err := extractProject(secret.Data)
 	if err != nil {
 		return "", err
 	}
 	zone := providerSpec.Zone
 
-	result, err := getVMs(ctx, machineName, providerSpec, secrets, project, computeService)
+	result, err := getVMs(ctx, machineName, providerSpec, secret, project, computeService)
 	if err != nil {
 		return "", err
 	} else if len(result) == 0 {
@@ -247,18 +247,18 @@ func (ms *MachinePlugin) GetMachineStatusUtil(ctx context.Context, machineName s
 }
 
 // ListMachinesUtil lists all VMs in the DC or folder
-func (ms *MachinePlugin) ListMachinesUtil(ctx context.Context, providerSpec *api.GCPProviderSpec, secrets *corev1.Secret) (map[string]string, error) {
-	ctx, computeService, err := ms.SPI.NewComputeService(secrets)
+func (ms *MachinePlugin) ListMachinesUtil(ctx context.Context, providerSpec *api.GCPProviderSpec, secret *corev1.Secret) (map[string]string, error) {
+	ctx, computeService, err := ms.SPI.NewComputeService(secret)
 	if err != nil {
 		return nil, err
 	}
 
-	project, err := extractProject(secrets.Data[api.GCPServiceAccountJSON])
+	project, err := extractProject(secret.Data)
 	if err != nil {
 		return nil, err
 	}
 
-	result, err := getVMs(ctx, "", providerSpec, secrets, project, computeService)
+	result, err := getVMs(ctx, "", providerSpec, secret, project, computeService)
 	if err != nil {
 		return nil, err
 	} else if len(result) == 0 {
@@ -269,7 +269,7 @@ func (ms *MachinePlugin) ListMachinesUtil(ctx context.Context, providerSpec *api
 	return result, nil
 }
 
-func getVMs(ctx context.Context, machineID string, providerSpec *api.GCPProviderSpec, secrets *corev1.Secret, project string, computeService *compute.Service) (map[string]string, error) {
+func getVMs(ctx context.Context, machineID string, providerSpec *api.GCPProviderSpec, _ *corev1.Secret, project string, computeService *compute.Service) (map[string]string, error) {
 	listOfVMs := make(map[string]string)
 
 	searchClusterName := ""
@@ -367,11 +367,13 @@ func prepareErrorf(err error, format string, args ...interface{}) error {
 	return status.Error(code, wrapped.Error())
 }
 
-func extractProject(serviceaccount []byte) (string, error) {
+func extractProject(credentialsData map[string][]byte) (string, error) {
+	serviceAccountJSON := extractCredentialsFromData(credentialsData, api.GCPServiceAccountJSON, api.GCPAlternativeServiceAccountJSON)
+
 	var j struct {
 		Project string `json:"project_id"`
 	}
-	if err := json.Unmarshal(serviceaccount, &j); err != nil {
+	if err := json.Unmarshal([]byte(serviceAccountJSON), &j); err != nil {
 		return "Error", err
 	}
 	return j.Project, nil

@@ -36,16 +36,17 @@ func validateSecrets(secret *corev1.Secret) []error {
 	var allErrs []error
 
 	if secret == nil {
-		allErrs = append(allErrs, fmt.Errorf("Secret object that has been passed by the MCM is nil"))
+		allErrs = append(allErrs, fmt.Errorf("secret object that has been passed by the MCM is nil"))
 	} else {
-		_, serviceAccountJSONExists := secret.Data["serviceAccountJSON"]
+		_, serviceAccountJSONExists := secret.Data[api.GCPServiceAccountJSON]
+		_, serviceAccountJSONAlternativeExists := secret.Data[api.GCPAlternativeServiceAccountJSON]
 		_, userDataExists := secret.Data["userData"]
 
-		if !serviceAccountJSONExists {
-			allErrs = append(allErrs, fmt.Errorf("Secret serviceAccountJSON is required field"))
+		if !serviceAccountJSONExists && !serviceAccountJSONAlternativeExists {
+			allErrs = append(allErrs, fmt.Errorf("secret %s or %s is required field", api.GCPServiceAccountJSON, api.GCPAlternativeServiceAccountJSON))
 		}
 		if !userDataExists {
-			allErrs = append(allErrs, fmt.Errorf("Secret userData is required field"))
+			allErrs = append(allErrs, fmt.Errorf("secret userData is required field"))
 		}
 	}
 

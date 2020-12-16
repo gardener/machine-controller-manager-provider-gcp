@@ -25,22 +25,26 @@ import (
 	compute "google.golang.org/api/compute/v1"
 	option "google.golang.org/api/option"
 	corev1 "k8s.io/api/core/v1"
+
+	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/apis"
 )
 
-//PluginSPIImpl is the mock implementation of PluginSPIImpl
+// PluginSPIImpl is the mock implementation of PluginSPIImpl
 type PluginSPIImpl struct {
 	Client *http.Client
 }
 
-//NewComputeService creates a compute service instance using the mock
+// NewComputeService creates a compute service instance using the mock
 func (ms *PluginSPIImpl) NewComputeService(secrets *corev1.Secret) (context.Context, *compute.Service, error) {
 	ctx := context.Background()
 
-	if _, exists := secrets.Data["serviceAccountJSON"]; !exists {
+	_, serviceAccountJSON := secrets.Data[api.GCPServiceAccountJSON]
+	_, serviceAccountJSONAlternative := secrets.Data[api.GCPAlternativeServiceAccountJSON]
+	if !serviceAccountJSON && !serviceAccountJSONAlternative {
 		return nil, nil, fmt.Errorf("Missing secrets to connect to compute service")
 	}
 
-	//create a compute service using a mockclient work
+	// create a compute service using a mockclient work
 	client := option.WithHTTPClient(ms.Client)
 	endpoint := option.WithEndpoint("http://127.0.0.1:6666")
 
