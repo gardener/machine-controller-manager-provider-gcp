@@ -729,8 +729,9 @@ var _ = Describe("#MachineController", func() {
 					Expect(err).ToNot(HaveOccurred())
 					Expect(data.action.machineRequest.MachineClass.ProviderSpec).To(Equal(data.expect.machineClass.ProviderSpec))
 					Expect(data.action.machineRequest.MachineClass.Provider).To(Equal(ProviderGCP))
+					Expect(data.action.machineRequest.MachineClass.SecretRef).To(Equal(data.expect.machineClass.SecretRef))
+					Expect(data.action.machineRequest.MachineClass.CredentialsSecretRef).To(Equal(data.expect.machineClass.CredentialsSecretRef))
 				}
-
 			},
 
 			Entry("With valid migration request", &data{
@@ -785,6 +786,10 @@ var _ = Describe("#MachineController", func() {
 									Name:      "test-secret",
 									Namespace: TestNamaspace,
 								},
+								CredentialsSecretRef: &corev1.SecretReference{
+									Name:      "test-credential",
+									Namespace: TestNamaspace,
+								},
 								ServiceAccounts: []v1alpha1.GCPServiceAccount{
 									{
 										Email: "mcmDummy@dummy.com",
@@ -826,6 +831,10 @@ var _ = Describe("#MachineController", func() {
 						},
 						SecretRef: &corev1.SecretReference{
 							Name:      "test-secret",
+							Namespace: TestNamaspace,
+						},
+						CredentialsSecretRef: &corev1.SecretReference{
+							Name:      "test-credential",
 							Namespace: TestNamaspace,
 						},
 						Provider: ProviderGCP,

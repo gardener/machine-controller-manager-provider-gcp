@@ -112,6 +112,7 @@ func fillUpMachineClass(gcpMachineClass *v1alpha1.GCPMachineClass, machineClass 
 		Raw: providerSpecMarshal,
 	}
 	machineClass.SecretRef = gcpMachineClass.Spec.SecretRef
+	machineClass.CredentialsSecretRef = gcpMachineClass.Spec.CredentialsSecretRef
 	machineClass.Provider = ProviderGCP
 
 	return nil
