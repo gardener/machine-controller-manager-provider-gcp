@@ -64,6 +64,12 @@ func (ms *MachinePlugin) CreateMachine(ctx context.Context, req *driver.CreateMa
 	// Log messages to track start of request
 	klog.V(2).Infof("Create machine request has been received for %q", req.Machine.Name)
 
+	// Check if the MachineClass is for the supported cloud provider
+	if req.MachineClass.Provider != ProviderGCP {
+		err := fmt.Errorf("Requested for Provider '%s', we only support '%s'", req.MachineClass.Provider, ProviderGCP)
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
 	providerSpec, err := decodeProviderSpecAndSecret(req.MachineClass, req.Secret)
 	if err != nil {
 		return nil, prepareErrorf(err, "Create machine %q failed on decodeProviderSpecAndSecret", req.Machine.Name)
@@ -101,6 +107,12 @@ func (ms *MachinePlugin) DeleteMachine(ctx context.Context, req *driver.DeleteMa
 	// Log messages to track delete request
 	klog.V(2).Infof("Machine deletion request has been received for %q", req.Machine.Name)
 
+	// Check if the MachineClass is for the supported cloud provider
+	if req.MachineClass.Provider != ProviderGCP {
+		err := fmt.Errorf("Requested for Provider '%s', we only support '%s'", req.MachineClass.Provider, ProviderGCP)
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
 	providerSpec, err := decodeProviderSpecAndSecret(req.MachineClass, req.Secret)
 	if err != nil {
 		return nil, prepareErrorf(err, "Delete machine %q failed on decodeProviderSpecAndSecret", req.Machine.Name)
@@ -135,6 +147,12 @@ func (ms *MachinePlugin) DeleteMachine(ctx context.Context, req *driver.DeleteMa
 func (ms *MachinePlugin) GetMachineStatus(ctx context.Context, req *driver.GetMachineStatusRequest) (*driver.GetMachineStatusResponse, error) {
 	// Log messages to track start of request
 	klog.V(2).Infof("Machine status request has been received for %q", req.Machine.Name)
+
+	// Check if the MachineClass is for the supported cloud provider
+	if req.MachineClass.Provider != ProviderGCP {
+		err := fmt.Errorf("Requested for Provider '%s', we only support '%s'", req.MachineClass.Provider, ProviderGCP)
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
 
 	providerSpec, err := decodeProviderSpecAndSecret(req.MachineClass, req.Secret)
 	if err != nil {
@@ -172,6 +190,12 @@ func (ms *MachinePlugin) GetMachineStatus(ctx context.Context, req *driver.GetMa
 func (ms *MachinePlugin) ListMachines(ctx context.Context, req *driver.ListMachinesRequest) (*driver.ListMachinesResponse, error) {
 	// Log messages to track start of request
 	klog.V(2).Infof("List machines request has been received")
+
+	// Check if the MachineClass is for the supported cloud provider
+	if req.MachineClass.Provider != ProviderGCP {
+		err := fmt.Errorf("Requested for Provider '%s', we only support '%s'", req.MachineClass.Provider, ProviderGCP)
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
 
 	providerSpec, err := decodeProviderSpecAndSecret(req.MachineClass, req.Secret)
 	if err != nil {
