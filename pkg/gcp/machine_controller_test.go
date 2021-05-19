@@ -70,6 +70,8 @@ const (
 	FailAtSpecValidation string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on decodeProviderSpecAndSecret: machine codes error: code = [Internal] message = [Error while validating ProviderSpec [spec.zone: Required value: zone is required]]]"
 	// FailAtNonExistingMachine because existing machine is not found
 	FailAtNonExistingMachine string = "rpc error: code = NotFound desc = Machine with the name \"non-existent-dummy-machine\" not found"
+
+	UnsupportedProviderError string = "machine codes error: code = [InvalidArgument] message = [Requested for Provider 'aws', we only support 'GCP']"
 )
 
 var _ = Describe("#MachineController", func() {
@@ -180,7 +182,7 @@ var _ = Describe("#MachineController", func() {
 				action: action{
 					machineRequest: &driver.CreateMachineRequest{
 						Machine:      newMachine("dummy-machine"),
-						MachineClass: newGCPMachineClass(gcpProviderSpec),
+						MachineClass: newGCPMachineClass(gcpProviderSpec, ""),
 						Secret:       newSecret(gcpProviderSecret),
 					},
 				},
@@ -192,11 +194,24 @@ var _ = Describe("#MachineController", func() {
 					errToHaveOccurred: false,
 				},
 			}),
+			Entry("Creata a simple machine with unsupported provider in MachineClass", &data{
+				action: action{
+					machineRequest: &driver.CreateMachineRequest{
+						Machine:      newMachine("dummy-machine"),
+						MachineClass: newGCPMachineClass(gcpProviderSpec, "aws"),
+						Secret:       newSecret(gcpProviderSecret),
+					},
+				},
+				expect: expect{
+					errToHaveOccurred: true,
+					errMessage:        UnsupportedProviderError,
+				},
+			}),
 			Entry("With zone missing", &data{
 				action: action{
 					machineRequest: &driver.CreateMachineRequest{
 						Machine:      newMachine("dummy-machine"),
-						MachineClass: newGCPMachineClass(gcpProviderSpecValidationErr),
+						MachineClass: newGCPMachineClass(gcpProviderSpecValidationErr, ""),
 						Secret:       newSecret(gcpProviderSecret),
 					},
 				},
@@ -209,7 +224,7 @@ var _ = Describe("#MachineController", func() {
 				action: action{
 					machineRequest: &driver.CreateMachineRequest{
 						Machine:      newMachine("dummy-machine"),
-						MachineClass: newGCPMachineClass([]byte("")),
+						MachineClass: newGCPMachineClass([]byte(""), ""),
 						Secret:       newSecret(gcpProviderSecret),
 					},
 				},
@@ -223,7 +238,7 @@ var _ = Describe("#MachineController", func() {
 				action: action{
 					machineRequest: &driver.CreateMachineRequest{
 						Machine:      newMachine("dummy-machine"),
-						MachineClass: newGCPMachineClass(gcpProviderSpec),
+						MachineClass: newGCPMachineClass(gcpProviderSpec, ""),
 						Secret:       newSecret(make(map[string][]byte)),
 					},
 				},
@@ -236,7 +251,7 @@ var _ = Describe("#MachineController", func() {
 				action: action{
 					machineRequest: &driver.CreateMachineRequest{
 						Machine:      newMachine("dummy-machine"),
-						MachineClass: newGCPMachineClass(gcpProviderSpec),
+						MachineClass: newGCPMachineClass(gcpProviderSpec, ""),
 						Secret:       newSecret(gcpProviderSecretWithMisssingUserData),
 					},
 				},
@@ -249,7 +264,7 @@ var _ = Describe("#MachineController", func() {
 				action: action{
 					machineRequest: &driver.CreateMachineRequest{
 						Machine:      newMachine("dummy-machine"),
-						MachineClass: newGCPMachineClass(gcpProviderSpec),
+						MachineClass: newGCPMachineClass(gcpProviderSpec, ""),
 						Secret:       newSecret(gcpProviderSecretWithoutProjectID),
 					},
 				},
@@ -262,7 +277,7 @@ var _ = Describe("#MachineController", func() {
 				action: action{
 					machineRequest: &driver.CreateMachineRequest{
 						Machine:      newMachine("dummy-machine"),
-						MachineClass: newGCPMachineClass(gcpProviderSpecInvalidPostZone),
+						MachineClass: newGCPMachineClass(gcpProviderSpecInvalidPostZone, ""),
 						Secret:       newSecret(gcpProviderSecret),
 					},
 				},
@@ -275,7 +290,7 @@ var _ = Describe("#MachineController", func() {
 				action: action{
 					machineRequest: &driver.CreateMachineRequest{
 						Machine:      newMachine("dummy-machine"),
-						MachineClass: newGCPMachineClass(gcpProviderSpecInvalidListZone),
+						MachineClass: newGCPMachineClass(gcpProviderSpecInvalidListZone, ""),
 						Secret:       newSecret(gcpProviderSecret),
 					},
 				},
@@ -319,7 +334,7 @@ var _ = Describe("#MachineController", func() {
 				action: action{
 					machineRequest: &driver.DeleteMachineRequest{
 						Machine:      newMachine("non-existent-dummy-machine"),
-						MachineClass: newGCPMachineClass(gcpProviderSpec),
+						MachineClass: newGCPMachineClass(gcpProviderSpec, ""),
 						Secret:       newSecret(gcpProviderSecret),
 					},
 				},
@@ -330,11 +345,25 @@ var _ = Describe("#MachineController", func() {
 				},
 			}),
 
+			Entry("Delete machine request with unsupported provider in the MachineClass", &data{
+				action: action{
+					machineRequest: &driver.DeleteMachineRequest{
+						Machine:      newMachine("dummy-machine"),
+						MachineClass: newGCPMachineClass(gcpProviderSpec, "aws"),
+						Secret:       newSecret(gcpProviderSecret),
+					},
+				},
+				expect: expect{
+					errToHaveOccurred: true,
+					errMessage:        UnsupportedProviderError,
+				},
+			}),
+
 			Entry("With no provider spec", &data{
 				action: action{
 					machineRequest: &driver.DeleteMachineRequest{
 						Machine:      newMachine("dummy-machine"),
-						MachineClass: newGCPMachineClass([]byte("")),
+						MachineClass: newGCPMachineClass([]byte(""), ""),
 						Secret:       newSecret(gcpProviderSecret),
 					},
 				},
@@ -348,7 +377,7 @@ var _ = Describe("#MachineController", func() {
 				action: action{
 					machineRequest: &driver.DeleteMachineRequest{
 						Machine:      newMachine("dummy-machine"),
-						MachineClass: newGCPMachineClass(gcpProviderSpecInvalidListZone),
+						MachineClass: newGCPMachineClass(gcpProviderSpecInvalidListZone, ""),
 						Secret:       newSecret(gcpProviderSecret),
 					},
 				},
@@ -419,12 +448,12 @@ var _ = Describe("#MachineController", func() {
 				action: action{
 					createRequest: &driver.CreateMachineRequest{
 						Machine:      newMachine("dummy-machine"),
-						MachineClass: newGCPMachineClass(gcpProviderSpec),
+						MachineClass: newGCPMachineClass(gcpProviderSpec, ""),
 						Secret:       newSecret(gcpProviderSecret),
 					},
 					createMachine: true,
 					listRequest: &driver.ListMachinesRequest{
-						MachineClass: newGCPMachineClass(gcpProviderSpec),
+						MachineClass: newGCPMachineClass(gcpProviderSpec, ""),
 						Secret:       newSecret(gcpProviderSecret),
 					},
 				},
@@ -441,7 +470,7 @@ var _ = Describe("#MachineController", func() {
 				action: action{
 					createMachine: false,
 					listRequest: &driver.ListMachinesRequest{
-						MachineClass: newGCPMachineClass([]byte("")),
+						MachineClass: newGCPMachineClass([]byte(""), ""),
 						Secret:       newSecret(gcpProviderSecret),
 					},
 				},
@@ -455,7 +484,7 @@ var _ = Describe("#MachineController", func() {
 				action: action{
 					createMachine: false,
 					listRequest: &driver.ListMachinesRequest{
-						MachineClass: newGCPMachineClass(gcpProviderSpecInvalidListZone),
+						MachineClass: newGCPMachineClass(gcpProviderSpecInvalidListZone, ""),
 						Secret:       newSecret(gcpProviderSecret),
 					},
 				},
@@ -463,6 +492,20 @@ var _ = Describe("#MachineController", func() {
 					errToHaveOccurred:     true,
 					listErrToHaveOccurred: true,
 					errMessage:            ListFailAtInvalidZoneListCall,
+				},
+			}),
+			Entry("List with Get call with unsupported provider in MachineClass", &data{
+				action: action{
+					createMachine: false,
+					listRequest: &driver.ListMachinesRequest{
+						MachineClass: newGCPMachineClass(gcpProviderSpecInvalidListZone, "aws"),
+						Secret:       newSecret(gcpProviderSecret),
+					},
+				},
+				expect: expect{
+					errToHaveOccurred:     true,
+					listErrToHaveOccurred: true,
+					errMessage:            UnsupportedProviderError,
 				},
 			}),
 		)
@@ -532,7 +575,7 @@ var _ = Describe("#MachineController", func() {
 
 					getStatusRequest: &driver.GetMachineStatusRequest{
 						Machine:      newMachine("non-existent-dummy-machine"),
-						MachineClass: newGCPMachineClass(gcpProviderSpecNoTagsToSearch),
+						MachineClass: newGCPMachineClass(gcpProviderSpecNoTagsToSearch, ""),
 						Secret:       newSecret(gcpProviderSecret),
 					},
 				},
@@ -546,13 +589,13 @@ var _ = Describe("#MachineController", func() {
 				action: action{
 					createRequest: &driver.CreateMachineRequest{
 						Machine:      newMachine("dummy-machine"),
-						MachineClass: newGCPMachineClass(gcpProviderSpec),
+						MachineClass: newGCPMachineClass(gcpProviderSpec, ""),
 						Secret:       newSecret(gcpProviderSecret),
 					},
 					createMachine: true,
 					getStatusRequest: &driver.GetMachineStatusRequest{
 						Machine:      newMachine("dummy-machine"),
-						MachineClass: newGCPMachineClass(gcpProviderSpec),
+						MachineClass: newGCPMachineClass(gcpProviderSpec, ""),
 						Secret:       newSecret(gcpProviderSecret),
 					},
 				},
@@ -574,7 +617,7 @@ var _ = Describe("#MachineController", func() {
 					createMachine: false,
 					getStatusRequest: &driver.GetMachineStatusRequest{
 						Machine:      newMachine("dummy-machine"),
-						MachineClass: newGCPMachineClass([]byte("")),
+						MachineClass: newGCPMachineClass([]byte(""), ""),
 						Secret:       newSecret(gcpProviderSecret),
 					},
 				},
@@ -589,7 +632,7 @@ var _ = Describe("#MachineController", func() {
 					createMachine: false,
 					getStatusRequest: &driver.GetMachineStatusRequest{
 						Machine:      newMachine("dummy-machine"),
-						MachineClass: newGCPMachineClass(gcpProviderSpecInvalidListZone),
+						MachineClass: newGCPMachineClass(gcpProviderSpecInvalidListZone, ""),
 						Secret:       newSecret(gcpProviderSecret),
 					},
 				},
@@ -812,6 +855,7 @@ var _ = Describe("#MachineController", func() {
 								Name:      TestMachineClassName,
 								Namespace: TestNamaspace,
 							},
+							Provider: ProviderGCP,
 						},
 						ClassSpec: &v1alpha1.ClassSpec{
 							Kind: GCPMachineClassKind,
@@ -862,11 +906,15 @@ func newMachine(name string) *v1alpha1.Machine {
 	}
 }
 
-func newGCPMachineClass(gcpProviderSpec []byte) *v1alpha1.MachineClass {
+func newGCPMachineClass(gcpProviderSpec []byte, provider string) *v1alpha1.MachineClass {
+	if provider == "" {
+		provider = ProviderGCP
+	}
 	return &v1alpha1.MachineClass{
 		ProviderSpec: runtime.RawExtension{
 			Raw: gcpProviderSpec,
 		},
+		Provider: provider,
 	}
 }
 
