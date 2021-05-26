@@ -92,7 +92,7 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 		if disk.AutoDelete == nil || *disk.AutoDelete == true {
 			autoDelete = true
 		}
-		if disk.Type == "SCRATCH" {
+		if disk.Type == validation.DiskTypeScratch {
 			attachedDisk = compute.AttachedDisk{
 				AutoDelete: autoDelete,
 				Type:       disk.Type,
