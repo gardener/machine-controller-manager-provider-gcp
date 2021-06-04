@@ -24,7 +24,7 @@ import (
 	"strings"
 	"time"
 
-	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/apis"
+	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/apis/v1"
 	"github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/apis/validation"
 	errors2 "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/errors"
 	v1alpha1 "github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"

@@ -26,7 +26,7 @@ import (
 	option "google.golang.org/api/option"
 	corev1 "k8s.io/api/core/v1"
 
-	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/apis"
+	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/apis/v1"
 )
 
 // PluginSPIImpl is the mock implementation of PluginSPIImpl

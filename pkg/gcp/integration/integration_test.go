@@ -24,7 +24,7 @@ import (
 	"testing"
 
 	"github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp"
-	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/apis"
+	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/apis/v1"
 	validation "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/apis/validation"
 	"github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/errors"
 	corev1 "k8s.io/api/core/v1"

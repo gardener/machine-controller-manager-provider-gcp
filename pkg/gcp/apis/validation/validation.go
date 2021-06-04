@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"regexp"
 
-	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/apis"
+	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/apis/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 )
