@@ -104,7 +104,7 @@ property when you create the resource.</p>
 </td>
 <td>
 <em>
-<a href="#GCPDisk">
+<a href="#?id=GCPDisk">
 []GCPDisk
 </a>
 </em>
@@ -162,7 +162,7 @@ machine types.</p>
 </td>
 <td>
 <em>
-<a href="#GCPMetadata">
+<a href="#?id=GCPMetadata">
 []GCPMetadata
 </a>
 </em>
@@ -178,7 +178,7 @@ This includes custom metadata and predefined keys.</p>
 </td>
 <td>
 <em>
-<a href="#GCPNetworkInterface">
+<a href="#?id=GCPNetworkInterface">
 []GCPNetworkInterface
 </a>
 </em>
@@ -209,7 +209,7 @@ string
 </td>
 <td>
 <em>
-<a href="#GCPScheduling">
+<a href="#?id=GCPScheduling">
 GCPScheduling
 </a>
 </em>
@@ -224,7 +224,7 @@ GCPScheduling
 </td>
 <td>
 <em>
-<a href="#GCPServiceAccount">
+<a href="#?id=GCPServiceAccount">
 []GCPServiceAccount
 </a>
 </em>
@@ -273,7 +273,7 @@ string
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#GCPProviderSpec">GCPProviderSpec</a>)
+<a href="#?id=GCPProviderSpec">GCPProviderSpec</a>)
 </p>
 <p>
 <p>GCPDisk describes disks for GCP.</p>
@@ -434,7 +434,7 @@ persistent disks.</p>
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#GCPProviderSpec">GCPProviderSpec</a>)
+<a href="#?id=GCPProviderSpec">GCPProviderSpec</a>)
 </p>
 <p>
 <p>GCPMetadata describes metadata for GCP.</p>
@@ -489,7 +489,7 @@ must be less than or equal to 262144 bytes (256 KiB).</p>
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#GCPProviderSpec">GCPProviderSpec</a>)
+<a href="#?id=GCPProviderSpec">GCPProviderSpec</a>)
 </p>
 <p>
 <p>GCPNetworkInterface describes network interfaces for GCP</p>
@@ -570,7 +570,7 @@ are all valid URLs:
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#GCPProviderSpec">GCPProviderSpec</a>)
+<a href="#?id=GCPProviderSpec">GCPProviderSpec</a>)
 </p>
 <p>
 <p>GCPScheduling describes scheduling configuration for GCP.</p>
@@ -646,7 +646,7 @@ after the instance has been created.</p>
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#GCPProviderSpec">GCPProviderSpec</a>)
+<a href="#?id=GCPProviderSpec">GCPProviderSpec</a>)
 </p>
 <p>
 <p>GCPServiceAccount describes service accounts for GCP.</p>
