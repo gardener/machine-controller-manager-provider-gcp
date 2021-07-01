@@ -12,7 +12,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1
+package v1alpha1
 
 const (
 	// GCPServiceAccountJSON is a constant for a key name that is part of the GCP cloud credentials.
