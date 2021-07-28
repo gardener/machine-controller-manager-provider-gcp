@@ -3,8 +3,8 @@ module github.com/gardener/machine-controller-manager-provider-gcp
 go 1.15
 
 require (
-	github.com/gardener/machine-controller-manager v0.39.0
-	github.com/onsi/ginkgo v1.15.2
+	github.com/gardener/machine-controller-manager v0.40.0
+	github.com/onsi/ginkgo v1.16.2
 	github.com/onsi/gomega v1.11.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.5.1 // indirect
