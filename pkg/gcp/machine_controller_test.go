@@ -21,7 +21,7 @@ import (
 	"context"
 	"net/http"
 
-	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/apis"
+	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/api/v1alpha1"
 	fake "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/fake"
 	v1alpha1 "github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
