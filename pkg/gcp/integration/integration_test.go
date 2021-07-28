@@ -23,10 +23,10 @@ import (
 	"os"
 	"testing"
 
+	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/api/v1alpha1"
 	"github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp"
-	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/apis"
-	validation "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/apis/validation"
 	"github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/errors"
+	validation "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/validation"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/yaml"
 )

@@ -30,7 +30,7 @@ import (
 	"google.golang.org/api/option"
 	corev1 "k8s.io/api/core/v1"
 
-	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/apis"
+	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/api/v1alpha1"
 )
 
 // PluginSPI provides an interface to deal with cloud provider session
