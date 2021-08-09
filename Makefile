@@ -25,6 +25,7 @@ MACHINECLASS_V1 	:= dev/machineclassv1.yaml
 MACHINECLASS_V2 	:= 
 MCM_IMAGE			:= eu.gcr.io/gardener-project/gardener/machine-controller-manager:v0.39.0
 MC_IMAGE			:= $(IMAGE_REPOSITORY):v0.7.0
+MACHINE_CONTROLLER_MANAGER_DEPLOYMENT_NAME :=
 LEADER_ELECT := "true"
 # MCM_IMAGE			:= eu.gcr.io/gardener-project/gardener/machine-controller-manager:v0.39.0
 # MC_IMAGE			:= $(IMAGE_REPOSITORY):v0.7.0
