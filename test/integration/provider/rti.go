@@ -8,6 +8,10 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+const (
+	IntegrationTestTag = "mcm-integration-test-true"
+)
+
 type ResourcesTrackerImpl struct {
 	InitialVolumes   []string
 	InitialInstances []string
@@ -31,20 +35,20 @@ func (r *ResourcesTrackerImpl) InitializeResourcesTracker(machineClass *v1alpha1
 		return err
 	}
 
-	instances, err := GetInstancesWithTag(ctx, svc, "mcm-integration-test-true", machineClass, secretData)
+	instances, err := getInstancesWithTag(ctx, svc, IntegrationTestTag, machineClass, secretData)
+
 	if err == nil {
 		r.InitialInstances = instances
-		volumes, err := GetAvailableVolumes(ctx, svc, clusterTag, clusterTagValue, machineClass, secretData)
+		volumes, err := getAvailableVolumes(ctx, svc, clusterTag, clusterTagValue, machineClass, secretData)
 		if err == nil {
 			r.InitialVolumes = volumes
-			r.InitialMachines, err = GetMachines(machineClass, secretData)
+			r.InitialMachines, err = getMachines(machineClass, secretData)
 			return err
 		} else {
 			return err
 		}
-	} else {
-		return err
 	}
+	return err
 }
 
 // probeResources will look for resources currently available and returns them
@@ -62,20 +66,20 @@ func (r *ResourcesTrackerImpl) probeResources() ([]string, []string, []string, e
 		return nil, nil, nil, err
 	}
 
-	instances, err := GetInstancesWithTag(ctx, svc, "mcm-integration-test-true", r.MachineClass, r.SecretData)
+	instances, err := getInstancesWithTag(ctx, svc, IntegrationTestTag, r.MachineClass, r.SecretData)
 	if err != nil {
 		return instances, nil, nil, err
 	}
 
 	// Check for available volumes in cloud provider with tag/label [Status:available]
-	availVols, err := GetAvailableVolumes(ctx, svc, clusterTag, clusterTagValue, r.MachineClass, r.SecretData)
+	availVols, err := getAvailableVolumes(ctx, svc, clusterTag, clusterTagValue, r.MachineClass, r.SecretData)
 	if err != nil {
 		return instances, availVols, nil, err
 	}
 
-	availMachines, _ := GetMachines(r.MachineClass, r.SecretData)
+	availMachines, _ := getMachines(r.MachineClass, r.SecretData)
 	// Check for available vpc and network interfaces in cloud provider with tag
-	err = AdditionalResourcesCheck(ctx, svc, r.ClusterName, r.MachineClass, r.SecretData)
+	err = additionalResourcesCheck(ctx, svc, r.ClusterName, r.MachineClass, r.SecretData)
 
 	return instances, availVols, availMachines, err
 

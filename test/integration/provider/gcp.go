@@ -34,10 +34,10 @@ import (
 	"google.golang.org/api/googleapi"
 )
 
-func GetMachines(machineClass *v1alpha1.MachineClass, secretData map[string][]byte) ([]string, error) {
+func getMachines(machineClass *v1alpha1.MachineClass, secretData map[string][]byte) ([]string, error) {
 	var machines []string
-	var sPI providerDriver.PluginSPIImpl
-	driverprovider := providerDriver.NewGCPPlugin(&sPI)
+	var spi providerDriver.PluginSPIImpl
+	driverprovider := providerDriver.NewGCPPlugin(&spi)
 	machineList, err := driverprovider.ListMachines(context.TODO(), &driver.ListMachinesRequest{
 		MachineClass: machineClass,
 		Secret:       &v1.Secret{Data: secretData},
@@ -54,8 +54,8 @@ func GetMachines(machineClass *v1alpha1.MachineClass, secretData map[string][]by
 	return machines, nil
 }
 
-// GetInstancesWithTag describes the instance with the specified tag
-func GetInstancesWithTag(ctx context.Context, svc *compute.Service, searchTagName string, machineClass *v1alpha1.MachineClass, secretData map[string][]byte) ([]string, error) {
+// getInstancesWithTag describes the instance with the specified tag
+func getInstancesWithTag(ctx context.Context, svc *compute.Service, searchTagName string, machineClass *v1alpha1.MachineClass, secretData map[string][]byte) ([]string, error) {
 	var instancesID []string
 	project, err := providerDriver.ExtractProject(secretData)
 	if err != nil {
@@ -64,8 +64,9 @@ func GetInstancesWithTag(ctx context.Context, svc *compute.Service, searchTagNam
 
 	var providerSpec *api.GCPProviderSpec
 
-	err = json.Unmarshal([]byte(machineClass.ProviderSpec.Raw), providerSpec)
+	err = json.Unmarshal([]byte(machineClass.ProviderSpec.Raw), &providerSpec)
 	if err != nil {
+
 		providerSpec = nil
 		log.Printf("Error occured while performing unmarshal %s", err.Error())
 		return instancesID, err
@@ -91,8 +92,8 @@ func GetInstancesWithTag(ctx context.Context, svc *compute.Service, searchTagNam
 	return instancesID, nil
 }
 
-// GetAvailableVolumes describes volumes with the specified tag
-func GetAvailableVolumes(ctx context.Context, svc *compute.Service, tagName string, tagValue string, machineClass *v1alpha1.MachineClass, secretData map[string][]byte) ([]string, error) {
+// getAvailableVolumes describes volumes with the specified tag
+func getAvailableVolumes(ctx context.Context, svc *compute.Service, tagName string, tagValue string, machineClass *v1alpha1.MachineClass, secretData map[string][]byte) ([]string, error) {
 	var availVolID []string
 	project, err := providerDriver.ExtractProject(secretData)
 	if err != nil {
@@ -101,7 +102,7 @@ func GetAvailableVolumes(ctx context.Context, svc *compute.Service, tagName stri
 
 	var providerSpec *api.GCPProviderSpec
 
-	err = json.Unmarshal([]byte(machineClass.ProviderSpec.Raw), providerSpec)
+	err = json.Unmarshal([]byte(machineClass.ProviderSpec.Raw), &providerSpec)
 	if err != nil {
 		providerSpec = nil
 		log.Printf("Error occured while performing unmarshal %s", err.Error())
@@ -122,7 +123,7 @@ func GetAvailableVolumes(ctx context.Context, svc *compute.Service, tagName stri
 					availVolID = append(availVolID, disk.Name)
 
 					//delete the disk
-					DeleteVolume(ctx, svc, project, zone, disk.Name)
+					deleteVolume(ctx, svc, project, zone, disk.Name)
 					break
 				}
 			}
@@ -135,8 +136,8 @@ func GetAvailableVolumes(ctx context.Context, svc *compute.Service, tagName stri
 	return availVolID, nil
 }
 
-// DeleteVolume deletes the specified volume
-func DeleteVolume(ctx context.Context, svc *compute.Service, project, zone, diskName string) error {
+// deleteVolume deletes the specified volume
+func deleteVolume(ctx context.Context, svc *compute.Service, project, zone, diskName string) error {
 	operation, err := svc.Disks.Delete(project, zone, diskName).Context(ctx).Do()
 	if err != nil {
 		if ae, ok := err.(*googleapi.Error); ok && ae.Code == http.StatusNotFound {
@@ -148,8 +149,8 @@ func DeleteVolume(ctx context.Context, svc *compute.Service, project, zone, disk
 	return providerDriver.WaitUntilOperationCompleted(svc, project, zone, operation.Name)
 }
 
-// AdditionalResourcesCheck describes VPCs and network interfaces
-func AdditionalResourcesCheck(ctx context.Context, svc *compute.Service, clusterName string, machineClass *v1alpha1.MachineClass, secretData map[string][]byte) error {
+// additionalResourcesCheck describes VPCs and network interfaces
+func additionalResourcesCheck(ctx context.Context, svc *compute.Service, clusterName string, machineClass *v1alpha1.MachineClass, secretData map[string][]byte) error {
 	// Checks for Network interfaces and VPCs
 	// If the command succeeds, no output is returned.
 	project, err := providerDriver.ExtractProject(secretData)
@@ -159,7 +160,7 @@ func AdditionalResourcesCheck(ctx context.Context, svc *compute.Service, cluster
 
 	var providerSpec *api.GCPProviderSpec
 
-	err = json.Unmarshal([]byte(machineClass.ProviderSpec.Raw), providerSpec)
+	err = json.Unmarshal([]byte(machineClass.ProviderSpec.Raw), &providerSpec)
 	if err != nil {
 		providerSpec = nil
 		log.Printf("Error occured while performing unmarshal %s", err.Error())
