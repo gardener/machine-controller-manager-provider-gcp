@@ -20,18 +20,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"strings"
 
 	v1 "k8s.io/api/core/v1"
-
-	"net/http"
 
 	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/api/v1alpha1"
 	providerDriver "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp"
 	v1alpha1 "github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
 	compute "google.golang.org/api/compute/v1"
-	"google.golang.org/api/googleapi"
 )
 
 func getMachines(machineClass *v1alpha1.MachineClass, secretData map[string][]byte) ([]string, error) {
@@ -54,7 +50,7 @@ func getMachines(machineClass *v1alpha1.MachineClass, secretData map[string][]by
 	return machines, nil
 }
 
-// getInstancesWithTag describes the instance with the specified tag
+// getInstancesWithTag describes the instance with the specified tag and terminates it
 func getInstancesWithTag(ctx context.Context, svc *compute.Service, searchTagName string, machineClass *v1alpha1.MachineClass, secretData map[string][]byte) ([]string, error) {
 	var instancesID []string
 	project, err := providerDriver.ExtractProject(secretData)
@@ -80,6 +76,9 @@ func getInstancesWithTag(ctx context.Context, svc *compute.Service, searchTagNam
 			for _, tag := range server.Tags.Items {
 				if tag == searchTagName {
 					instancesID = append(instancesID, server.Name)
+
+					TerminateInstance(svc, project, zone, server.Name)
+
 					break
 				}
 			}
@@ -92,8 +91,21 @@ func getInstancesWithTag(ctx context.Context, svc *compute.Service, searchTagNam
 	return instancesID, nil
 }
 
-// getAvailableVolumes describes volumes with the specified tag
-func getAvailableVolumes(ctx context.Context, svc *compute.Service, tagName string, tagValue string, machineClass *v1alpha1.MachineClass, secretData map[string][]byte) ([]string, error) {
+//TerminateInstance terminates a specified instance
+func TerminateInstance(svc *compute.Service, project, zone, instanceName string) {
+	operation, err := svc.Instances.Delete(project, zone, instanceName).Context(context.Background()).Do()
+	if err != nil {
+		fmt.Printf("can't terminate the instance %s, %s\n", instanceName, err.Error())
+	}
+
+	err = providerDriver.WaitUntilOperationCompleted(svc, project, zone, operation.Name)
+	if err != nil {
+		fmt.Printf("Deletion of volume %s failed with error: %s\n", instanceName, err.Error())
+	}
+}
+
+// getAvailableVolumes gets list of possible orphaned volumes ,verifies if they still exist and if yes then deletes them
+func getAvailableVolumes(ctx context.Context, svc *compute.Service, orphanDisks []string, machineClass *v1alpha1.MachineClass, secretData map[string][]byte) ([]string, error) {
 	var availVolID []string
 	project, err := providerDriver.ExtractProject(secretData)
 	if err != nil {
@@ -110,92 +122,49 @@ func getAvailableVolumes(ctx context.Context, svc *compute.Service, tagName stri
 	}
 
 	zone := providerSpec.Zone
-	req := svc.Disks.List(project, zone)
+	// req := svc.Disks.List(project, zone).Filter("status = READY")
 
-	//check whether these tags are present on the disks or not
-	if err := req.Pages(ctx, func(page *compute.DiskList) error {
-		for _, disk := range page.Items {
-			for key, value := range disk.Labels {
+	// //check whether these tags are present on the disks or not
+	// if err := req.Pages(ctx, func(page *compute.DiskList) error {
+	// 	for _, disk := range page.Items {
+	// 		for key, value := range disk.Labels {
 
-				// #the disks didn't have any tag, check after getting access
-				if strings.Contains(key, tagName) && strings.Contains(value, tagValue) {
-					fmt.Printf("%s", disk.Name)
-					availVolID = append(availVolID, disk.Name)
+	// 			// #the disks didn't have any tag, check after getting access
+	// 			if strings.Contains(key, tagName) && strings.Contains(value, tagValue) {
+	// 				fmt.Printf("%s", disk.Name)
+	// 				availVolID = append(availVolID, disk.Name)
 
-					//delete the disk
-					deleteVolume(ctx, svc, project, zone, disk.Name)
-					break
-				}
-			}
+	// 				//delete the disk
+	// 				//deleteVolume(ctx, svc, project, zone, disk.Name)
+	// 				break
+	// 			}
+	// 		}
+	// 	}
+	// 	return nil
+	// }); err != nil {
+	// 	return availVolID, err
+	// }
+	for _, diskName := range orphanDisks {
+		_, err := svc.Disks.Get(project, zone, diskName).Context(ctx).Do()
+		if err == nil {
+			availVolID = append(availVolID, diskName)
+
+			deleteVolume(ctx, svc, project, zone, diskName)
 		}
-		return nil
-	}); err != nil {
-		return availVolID, err
 	}
 
 	return availVolID, nil
 }
 
 // deleteVolume deletes the specified volume
-func deleteVolume(ctx context.Context, svc *compute.Service, project, zone, diskName string) error {
+func deleteVolume(ctx context.Context, svc *compute.Service, project, zone, diskName string) {
 	operation, err := svc.Disks.Delete(project, zone, diskName).Context(ctx).Do()
 	if err != nil {
-		if ae, ok := err.(*googleapi.Error); ok && ae.Code == http.StatusNotFound {
-			return nil
-		}
-		return err
+		fmt.Printf("Deletion of volume %s failed with error: %s\n", diskName, err.Error())
 	}
 
-	return providerDriver.WaitUntilOperationCompleted(svc, project, zone, operation.Name)
-}
-
-// additionalResourcesCheck describes VPCs and network interfaces
-func additionalResourcesCheck(ctx context.Context, svc *compute.Service, clusterName string, machineClass *v1alpha1.MachineClass, secretData map[string][]byte) error {
-	// Checks for Network interfaces and VPCs
-	// If the command succeeds, no output is returned.
-	project, err := providerDriver.ExtractProject(secretData)
+	err = providerDriver.WaitUntilOperationCompleted(svc, project, zone, operation.Name)
 	if err != nil {
-		return err
+		fmt.Printf("Deletion of volume %s failed with error: %s\n", diskName, err.Error())
 	}
-
-	var providerSpec *api.GCPProviderSpec
-
-	err = json.Unmarshal([]byte(machineClass.ProviderSpec.Raw), &providerSpec)
-	if err != nil {
-		providerSpec = nil
-		log.Printf("Error occured while performing unmarshal %s", err.Error())
-		return err
-	}
-
-	zone := providerSpec.Zone
-
-	networkFilter := "name=" + clusterName
-	resultNetwork := svc.Networks.List(project).Filter(networkFilter)
-
-	if err := resultNetwork.Pages(ctx, func(page *compute.NetworkList) error {
-		for _, network := range page.Items {
-			fmt.Println(network.Id)
-			//list all the instances
-			req := svc.Instances.List(project, zone)
-			//for every nic of each instance see if nic.network contains network.name
-			//if yes , print it.
-			if err := req.Pages(ctx, func(page *compute.InstanceList) error {
-				for _, instance := range page.Items {
-					for _, networkInterface := range instance.NetworkInterfaces {
-						if strings.Contains(networkInterface.Network, network.Name) {
-							fmt.Printf("nic: %s\n", networkInterface.Name)
-						}
-					}
-				}
-				return nil
-			}); err != nil {
-				return err
-			}
-		}
-		return nil
-	}); err != nil {
-		return err
-	}
-
-	return nil
 }

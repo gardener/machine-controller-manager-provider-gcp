@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	IntegrationTestTag = "mcm-integration-test-true"
+	IntegrationTestTag = "kubernetes-io-role-integration-test"
 )
 
 type ResourcesTrackerImpl struct {
@@ -23,8 +23,6 @@ type ResourcesTrackerImpl struct {
 
 func (r *ResourcesTrackerImpl) InitializeResourcesTracker(machineClass *v1alpha1.MachineClass, secretData map[string][]byte, clusterName string) error {
 
-	clusterTag := "kubernetes-io-cluster-" + clusterName
-	clusterTagValue := "1"
 	r.MachineClass = machineClass
 	r.SecretData = secretData
 	r.ClusterName = clusterName
@@ -39,7 +37,8 @@ func (r *ResourcesTrackerImpl) InitializeResourcesTracker(machineClass *v1alpha1
 
 	if err == nil {
 		r.InitialInstances = instances
-		volumes, err := getAvailableVolumes(ctx, svc, clusterTag, clusterTagValue, machineClass, secretData)
+		//since disk name is same as instance name
+		volumes, err := getAvailableVolumes(ctx, svc, instances, machineClass, secretData)
 		if err == nil {
 			r.InitialVolumes = volumes
 			r.InitialMachines, err = getMachines(machineClass, secretData)
@@ -57,9 +56,6 @@ func (r *ResourcesTrackerImpl) probeResources() ([]string, []string, []string, e
 	// Describe volumes attached to VM instance & delete the volumes
 	// Finally delete the VM instance
 
-	clusterTag := "kubernetes-io-cluster-" + r.ClusterName
-	clusterTagValue := "1"
-
 	ms := gcp.NewGCPPlugin(&gcp.PluginSPIImpl{})
 	ctx, svc, err := ms.SPI.NewComputeService(&corev1.Secret{Data: r.SecretData})
 	if err != nil {
@@ -70,16 +66,12 @@ func (r *ResourcesTrackerImpl) probeResources() ([]string, []string, []string, e
 	if err != nil {
 		return instances, nil, nil, err
 	}
-
-	// Check for available volumes in cloud provider with tag/label [Status:available]
-	availVols, err := getAvailableVolumes(ctx, svc, clusterTag, clusterTagValue, r.MachineClass, r.SecretData)
+	availVols, err := getAvailableVolumes(ctx, svc, instances, r.MachineClass, r.SecretData)
 	if err != nil {
 		return instances, availVols, nil, err
 	}
 
 	availMachines, _ := getMachines(r.MachineClass, r.SecretData)
-	// Check for available vpc and network interfaces in cloud provider with tag
-	err = additionalResourcesCheck(ctx, svc, r.ClusterName, r.MachineClass, r.SecretData)
 
 	return instances, availVols, availMachines, err
 
@@ -119,22 +111,30 @@ If yes, then prints them and returns true. If not, then returns false
 */
 func (r *ResourcesTrackerImpl) IsOrphanedResourcesAvailable() bool {
 	afterTestExecutionInstances, afterTestExecutionAvailVols, afterTestExecutionAvailmachines, err := r.probeResources()
+
+	fmt.Printf("instances,disks and machine obj BEFORE running tests are:\n")
+	fmt.Printf("instances: %v\n", r.InitialInstances)
+	fmt.Printf("disks: %v\n", r.InitialVolumes)
+	fmt.Printf("machine obj: %v\n", r.InitialMachines)
+
+	fmt.Printf("instances,disks and machine obj AFTER running tests are:\n")
+	fmt.Printf("instances: %v\n", afterTestExecutionInstances)
+	fmt.Printf("disks: %v\n", afterTestExecutionAvailVols)
+	fmt.Printf("machine obj: %v\n", afterTestExecutionAvailmachines)
+
 	//Check there is no error occured
 	if err == nil {
 		orphanedResourceInstances := differenceOrphanedResources(r.InitialInstances, afterTestExecutionInstances)
 		if orphanedResourceInstances != nil {
-			fmt.Println("orphaned instances are:", orphanedResourceInstances)
-			return true
+			fmt.Println("orphaned instances were:", orphanedResourceInstances)
 		}
 		orphanedResourceAvailVols := differenceOrphanedResources(r.InitialVolumes, afterTestExecutionAvailVols)
 		if orphanedResourceAvailVols != nil {
-			fmt.Println("orphaned volumes are:", orphanedResourceAvailVols)
-			return true
+			fmt.Println("orphaned volumes were:", orphanedResourceAvailVols)
 		}
 		orphanedResourceAvailMachines := differenceOrphanedResources(r.InitialMachines, afterTestExecutionAvailmachines)
 		if orphanedResourceAvailMachines != nil {
-			fmt.Println("orphaned volumes are:", orphanedResourceAvailMachines)
-			return true
+			fmt.Println("orphaned machines were:", orphanedResourceAvailMachines)
 		}
 		return false
 	}
