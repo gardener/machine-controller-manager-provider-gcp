@@ -261,9 +261,6 @@ func (ms *MachinePlugin) ListMachinesUtil(ctx context.Context, providerSpec *api
 	result, err := getVMs(ctx, "", providerSpec, secret, project, computeService)
 	if err != nil {
 		return nil, err
-	} else if len(result) == 0 {
-		// No running instance exists
-		return nil, &errors2.MachineNotFoundError{}
 	}
 
 	return result, nil
