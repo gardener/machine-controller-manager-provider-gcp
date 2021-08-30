@@ -1,7 +1,6 @@
 {
-    "providerSpec": {
-        "tags": [
-            "mcm-integration-test-true"
-        ]
-    }
+ "providerSpec": {
+  "tags": [
+  ]
+ }
 }
