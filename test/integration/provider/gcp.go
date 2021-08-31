@@ -100,7 +100,7 @@ func TerminateInstance(svc *compute.Service, project, zone, instanceName string)
 
 	err = providerDriver.WaitUntilOperationCompleted(svc, project, zone, operation.Name)
 	if err != nil {
-		fmt.Printf("Deletion of volume %s failed with error: %s\n", instanceName, err.Error())
+		fmt.Printf("Deletion of instance %s failed with error: %s\n", instanceName, err.Error())
 	}
 }
 
