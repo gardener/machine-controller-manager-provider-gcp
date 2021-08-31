@@ -122,28 +122,7 @@ func getAvailableVolumes(ctx context.Context, svc *compute.Service, orphanDisks 
 	}
 
 	zone := providerSpec.Zone
-	// req := svc.Disks.List(project, zone).Filter("status = READY")
 
-	// //check whether these tags are present on the disks or not
-	// if err := req.Pages(ctx, func(page *compute.DiskList) error {
-	// 	for _, disk := range page.Items {
-	// 		for key, value := range disk.Labels {
-
-	// 			// #the disks didn't have any tag, check after getting access
-	// 			if strings.Contains(key, tagName) && strings.Contains(value, tagValue) {
-	// 				fmt.Printf("%s", disk.Name)
-	// 				availVolID = append(availVolID, disk.Name)
-
-	// 				//delete the disk
-	// 				//deleteVolume(ctx, svc, project, zone, disk.Name)
-	// 				break
-	// 			}
-	// 		}
-	// 	}
-	// 	return nil
-	// }); err != nil {
-	// 	return availVolID, err
-	// }
 	for _, diskName := range orphanDisks {
 		_, err := svc.Disks.Get(project, zone, diskName).Context(ctx).Do()
 		if err == nil {
