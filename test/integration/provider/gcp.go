@@ -50,8 +50,8 @@ func getMachines(machineClass *v1alpha1.MachineClass, secretData map[string][]by
 	return machines, nil
 }
 
-// getInstancesWithTag describes the instance with the specified tag and terminates it
-func getInstancesWithTag(ctx context.Context, svc *compute.Service, searchTagName string, machineClass *v1alpha1.MachineClass, secretData map[string][]byte) ([]string, error) {
+// getInstancesWithTag lists instances with specified tag, deletes them, and returns a list of instances which couldn't be deleted
+func getOrphanedVMs(ctx context.Context, svc *compute.Service, searchTagName string, machineClass *v1alpha1.MachineClass, secretData map[string][]byte) ([]string, error) {
 	var instancesID []string
 	project, err := providerDriver.ExtractProject(secretData)
 	if err != nil {
@@ -75,10 +75,9 @@ func getInstancesWithTag(ctx context.Context, svc *compute.Service, searchTagNam
 			//in gcp the tags are just string, not key value pair
 			for _, tag := range server.Tags.Items {
 				if tag == searchTagName {
-					instancesID = append(instancesID, server.Name)
-
-					TerminateInstance(svc, project, zone, server.Name)
-
+					if err := TerminateInstance(svc, project, zone, server.Name); err != nil {
+						instancesID = append(instancesID, server.Name)
+					}
 					break
 				}
 			}
@@ -92,20 +91,25 @@ func getInstancesWithTag(ctx context.Context, svc *compute.Service, searchTagNam
 }
 
 //TerminateInstance terminates a specified instance
-func TerminateInstance(svc *compute.Service, project, zone, instanceName string) {
+func TerminateInstance(svc *compute.Service, project, zone, instanceName string) error {
 	operation, err := svc.Instances.Delete(project, zone, instanceName).Context(context.Background()).Do()
 	if err != nil {
 		fmt.Printf("can't terminate the instance %s, %s\n", instanceName, err.Error())
+		return err
 	}
 
 	err = providerDriver.WaitUntilOperationCompleted(svc, project, zone, operation.Name)
 	if err != nil {
 		fmt.Printf("Deletion of instance %s failed with error: %s\n", instanceName, err.Error())
+		return err
 	}
+
+	fmt.Printf("Deleted an orphan VM %s\n,", instanceName)
+	return nil
 }
 
-// getAvailableVolumes gets list of possible orphaned volumes ,verifies if they still exist and if yes then deletes them
-func getAvailableVolumes(ctx context.Context, svc *compute.Service, orphanDisks []string, machineClass *v1alpha1.MachineClass, secretData map[string][]byte) ([]string, error) {
+// getAvailableVolumes returns a list of disks which couldn't be deleted
+func getOrphanedVolumes(ctx context.Context, svc *compute.Service, orphanDisks []string, machineClass *v1alpha1.MachineClass, secretData map[string][]byte) ([]string, error) {
 	var availVolID []string
 	project, err := providerDriver.ExtractProject(secretData)
 	if err != nil {
@@ -126,9 +130,9 @@ func getAvailableVolumes(ctx context.Context, svc *compute.Service, orphanDisks 
 	for _, diskName := range orphanDisks {
 		_, err := svc.Disks.Get(project, zone, diskName).Context(ctx).Do()
 		if err == nil {
-			availVolID = append(availVolID, diskName)
-
-			deleteVolume(ctx, svc, project, zone, diskName)
+			if err = deleteVolume(ctx, svc, project, zone, diskName); err != nil {
+				availVolID = append(availVolID, diskName)
+			}
 		}
 	}
 
@@ -136,14 +140,20 @@ func getAvailableVolumes(ctx context.Context, svc *compute.Service, orphanDisks 
 }
 
 // deleteVolume deletes the specified volume
-func deleteVolume(ctx context.Context, svc *compute.Service, project, zone, diskName string) {
+func deleteVolume(ctx context.Context, svc *compute.Service, project, zone, diskName string) error {
 	operation, err := svc.Disks.Delete(project, zone, diskName).Context(ctx).Do()
 	if err != nil {
 		fmt.Printf("Deletion of volume %s failed with error: %s\n", diskName, err.Error())
+		return err
 	}
 
 	err = providerDriver.WaitUntilOperationCompleted(svc, project, zone, operation.Name)
 	if err != nil {
 		fmt.Printf("Deletion of volume %s failed with error: %s\n", diskName, err.Error())
+		return err
 	}
+
+	fmt.Printf("Deleted an orphan disk %s\n,", diskName)
+
+	return nil
 }
