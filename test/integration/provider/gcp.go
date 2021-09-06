@@ -31,8 +31,10 @@ import (
 )
 
 func getMachines(machineClass *v1alpha1.MachineClass, secretData map[string][]byte) ([]string, error) {
-	var machines []string
-	var spi providerDriver.PluginSPIImpl
+	var (
+		machines []string
+		spi      providerDriver.PluginSPIImpl
+	)
 	driverprovider := providerDriver.NewGCPPlugin(&spi)
 	machineList, err := driverprovider.ListMachines(context.TODO(), &driver.ListMachinesRequest{
 		MachineClass: machineClass,
@@ -52,18 +54,17 @@ func getMachines(machineClass *v1alpha1.MachineClass, secretData map[string][]by
 
 // getInstancesWithTag lists instances with specified tag, deletes them, and returns a list of instances which couldn't be deleted
 func getOrphanedVMs(ctx context.Context, svc *compute.Service, searchTagName string, machineClass *v1alpha1.MachineClass, secretData map[string][]byte) ([]string, error) {
-	var instancesID []string
+	var (
+		instancesID  []string
+		providerSpec *api.GCPProviderSpec
+	)
 	project, err := providerDriver.ExtractProject(secretData)
 	if err != nil {
 		return nil, err
 	}
 
-	var providerSpec *api.GCPProviderSpec
-
 	err = json.Unmarshal([]byte(machineClass.ProviderSpec.Raw), &providerSpec)
 	if err != nil {
-
-		providerSpec = nil
 		log.Printf("Error occured while performing unmarshal %s", err.Error())
 		return instancesID, err
 	}
@@ -120,7 +121,6 @@ func getOrphanedVolumes(ctx context.Context, svc *compute.Service, orphanDisks [
 
 	err = json.Unmarshal([]byte(machineClass.ProviderSpec.Raw), &providerSpec)
 	if err != nil {
-		providerSpec = nil
 		log.Printf("Error occured while performing unmarshal %s", err.Error())
 		return availVolID, err
 	}

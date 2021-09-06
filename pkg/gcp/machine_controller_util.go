@@ -364,6 +364,7 @@ func prepareErrorf(err error, format string, args ...interface{}) error {
 	return status.Error(code, wrapped.Error())
 }
 
+//ExtractProject returns the name of the project which is extracted from the secret
 func ExtractProject(credentialsData map[string][]byte) (string, error) {
 	serviceAccountJSON := extractCredentialsFromData(credentialsData, api.GCPServiceAccountJSON, api.GCPAlternativeServiceAccountJSON)
 
@@ -376,6 +377,7 @@ func ExtractProject(credentialsData map[string][]byte) (string, error) {
 	return j.Project, nil
 }
 
+//WaitUntilOperationCompleted waits for the specified operation to be completed and returns true if it does else returns false
 func WaitUntilOperationCompleted(computeService *compute.Service, project, zone, operationName string) error {
 	return wait.Poll(5*time.Second, 300*time.Second, func() (bool, error) {
 		op, err := computeService.ZoneOperations.Get(project, zone, operationName).Do()
