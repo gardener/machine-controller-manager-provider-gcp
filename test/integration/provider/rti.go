@@ -16,12 +16,15 @@ const (
 	IntegrationTestTag = "kubernetes-io-role-integration-test"
 )
 
+//ResourcesTrackerImpl type keeps a note of resources which are initialized in MCM IT suite and are used in provider IT
 type ResourcesTrackerImpl struct {
 	MachineClass *v1alpha1.MachineClass
 	SecretData   map[string][]byte
 	ClusterName  string
 }
 
+//InitializeResourcesTracker initializes the type ResourcesTrackerImpl variable and tries
+//to delete the orphan resources present before the actual IT runs.
 func (r *ResourcesTrackerImpl) InitializeResourcesTracker(machineClass *v1alpha1.MachineClass, secretData map[string][]byte, clusterName string) error {
 
 	r.MachineClass = machineClass
@@ -68,9 +71,8 @@ func (r *ResourcesTrackerImpl) probeResources() ([]string, []string, []string, e
 
 }
 
-/* IsOrphanedResourcesAvailable checks whether there are any orphaned resources left.
-If yes, then prints them and returns true. If not, then returns false
-*/
+// IsOrphanedResourcesAvailable checks whether there are any orphaned resources left.
+//If yes, then prints them and returns true. If not, then returns false
 func (r *ResourcesTrackerImpl) IsOrphanedResourcesAvailable() bool {
 	afterTestExecutionInstances, afterTestExecutionAvailVols, afterTestExecutionAvailmachines, err := r.probeResources()
 
