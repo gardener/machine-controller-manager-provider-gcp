@@ -1,0 +1,46 @@
+apiVersion: machine.sapcloud.io/v1alpha1
+kind: MachineClass
+metadata:
+  name: test-mc-v1
+  namespace: default
+provider: GCP
+providerSpec:
+  canIpForward: true
+  deletionProtection: false
+  description: Machine of Shoot gcp-oot-target created by machine-controller-manager.
+  disks:
+  - autoDelete: true
+    boot: true
+    image: projects/sap-se-gcp-gardenlinux/global/images/gardenlinux-gcp-cloud-gardener--prod-318-8-ae20c2
+    labels:
+      name: gcp-oot-target
+    sizeGb: 50
+    type: pd-standard
+  labels:
+    name: gcp-oot-target
+    node_kubernetes_io_role: node
+    worker_garden_sapcloud_io_group: wrkr-n1-std2
+    worker_gardener_cloud_cri-name: docker
+    worker_gardener_cloud_pool: wrkr-n1-std2
+    worker_gardener_cloud_system-components: "true"
+  machineType: n1-standard-2
+  networkInterfaces:
+  - disableExternalIP: true
+    subnetwork: shoot--mcm-ci--gcp-oot-target-nodes
+  region: europe-west1
+  scheduling:
+    automaticRestart: true
+    onHostMaintenance: MIGRATE
+    preemptible: false
+  serviceAccounts:
+  - email: shoot--mcm-ci--gcp-oot-target@sap-se-gcp-scp-k8s-dev.iam.gserviceaccount.com
+    scopes:
+    - https://www.googleapis.com/auth/compute
+  tags:
+  - shoot--mcm-ci--gcp-oot-target
+  - kubernetes-io-cluster-shoot--mcm-ci--gcp-oot-target
+  - kubernetes-io-role-node
+  zone: europe-west1-c
+secretRef:
+  name: test-mc-secret
+  namespace: default
