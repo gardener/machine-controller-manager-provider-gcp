@@ -24,7 +24,7 @@ machine-controller-manager-provider-gcp:
         image: 'golang:1.16.6'
         output_dir: 'binary'
       test:
-        image: 'golang:1.16.6'
+        image: 'eu.gcr.io/gardener-project/gardener/testmachinery/base-step:stable'
   jobs:
     head-update:
       traits:
