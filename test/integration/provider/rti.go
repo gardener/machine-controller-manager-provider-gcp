@@ -1,9 +1,13 @@
 package provider
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 
+	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/api/v1alpha1"
 	gcp "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp"
+	providerDriver "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp"
 	v1alpha1 "github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -14,6 +18,10 @@ const (
 	// is expected to have these tags set so that the machines created from this suite
 	// won't be orphan collected.
 	IntegrationTestTag = "kubernetes-io-role-integration-test"
+)
+
+var (
+	providerSpec *api.GCPProviderSpec
 )
 
 //ResourcesTrackerImpl type keeps a note of resources which are initialized in MCM IT suite and are used in provider IT
@@ -56,11 +64,24 @@ func (r *ResourcesTrackerImpl) probeResources() ([]string, []string, []string, e
 		return nil, nil, nil, err
 	}
 
-	orphanedInstances, err := getOrphanedVMs(ctx, svc, IntegrationTestTag, r.MachineClass, r.SecretData)
+	project, err := providerDriver.ExtractProject(r.SecretData)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	err = json.Unmarshal([]byte(r.MachineClass.ProviderSpec.Raw), &providerSpec)
+	if err != nil {
+		log.Printf("Error occured while performing unmarshal %s", err.Error())
+		return nil, nil, nil, err
+	}
+
+	zone := providerSpec.Zone
+
+	orphanedInstances, err := getOrphanedVMs(ctx, svc, project, zone, IntegrationTestTag)
 	if err != nil {
 		return orphanedInstances, nil, nil, err
 	}
-	orphanedVols, err := getOrphanedVolumes(ctx, svc, orphanedInstances, r.MachineClass, r.SecretData)
+	orphanedVols, err := getOrphanedVolumes(ctx, svc, project, zone, orphanedInstances)
 	if err != nil {
 		return orphanedInstances, orphanedVols, nil, err
 	}
