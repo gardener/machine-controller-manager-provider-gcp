@@ -12,7 +12,6 @@ import (
 	compute "google.golang.org/api/compute/v1"
 )
 
-
 // deleteVolume deletes the specified volume
 func deleteVolume(ctx context.Context, svc *compute.Service, project, zone, diskName string) error {
 	operation, err := svc.Disks.Delete(project, zone, diskName).Context(ctx).Do()
@@ -54,8 +53,8 @@ func getMachines(machineClass *v1alpha1.MachineClass, secretData map[string][]by
 	return machines, nil
 }
 
-// getOrphanedVMs returns a list of VMs which couldn't be deleted
-func getOrphanedVMs(ctx context.Context, svc *compute.Service, project, zone, searchTagName string) ([]string, error) {
+// getOrphanedVMs returns a list of VMs with Integration Test tag which couldn't be deleted
+func getOrphanedVMs(ctx context.Context, svc *compute.Service, project, zone string) ([]string, error) {
 	var (
 		instancesID []string
 	)
@@ -65,7 +64,7 @@ func getOrphanedVMs(ctx context.Context, svc *compute.Service, project, zone, se
 		for _, server := range page.Items {
 			//in gcp the tags are just string, not key value pair
 			for _, tag := range server.Tags.Items {
-				if tag == searchTagName {
+				if tag == IntegrationTestTag {
 					if err := terminateInstance(svc, project, zone, server.Name); err != nil {
 						instancesID = append(instancesID, server.Name)
 					}

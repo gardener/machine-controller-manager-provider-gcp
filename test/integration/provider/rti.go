@@ -77,7 +77,7 @@ func (r *ResourcesTrackerImpl) probeResources() ([]string, []string, []string, e
 
 	zone := providerSpec.Zone
 
-	orphanedInstances, err := getOrphanedVMs(ctx, svc, project, zone, IntegrationTestTag)
+	orphanedInstances, err := getOrphanedVMs(ctx, svc, project, zone)
 	if err != nil {
 		return orphanedInstances, nil, nil, err
 	}
@@ -86,7 +86,7 @@ func (r *ResourcesTrackerImpl) probeResources() ([]string, []string, []string, e
 		return orphanedInstances, orphanedVols, nil, err
 	}
 
-	orphanedMachines, _ := getMachines(r.MachineClass, r.SecretData)
+	orphanedMachines, err := getMachines(r.MachineClass, r.SecretData)
 
 	return orphanedInstances, orphanedVols, orphanedMachines, err
 
