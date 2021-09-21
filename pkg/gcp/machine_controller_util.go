@@ -57,7 +57,7 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 		return "", err
 	}
 
-	project, err := extractProject(secret.Data)
+	project, err := ExtractProject(secret.Data)
 	if err != nil {
 		return "", err
 	}
@@ -162,7 +162,7 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 		return "", err
 	}
 
-	if err := waitUntilOperationCompleted(computeService, project, zone, operation.Name); err != nil {
+	if err := WaitUntilOperationCompleted(computeService, project, zone, operation.Name); err != nil {
 		return "", err
 	}
 
@@ -197,7 +197,7 @@ func (ms *MachinePlugin) DeleteMachineUtil(ctx context.Context, machineName stri
 		return "", err
 	}
 
-	project, err := extractProject(secret.Data)
+	project, err := ExtractProject(secret.Data)
 	if err != nil {
 		return "", err
 	}
@@ -219,7 +219,7 @@ func (ms *MachinePlugin) DeleteMachineUtil(ctx context.Context, machineName stri
 		return "", err
 	}
 
-	return encodeMachineID(project, zone, machineName), waitUntilOperationCompleted(computeService, project, zone, operation.Name)
+	return encodeMachineID(project, zone, machineName), WaitUntilOperationCompleted(computeService, project, zone, operation.Name)
 }
 
 // GetMachineStatusUtil checks for existence of VM by name
@@ -229,7 +229,7 @@ func (ms *MachinePlugin) GetMachineStatusUtil(ctx context.Context, machineName s
 		return "", err
 	}
 
-	project, err := extractProject(secret.Data)
+	project, err := ExtractProject(secret.Data)
 	if err != nil {
 		return "", err
 	}
@@ -253,7 +253,7 @@ func (ms *MachinePlugin) ListMachinesUtil(ctx context.Context, providerSpec *api
 		return nil, err
 	}
 
-	project, err := extractProject(secret.Data)
+	project, err := ExtractProject(secret.Data)
 	if err != nil {
 		return nil, err
 	}
@@ -261,9 +261,6 @@ func (ms *MachinePlugin) ListMachinesUtil(ctx context.Context, providerSpec *api
 	result, err := getVMs(ctx, "", providerSpec, secret, project, computeService)
 	if err != nil {
 		return nil, err
-	} else if len(result) == 0 {
-		// No running instance exists
-		return nil, &errors2.MachineNotFoundError{}
 	}
 
 	return result, nil
@@ -367,7 +364,8 @@ func prepareErrorf(err error, format string, args ...interface{}) error {
 	return status.Error(code, wrapped.Error())
 }
 
-func extractProject(credentialsData map[string][]byte) (string, error) {
+//ExtractProject returns the name of the project which is extracted from the secret
+func ExtractProject(credentialsData map[string][]byte) (string, error) {
 	serviceAccountJSON := extractCredentialsFromData(credentialsData, api.GCPServiceAccountJSON, api.GCPAlternativeServiceAccountJSON)
 
 	var j struct {
@@ -379,7 +377,8 @@ func extractProject(credentialsData map[string][]byte) (string, error) {
 	return j.Project, nil
 }
 
-func waitUntilOperationCompleted(computeService *compute.Service, project, zone, operationName string) error {
+//WaitUntilOperationCompleted waits for the specified operation to be completed and returns true if it does else returns false
+func WaitUntilOperationCompleted(computeService *compute.Service, project, zone, operationName string) error {
 	return wait.Poll(5*time.Second, 300*time.Second, func() (bool, error) {
 		op, err := computeService.ZoneOperations.Get(project, zone, operationName).Do()
 		if err != nil {
