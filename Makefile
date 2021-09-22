@@ -72,7 +72,7 @@ revendor:
 
 .PHONY: test-unit
 test-unit:
-	.ci/test
+	@SKIP_INTEGRATION_TESTS=X .ci/test
 
 .PHONY: test-integration
 test-integration:
@@ -85,7 +85,7 @@ test-integration:
 	export CONTROL_CLUSTER_NAMESPACE=$(CONTROL_NAMESPACE); \
 	export MACHINE_CONTROLLER_MANAGER_DEPLOYMENT_NAME=$(MACHINE_CONTROLLER_MANAGER_DEPLOYMENT_NAME); \
 	export TAGS_ARE_STRINGS=$(TAGS_ARE_STRINGS); \
-	.ci/integration_test
+	.ci/local_integration_test
 #########################################
 # Rules for build/release
 #########################################
