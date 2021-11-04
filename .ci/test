@@ -43,15 +43,15 @@ function test_without_coverage() {
 
 ###############################################################################
 
-# if [[ "${SKIP_UNIT_TESTS}" != "" ]]; then
-#   echo ">>>>>Skipping unit tests"
-# else
-#   echo ">>>>> Invoking unit tests"
-#   TEST_PACKAGES="pkg"
-#   GINKGO_COMMON_FLAGS="-r -timeout=1h0m0s --randomizeAllSpecs --randomizeSuites --failOnPending  --progress"
-#   test_without_coverage
-#   echo ">>>>> Finished executing unit tests"
-# fi
+if [[ "${SKIP_UNIT_TESTS}" != "" ]]; then
+  echo ">>>>>Skipping unit tests"
+else
+  echo ">>>>> Invoking unit tests"
+  TEST_PACKAGES="pkg"
+  GINKGO_COMMON_FLAGS="-r -timeout=1h0m0s --randomizeAllSpecs --randomizeSuites --failOnPending  --progress"
+  test_without_coverage
+  echo ">>>>> Finished executing unit tests"
+fi
 
 if [[ "${SKIP_INTEGRATION_TESTS}" != "" ]]; then
   echo ">>>>> Skipping integration tests"
