@@ -3,7 +3,7 @@ module github.com/gardener/machine-controller-manager-provider-gcp
 go 1.17
 
 require (
-	github.com/gardener/machine-controller-manager v0.40.1-0.20210916131306-0b3c2244f009
+	github.com/gardener/machine-controller-manager v0.43.0
 	github.com/onsi/ginkgo v1.16.2
 	github.com/onsi/gomega v1.11.0
 	github.com/pkg/errors v0.9.1
@@ -79,7 +79,7 @@ require (
 	k8s.io/apiextensions-apiserver v0.20.6 // indirect
 	k8s.io/apiserver v0.20.6 // indirect
 	k8s.io/client-go v0.20.6 // indirect
-	k8s.io/cluster-bootstrap v0.0.0-20190918163108-da9fdfce26bb // indirect
+	k8s.io/cluster-bootstrap v0.20.6 // indirect
 	k8s.io/klog/v2 v2.4.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20201113171705-d219536bb9fd // indirect
 	k8s.io/utils v0.0.0-20201110183641-67b214c5f920 // indirect
