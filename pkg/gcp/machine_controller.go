@@ -241,10 +241,10 @@ func (ms *MachinePlugin) GetVolumeIDs(ctx context.Context, req *driver.GetVolume
 	klog.V(2).Infof("GetVolumeIDs machines request has been processed successfully (%d/%d).", len(volumeIDs), len(req.PVSpecs))
 	klog.V(4).Infof("GetVolumeIDs volumneIDs: %v", volumeIDs)
 
-	Resp := &driver.GetVolumeIDsResponse{
+	response := &driver.GetVolumeIDsResponse{
 		VolumeIDs: volumeIDs,
 	}
-	return Resp, nil
+	return response, nil
 }
 
 // GenerateMachineClassForMigration converts providerSpecificMachineClass to (generic) MachineClass
