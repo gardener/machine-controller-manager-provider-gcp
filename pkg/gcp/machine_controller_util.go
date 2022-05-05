@@ -81,15 +81,13 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 		}
 	)
 
-	if providerSpec.GPUConfig != nil {
+	if providerSpec.Gpu != nil {
 		instance.GuestAccelerators = []*compute.AcceleratorConfig{
 			{
-				AcceleratorType:  fmt.Sprintf("projects/%s/zones/%s/acceleratorTypes/%s", project, zone, providerSpec.GPUConfig.AcceleratorType),
-				AcceleratorCount: providerSpec.GPUConfig.CountPerNode,
+				AcceleratorType:  fmt.Sprintf("projects/%s/zones/%s/acceleratorTypes/%s", project, zone, providerSpec.Gpu.AcceleratorType),
+				AcceleratorCount: providerSpec.Gpu.Count,
 			},
 		}
-		// need to make onHostMaintainence as `TERMINATE` as live-migration not supported for VMs with GPU attached
-		instance.Scheduling.OnHostMaintenance = "TERMINATE"
 	}
 
 	if providerSpec.Description != nil {
