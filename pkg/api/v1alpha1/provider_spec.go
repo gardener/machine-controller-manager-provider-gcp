@@ -53,7 +53,7 @@ type GCPProviderSpec struct {
 
 	// Gpu: Configurations related to GPU which would be attached to the instance. Enough
 	// Quota of the particular GPU should be available.
-	Gpu *GCPGpu `json:"gpuConfig,omitempty"`
+	Gpu *GCPGpu `json:"gpu,omitempty"`
 
 	// Labels: Labels to apply to this instance.
 	Labels map[string]string `json:"labels,omitempty"`
