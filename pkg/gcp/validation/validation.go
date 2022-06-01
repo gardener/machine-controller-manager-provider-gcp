@@ -87,7 +87,6 @@ func validateGCPMachineClassSpec(spec *api.GCPProviderSpec, fldPath *field.Path)
 	allErrs = append(allErrs, validateGCPNetworkInterfaces(spec.NetworkInterfaces, fldPath.Child("networkInterfaces"))...)
 	allErrs = append(allErrs, validateGCPMetadata(spec.Metadata, fldPath.Child("networkInterfaces"))...)
 	allErrs = append(allErrs, validateGCPScheduling(spec.Scheduling, fldPath.Child("scheduling"))...)
-	allErrs = append(allErrs, validateGCPServiceAccounts(spec.ServiceAccounts, fldPath.Child("serviceAccounts"))...)
 
 	return allErrs
 }

@@ -85,7 +85,7 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 		instance.Description = *providerSpec.Description
 	}
 
-	var disks = []*compute.AttachedDisk{}
+	disks := []*compute.AttachedDisk{}
 	for _, disk := range providerSpec.Disks {
 		var attachedDisk compute.AttachedDisk
 		autoDelete := false
@@ -117,7 +117,7 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 	}
 	instance.Disks = disks
 
-	var metadataItems = []*compute.MetadataItems{}
+	metadataItems := []*compute.MetadataItems{}
 	metadataItems = append(metadataItems, getUserData(string(secret.Data["userData"])))
 
 	for _, metadata := range providerSpec.Metadata {
@@ -130,7 +130,7 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 		Items: metadataItems,
 	}
 
-	var networkInterfaces = []*compute.NetworkInterface{}
+	networkInterfaces := []*compute.NetworkInterface{}
 	for _, nic := range providerSpec.NetworkInterfaces {
 		computeNIC := &compute.NetworkInterface{}
 
@@ -148,7 +148,7 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 	}
 	instance.NetworkInterfaces = networkInterfaces
 
-	var serviceAccounts = []*compute.ServiceAccount{}
+	serviceAccounts := []*compute.ServiceAccount{}
 	for _, sa := range providerSpec.ServiceAccounts {
 		serviceAccounts = append(serviceAccounts, &compute.ServiceAccount{
 			Email:  sa.Email,
@@ -322,9 +322,7 @@ func getVMs(ctx context.Context, machineID string, providerSpec *api.GCPProvider
 
 // decodeProviderSpecAndSecret converts request parameters to api.ProviderSpec
 func decodeProviderSpecAndSecret(machineClass *v1alpha1.MachineClass, secret *corev1.Secret) (*api.GCPProviderSpec, error) {
-	var (
-		providerSpec *api.GCPProviderSpec
-	)
+	var providerSpec *api.GCPProviderSpec
 
 	// If machineClass is nil
 	if machineClass == nil {
@@ -337,7 +335,7 @@ func decodeProviderSpecAndSecret(machineClass *v1alpha1.MachineClass, secret *co
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	//Validate the Spec and Secrets
+	// Validate the Spec and Secrets
 	ValidationErr := validation.ValidateGCPProviderSpec(providerSpec, secret)
 	if ValidationErr != nil {
 		err = fmt.Errorf("Error while validating ProviderSpec %v", ValidationErr)
@@ -364,7 +362,7 @@ func prepareErrorf(err error, format string, args ...interface{}) error {
 	return status.Error(code, wrapped.Error())
 }
 
-//ExtractProject returns the name of the project which is extracted from the secret
+// ExtractProject returns the name of the project which is extracted from the secret
 func ExtractProject(credentialsData map[string][]byte) (string, error) {
 	serviceAccountJSON := extractCredentialsFromData(credentialsData, api.GCPServiceAccountJSON, api.GCPAlternativeServiceAccountJSON)
 
@@ -377,7 +375,7 @@ func ExtractProject(credentialsData map[string][]byte) (string, error) {
 	return j.Project, nil
 }
 
-//WaitUntilOperationCompleted waits for the specified operation to be completed and returns true if it does else returns false
+// WaitUntilOperationCompleted waits for the specified operation to be completed and returns true if it does else returns false
 func WaitUntilOperationCompleted(computeService *compute.Service, project, zone, operationName string) error {
 	return wait.Poll(5*time.Second, 300*time.Second, func() (bool, error) {
 		op, err := computeService.ZoneOperations.Get(project, zone, operationName).Do()
