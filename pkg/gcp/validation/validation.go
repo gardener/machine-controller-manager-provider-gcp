@@ -18,7 +18,6 @@ package validation
 
 import (
 	"fmt"
-	"regexp"
 
 	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
@@ -152,23 +151,6 @@ func validateGCPScheduling(scheduling api.GCPScheduling, fldPath *field.Path) []
 
 	if "MIGRATE" != scheduling.OnHostMaintenance && "TERMINATE" != scheduling.OnHostMaintenance {
 		allErrs = append(allErrs, field.NotSupported(fldPath.Child("onHostMaintenance"), scheduling.OnHostMaintenance, []string{"MIGRATE", "TERMINATE"}))
-	}
-
-	return allErrs
-}
-
-func validateGCPServiceAccounts(serviceAccounts []api.GCPServiceAccount, fldPath *field.Path) []error {
-	var allErrs []error
-
-	if 0 == len(serviceAccounts) {
-		allErrs = append(allErrs, field.Required(fldPath, "at least one service account is required"))
-	}
-
-	for i, account := range serviceAccounts {
-		idxPath := fldPath.Index(i)
-		if match, _ := regexp.MatchString(`^[^@]+@(?:[a-zA-Z-0-9]+\.)+[a-zA-Z]{2,}$`, account.Email); !match {
-			allErrs = append(allErrs, field.Invalid(idxPath.Child("email"), account.Email, "email address is of invalid format"))
-		}
 	}
 
 	return allErrs
