@@ -59,7 +59,7 @@ func (r *ResourcesTrackerImpl) InitializeResourcesTracker(machineClass *v1alpha1
 	}
 	zone := providerSpec.Zone
 
-	delErrOrphanVms, delErrOrphanVolumes := cleanUpOrphanResources(initialVMs, initialVolumes, ctx, svc, project, zone)
+	delErrOrphanVms, delErrOrphanVolumes := cleanUpOrphanResources(ctx, initialVMs, initialVolumes, svc, project, zone)
 
 	if delErrOrphanVms != nil || delErrOrphanVolumes != nil || initialMachines != nil {
 		err := fmt.Errorf("orphan resources are available. Clean them up before proceeding with the test.\nvirtual machines: %v\nvolumes: %v\nmcm machines: %v", delErrOrphanVms, delErrOrphanVolumes, initialMachines)

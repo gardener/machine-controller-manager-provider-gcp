@@ -53,17 +53,17 @@ func getMachines(machineClass *v1alpha1.MachineClass, secretData map[string][]by
 	return machines, nil
 }
 
-func cleanUpOrphanResources(instanceIds []string, volumeIds []string, ctx context.Context, svc *compute.Service, project, zone string) (delErrInstanceId []string, delErrVolumeIds []string) {
+func cleanUpOrphanResources(ctx context.Context, instanceIds []string, volumeIds []string, svc *compute.Service, project, zone string) (delErrInstanceIds []string, delErrVolumeIds []string) {
 
-	for _, instanceId := range instanceIds {
-		if err := terminateInstance(ctx, svc, project, zone, instanceId); err != nil {
-			delErrInstanceId = append(delErrInstanceId, instanceId)
+	for _, instanceID := range instanceIds {
+		if err := terminateInstance(ctx, svc, project, zone, instanceID); err != nil {
+			delErrInstanceIds = append(delErrInstanceIds, instanceID)
 		}
 	}
 
-	for _, volumeId := range volumeIds {
-		if err := deleteVolume(ctx, svc, project, zone, volumeId); err != nil {
-			delErrVolumeIds = append(delErrVolumeIds, volumeId)
+	for _, volumeID := range volumeIds {
+		if err := deleteVolume(ctx, svc, project, zone, volumeID); err != nil {
+			delErrVolumeIds = append(delErrVolumeIds, volumeID)
 		}
 	}
 
