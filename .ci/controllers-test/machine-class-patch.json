@@ -1,9 +1,1 @@
-{
- "providerSpec": {
-  "tags": [
-   "shoot--i544024--sfz-test",
-   "kubernetes-io-cluster-shoot--i544024--sfz-test",
-   "kubernetes-io-role-integration-test"
-  ]
- }
-}
+
