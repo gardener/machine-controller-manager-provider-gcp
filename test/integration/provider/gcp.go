@@ -53,6 +53,23 @@ func getMachines(machineClass *v1alpha1.MachineClass, secretData map[string][]by
 	return machines, nil
 }
 
+func cleanUpOrphanResources(ctx context.Context, instanceIds []string, volumeIds []string, svc *compute.Service, project, zone string) (delErrInstanceIds []string, delErrVolumeIds []string) {
+
+	for _, instanceID := range instanceIds {
+		if err := terminateInstance(ctx, svc, project, zone, instanceID); err != nil {
+			delErrInstanceIds = append(delErrInstanceIds, instanceID)
+		}
+	}
+
+	for _, volumeID := range volumeIds {
+		if err := deleteVolume(ctx, svc, project, zone, volumeID); err != nil {
+			delErrVolumeIds = append(delErrVolumeIds, volumeID)
+		}
+	}
+
+	return
+}
+
 // getOrphanedVMs returns a list of VMs with Integration Test tag which couldn't be deleted
 func getOrphanedVMs(ctx context.Context, svc *compute.Service, project, zone string) ([]string, error) {
 	var (
@@ -65,9 +82,7 @@ func getOrphanedVMs(ctx context.Context, svc *compute.Service, project, zone str
 			//in gcp the tags are just string, not key value pair
 			for _, tag := range server.Tags.Items {
 				if tag == IntegrationTestTag {
-					if err := terminateInstance(svc, project, zone, server.Name); err != nil {
-						instancesID = append(instancesID, server.Name)
-					}
+					instancesID = append(instancesID, server.Name)
 					break
 				}
 			}
@@ -87,9 +102,7 @@ func getOrphanedVolumes(ctx context.Context, svc *compute.Service, project strin
 	for _, diskName := range orphanDisks {
 		_, err := svc.Disks.Get(project, zone, diskName).Context(ctx).Do()
 		if err == nil {
-			if err = deleteVolume(ctx, svc, project, zone, diskName); err != nil {
-				availVolID = append(availVolID, diskName)
-			}
+			availVolID = append(availVolID, diskName)
 		}
 	}
 
@@ -97,8 +110,8 @@ func getOrphanedVolumes(ctx context.Context, svc *compute.Service, project strin
 }
 
 //terminateInstance terminates a specified instance
-func terminateInstance(svc *compute.Service, project, zone, instanceName string) error {
-	operation, err := svc.Instances.Delete(project, zone, instanceName).Context(context.Background()).Do()
+func terminateInstance(ctx context.Context, svc *compute.Service, project, zone, instanceName string) error {
+	operation, err := svc.Instances.Delete(project, zone, instanceName).Context(ctx).Do()
 	if err != nil {
 		fmt.Printf("can't terminate the instance %s, %s\n", instanceName, err.Error())
 		return err

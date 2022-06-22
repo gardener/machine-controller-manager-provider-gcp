@@ -33,21 +33,36 @@ type ResourcesTrackerImpl struct {
 
 //InitializeResourcesTracker initializes the type ResourcesTrackerImpl variable and tries
 //to delete the orphan resources present before the actual IT runs.
+// 1. get list of orphan resources.
+// 2. Mark them for deletion and call cleanup.
+// 3. Print the orphan resources which got error in deletion and error out
 func (r *ResourcesTrackerImpl) InitializeResourcesTracker(machineClass *v1alpha1.MachineClass, secretData map[string][]byte, clusterName string) error {
-
 	r.MachineClass = machineClass
 	r.SecretData = secretData
 	r.ClusterName = clusterName
 
 	initialVMs, initialVolumes, initialMachines, err := r.probeResources()
-
 	if err != nil {
 		fmt.Printf("Error in initial probe of orphaned resources: %s", err.Error())
 		return err
 	}
 
-	if initialVMs != nil || initialVolumes != nil || initialMachines != nil {
-		err := fmt.Errorf("orphan resources are available. Clean them up before proceeding with the test.\nvirtual machines: %v\nvolumes: %v\nmcm machines: %v", initialVMs, initialVolumes, initialMachines)
+	ms := gcp.NewGCPPlugin(&gcp.PluginSPIImpl{})
+	ctx, svc, err := ms.SPI.NewComputeService(&corev1.Secret{Data: r.SecretData})
+	if err != nil {
+		return err
+	}
+
+	project, err := providerDriver.ExtractProject(r.SecretData)
+	if err != nil {
+		return err
+	}
+	zone := providerSpec.Zone
+
+	delErrOrphanVms, delErrOrphanVolumes := cleanUpOrphanResources(ctx, initialVMs, initialVolumes, svc, project, zone)
+
+	if delErrOrphanVms != nil || delErrOrphanVolumes != nil || initialMachines != nil {
+		err := fmt.Errorf("orphan resources are available. Clean them up before proceeding with the test.\nvirtual machines: %v\nvolumes: %v\nmcm machines: %v", delErrOrphanVms, delErrOrphanVolumes, initialMachines)
 		return err
 	}
 	return nil
@@ -57,7 +72,6 @@ func (r *ResourcesTrackerImpl) InitializeResourcesTracker(machineClass *v1alpha1
 // those resources which could not be deleted in the order
 // orphanedInstances, orphanedVolumes, orphanedMachines
 func (r *ResourcesTrackerImpl) probeResources() ([]string, []string, []string, error) {
-
 	ms := gcp.NewGCPPlugin(&gcp.PluginSPIImpl{})
 	ctx, svc, err := ms.SPI.NewComputeService(&corev1.Secret{Data: r.SecretData})
 	if err != nil {
@@ -96,14 +110,13 @@ func (r *ResourcesTrackerImpl) probeResources() ([]string, []string, []string, e
 //If yes, then prints them and returns true. If not, then returns false
 func (r *ResourcesTrackerImpl) IsOrphanedResourcesAvailable() bool {
 	afterTestExecutionInstances, afterTestExecutionAvailVols, afterTestExecutionAvailmachines, err := r.probeResources()
-
 	if err != nil {
 		fmt.Printf("Error probing orphaned resources: %s", err.Error())
 		return true
 	}
 
 	if afterTestExecutionInstances != nil || afterTestExecutionAvailVols != nil || afterTestExecutionAvailmachines != nil {
-		fmt.Printf("attempting to delete orphaned resources... the following resources are orphaned\n")
+		fmt.Printf("waiting for orphaned resources to get deleted... the following resources are orphaned\n")
 		fmt.Printf("Virtual Machines: %v\nVolumes: %v\nMCM Machines: %v\n", afterTestExecutionInstances, afterTestExecutionAvailVols, afterTestExecutionAvailmachines)
 		return true
 	}
