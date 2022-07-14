@@ -51,6 +51,10 @@ type GCPProviderSpec struct {
 	// must be created before you can assign them.
 	Disks []*GCPDisk `json:"disks,omitempty"`
 
+	// Gpu: Configurations related to GPU which would be attached to the instance. Enough
+	// Quota of the particular GPU should be available.
+	Gpu *GCPGpu `json:"gpu,omitempty"`
+
 	// Labels: Labels to apply to this instance.
 	Labels map[string]string `json:"labels,omitempty"`
 
@@ -283,4 +287,10 @@ type GCPServiceAccount struct {
 	// Scopes: The list of scopes to be made available for this service
 	// account.
 	Scopes []string `json:"scopes"`
+}
+
+// GCPGpu describes gpu configurations for GCP
+type GCPGpu struct {
+	AcceleratorType string `json:"acceleratorType"`
+	Count           int64  `json:"count"`
 }

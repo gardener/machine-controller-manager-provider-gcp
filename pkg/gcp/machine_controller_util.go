@@ -81,6 +81,15 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 		}
 	)
 
+	if providerSpec.Gpu != nil {
+		instance.GuestAccelerators = []*compute.AcceleratorConfig{
+			{
+				AcceleratorType:  fmt.Sprintf("projects/%s/zones/%s/acceleratorTypes/%s", project, zone, providerSpec.Gpu.AcceleratorType),
+				AcceleratorCount: providerSpec.Gpu.Count,
+			},
+		}
+	}
+
 	if providerSpec.Description != nil {
 		instance.Description = *providerSpec.Description
 	}
