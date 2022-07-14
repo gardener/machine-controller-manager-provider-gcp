@@ -103,7 +103,6 @@ build:
 
 .PHONY: docker-image
 docker-image:
-	@if [[ ! -f ${BINARY_PATH}/rel/machine-controller ]]; then echo "No binary found. Please run 'make build'"; false; fi
 	@docker build -t $(IMAGE_REPOSITORY):$(IMAGE_TAG) .
 
 .PHONY: docker-push
