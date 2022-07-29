@@ -18,7 +18,6 @@ package validation
 
 import (
 	"fmt"
-	"regexp"
 
 	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
@@ -86,7 +85,6 @@ func validateGCPMachineClassSpec(spec *api.GCPProviderSpec, fldPath *field.Path)
 
 	allErrs = append(allErrs, validateGCPNetworkInterfaces(spec.NetworkInterfaces, fldPath.Child("networkInterfaces"))...)
 	allErrs = append(allErrs, validateGCPMetadata(spec.Metadata, fldPath.Child("networkInterfaces"))...)
-	allErrs = append(allErrs, validateGCPServiceAccounts(spec.ServiceAccounts, fldPath.Child("serviceAccounts"))...)
 	allErrs = append(allErrs, validateGCPGpu(spec.Gpu, fldPath.Child("gpu"))...)
 	allErrs = append(allErrs, validateGCPScheduling(spec.Scheduling, spec.Gpu, fldPath.Child("scheduling"))...)
 
@@ -158,23 +156,6 @@ func validateGCPScheduling(scheduling api.GCPScheduling, gpu *api.GCPGpu, fldPat
 
 	if gpu != nil && scheduling.OnHostMaintenance != "TERMINATE" {
 		allErrs = append(allErrs, field.Forbidden(fldPath.Child("onHostMaintenance"), "liveMigration is not allowed for VMs with gpu attached, use \"TERMINATE\" instead"))
-	}
-
-	return allErrs
-}
-
-func validateGCPServiceAccounts(serviceAccounts []api.GCPServiceAccount, fldPath *field.Path) []error {
-	var allErrs []error
-
-	if 0 == len(serviceAccounts) {
-		allErrs = append(allErrs, field.Required(fldPath, "at least one service account is required"))
-	}
-
-	for i, account := range serviceAccounts {
-		idxPath := fldPath.Index(i)
-		if match, _ := regexp.MatchString(`^[^@]+@(?:[a-zA-Z-0-9]+\.)+[a-zA-Z]{2,}$`, account.Email); !match {
-			allErrs = append(allErrs, field.Invalid(idxPath.Child("email"), account.Email, "email address is of invalid format"))
-		}
 	}
 
 	return allErrs
