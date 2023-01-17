@@ -23,6 +23,7 @@ package gcp
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"golang.org/x/oauth2/google"
@@ -57,7 +58,7 @@ func (spi *PluginSPIImpl) NewComputeService(secret *corev1.Secret) (context.Cont
 
 	jwt, err := google.JWTConfigFromJSON([]byte(serviceAccountJSON), compute.CloudPlatformScope)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("cannot parse serviceAccountJSON secret value: %w", err)
 	}
 
 	clientOption := option.WithTokenSource(jwt.TokenSource(ctx))
