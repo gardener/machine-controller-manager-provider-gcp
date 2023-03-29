@@ -3,7 +3,7 @@ module github.com/gardener/machine-controller-manager-provider-gcp
 go 1.17
 
 require (
-	github.com/gardener/machine-controller-manager v0.46.0
+	github.com/gardener/machine-controller-manager v0.48.2
 	github.com/onsi/ginkgo v1.16.2
 	github.com/onsi/gomega v1.11.0
 	github.com/pkg/errors v0.9.1
@@ -21,6 +21,7 @@ require (
 
 require (
 	cloud.google.com/go v0.65.0 // indirect
+	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/Microsoft/go-winio v0.4.16 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20210428141323-04723f9f07d7 // indirect
 	github.com/acomagu/bufpipe v1.0.3 // indirect
