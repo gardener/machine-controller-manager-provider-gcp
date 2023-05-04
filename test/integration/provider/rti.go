@@ -24,15 +24,15 @@ var (
 	providerSpec *api.GCPProviderSpec
 )
 
-//ResourcesTrackerImpl type keeps a note of resources which are initialized in MCM IT suite and are used in provider IT
+// ResourcesTrackerImpl type keeps a note of resources which are initialized in MCM IT suite and are used in provider IT
 type ResourcesTrackerImpl struct {
 	MachineClass *v1alpha1.MachineClass
 	SecretData   map[string][]byte
 	ClusterName  string
 }
 
-//InitializeResourcesTracker initializes the type ResourcesTrackerImpl variable and tries
-//to delete the orphan resources present before the actual IT runs.
+// InitializeResourcesTracker initializes the type ResourcesTrackerImpl variable and tries
+// to delete the orphan resources present before the actual IT runs.
 // 1. get list of orphan resources.
 // 2. Mark them for deletion and call cleanup.
 // 3. Print the orphan resources which got error in deletion and error out
@@ -107,7 +107,7 @@ func (r *ResourcesTrackerImpl) probeResources() ([]string, []string, []string, e
 }
 
 // IsOrphanedResourcesAvailable checks whether there are any orphaned resources left.
-//If yes, then prints them and returns true. If not, then returns false
+// If yes, then prints them and returns true. If not, then returns false
 func (r *ResourcesTrackerImpl) IsOrphanedResourcesAvailable() bool {
 	afterTestExecutionInstances, afterTestExecutionAvailVols, afterTestExecutionAvailmachines, err := r.probeResources()
 	if err != nil {

@@ -24,7 +24,6 @@ package gcp
 import (
 	"fmt"
 
-	"github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
@@ -33,6 +32,8 @@ import (
 )
 
 const (
+	// ProviderGCP string const to identify GCP provider
+	ProviderGCP = "GCP"
 	// gcePDDriverName is the name of the CSI driver for GCE PD
 	gcePDDriverName = "pd.csi.storage.gke.io"
 )
@@ -48,18 +49,22 @@ const (
 //
 // RESPONSE PARAMETERS (driver.CreateMachineResponse)
 // ProviderID            string             Unique identification of the VM at the cloud provider. This could be the same/different from req.MachineName.
-//                                          ProviderID typically matches with the node.Spec.ProviderID on the node object.
-//                                          Eg: gce://project-name/region/vm-ProviderID
+//
+//	ProviderID typically matches with the node.Spec.ProviderID on the node object.
+//	Eg: gce://project-name/region/vm-ProviderID
+//
 // NodeName              string             Returns the name of the node-object that the VM register's with Kubernetes.
-//                                          This could be different from req.MachineName as well
+//
+//	This could be different from req.MachineName as well
+//
 // LastKnownState        bytes(blob)        (Optional) Last known state of VM during the current operation.
-//                                          Could be helpful to continue operations in future requests.
+//
+//	Could be helpful to continue operations in future requests.
 //
 // OPTIONAL IMPLEMENTATION LOGIC
 // It is optionally expected by the safety controller to use an identification mechanisms to map the VM Created by a providerSpec.
 // These could be done using tag(s)/resource-groups etc.
 // This logic is used by safety controller to delete orphan VMs which are not backed by any machine CRD
-//
 func (ms *MachinePlugin) CreateMachine(ctx context.Context, req *driver.CreateMachineRequest) (*driver.CreateMachineResponse, error) {
 	// Log messages to track start of request
 	klog.V(2).Infof("Create machine request has been received for %q", req.Machine.Name)
@@ -101,8 +106,8 @@ func (ms *MachinePlugin) CreateMachine(ctx context.Context, req *driver.CreateMa
 //
 // RESPONSE PARAMETERS (driver.DeleteMachineResponse)
 // LastKnownState       bytes(blob)        (Optional) Last known state of VM during the current operation.
-//                                          Could be helpful to continue operations in future requests.
 //
+//	Could be helpful to continue operations in future requests.
 func (ms *MachinePlugin) DeleteMachine(ctx context.Context, req *driver.DeleteMachineRequest) (*driver.DeleteMachineResponse, error) {
 	// Log messages to track delete request
 	klog.V(2).Infof("Machine deletion request has been received for %q", req.Machine.Name)
@@ -139,11 +144,13 @@ func (ms *MachinePlugin) DeleteMachine(ctx context.Context, req *driver.DeleteMa
 //
 // RESPONSE PARAMETERS (driver.GetMachineStatueResponse)
 // ProviderID           string              Unique identification of the VM at the cloud provider. This could be the same/different from req.MachineName.
-//                                          ProviderID typically matches with the node.Spec.ProviderID on the node object.
-//                                          Eg: gce://project-name/region/vm-ProviderID
-// NodeName             string              Returns the name of the node-object that the VM register's with Kubernetes.
-//                                          This could be different from req.MachineName as well
 //
+//	ProviderID typically matches with the node.Spec.ProviderID on the node object.
+//	Eg: gce://project-name/region/vm-ProviderID
+//
+// NodeName             string              Returns the name of the node-object that the VM register's with Kubernetes.
+//
+//	This could be different from req.MachineName as well
 func (ms *MachinePlugin) GetMachineStatus(ctx context.Context, req *driver.GetMachineStatusRequest) (*driver.GetMachineStatusResponse, error) {
 	// Log messages to track start of request
 	klog.V(2).Infof("Machine status request has been received for %q", req.Machine.Name)
@@ -185,8 +192,8 @@ func (ms *MachinePlugin) GetMachineStatus(ctx context.Context, req *driver.GetMa
 //
 // RESPONSE PARAMETERS (driver.ListMachinesResponse)
 // MachineList           map<string,string>  A map containing the keys as the MachineID and value as the MachineName
-//                                           for all machine's who where possibilly created by this ProviderSpec
 //
+//	for all machine's who where possibilly created by this ProviderSpec
 func (ms *MachinePlugin) ListMachines(ctx context.Context, req *driver.ListMachinesRequest) (*driver.ListMachinesResponse, error) {
 	// Log messages to track start of request
 	klog.V(2).Infof("List machines request has been received")
@@ -220,7 +227,6 @@ func (ms *MachinePlugin) ListMachines(ctx context.Context, req *driver.ListMachi
 //
 // RESPONSE PARAMETERS (driver.GetVolumeIDsResponse)
 // VolumeIDs             repeated string     VolumeIDs is a repeated list of VolumeIDs.
-//
 func (ms *MachinePlugin) GetVolumeIDs(ctx context.Context, req *driver.GetVolumeIDsRequest) (*driver.GetVolumeIDsResponse, error) {
 	// Log messages to track start of request
 	klog.V(2).Infof("GetVolumeIDs request has been received")
@@ -245,20 +251,4 @@ func (ms *MachinePlugin) GetVolumeIDs(ctx context.Context, req *driver.GetVolume
 		VolumeIDs: volumeIDs,
 	}
 	return response, nil
-}
-
-// GenerateMachineClassForMigration converts providerSpecificMachineClass to (generic) MachineClass
-func (ms *MachinePlugin) GenerateMachineClassForMigration(ctx context.Context, req *driver.GenerateMachineClassForMigrationRequest) (*driver.GenerateMachineClassForMigrationResponse, error) {
-	klog.V(1).Infof("Migrate request has been recieved for %v", req.MachineClass.Name)
-	defer klog.V(1).Infof("Migrate request has been processed for %v", req.MachineClass.Name)
-
-	gcpMachineClass := req.ProviderSpecificMachineClass.(*v1alpha1.GCPMachineClass)
-
-	// Check if incoming CR is valid CR for migration
-	// In this case, the MachineClassKind to be matching
-	if req.ClassSpec.Kind != GCPMachineClassKind {
-		return nil, status.Error(codes.Internal, "Migration cannot be done for this machineClass kind")
-	}
-
-	return &driver.GenerateMachineClassForMigrationResponse{}, fillUpMachineClass(gcpMachineClass, req.MachineClass)
 }

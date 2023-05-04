@@ -30,7 +30,7 @@ import (
 	compute "google.golang.org/api/compute/v1"
 )
 
-//Instances stores and manages the instances during create,delete and list calls
+// Instances stores and manages the instances during create,delete and list calls
 var Instances []*compute.Instance
 
 var singleConnHandler = make(chan struct{})
@@ -52,7 +52,7 @@ func (h *httpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//NewMockServer creates an http server to mock the gcp compute api
+// NewMockServer creates an http server to mock the gcp compute api
 func NewMockServer() {
 
 	var srv = http.Server{
