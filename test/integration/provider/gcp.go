@@ -109,7 +109,7 @@ func getOrphanedVolumes(ctx context.Context, svc *compute.Service, project strin
 	return availVolID, nil
 }
 
-//terminateInstance terminates a specified instance
+// terminateInstance terminates a specified instance
 func terminateInstance(ctx context.Context, svc *compute.Service, project, zone, instanceName string) error {
 	operation, err := svc.Instances.Delete(project, zone, instanceName).Context(ctx).Do()
 	if err != nil {

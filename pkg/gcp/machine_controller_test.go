@@ -123,7 +123,7 @@ var _ = Describe("#MachineController", func() {
 	}
 
 	gcpProviderSecretWithMisssingUserData := map[string][]byte{
-		//"userData":           []byte(""),
+		// "userData":           []byte(""),
 		api.GCPServiceAccountJSON: []byte("{\"type\":\"service_account\",\"project_id\":\"sap-se-gcp-scp-k8s-dev\"}"),
 	}
 	gcpProviderSecretWithoutProjectID := map[string][]byte{
@@ -135,8 +135,8 @@ var _ = Describe("#MachineController", func() {
 	var mockPluginSPIImpl *fake.PluginSPIImpl
 
 	var _ = BeforeSuite(func() {
-		//Start a mock server to listen to mock client requests
-		//This is rquired as compute sdk doesn't offer any interface so the mocking is done via a mock http client pass to the compute service
+		// Start a mock server to listen to mock client requests
+		// This is rquired as compute sdk doesn't offer any interface so the mocking is done via a mock http client pass to the compute service
 		go fake.NewMockServer()
 		mockPluginSPIImpl = &fake.PluginSPIImpl{Client: &http.Client{}}
 		ms = NewGCPPlugin(mockPluginSPIImpl)
