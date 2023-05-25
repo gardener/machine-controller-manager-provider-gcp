@@ -19,9 +19,10 @@ package validation
 import (
 	"fmt"
 
-	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+
+	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/api/v1alpha1"
 )
 
 const (
@@ -111,6 +112,12 @@ func validateGCPDisks(disks []*api.GCPDisk, fldPath *field.Path) []error {
 		}
 		if disk.Boot && "" == disk.Image {
 			allErrs = append(allErrs, field.Required(idxPath.Child("image"), "image is required for boot disk"))
+		}
+		if disk.KmsKeyName != "" && disk.KmsKeyServiceAccount == "" {
+			allErrs = append(allErrs, field.Required(idxPath.Child("kmsKeyServiceAccount"), "kmsKeyServiceAccount is required to be specified along with kmsKeyName"))
+		}
+		if disk.KmsKeyName == "" && disk.KmsKeyServiceAccount != "" {
+			allErrs = append(allErrs, field.Required(idxPath.Child("kmsKeyServiceAccount"), "kmsKeyName is required to be specified along with kmsKeyServiceAccount"))
 		}
 	}
 

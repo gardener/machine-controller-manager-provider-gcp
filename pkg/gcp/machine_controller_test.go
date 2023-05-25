@@ -21,8 +21,6 @@ import (
 	"context"
 	"net/http"
 
-	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/api/v1alpha1"
-	fake "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/fake"
 	v1alpha1 "github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
 	. "github.com/onsi/ginkgo"
@@ -31,6 +29,9 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/api/v1alpha1"
+	fake "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/fake"
 )
 
 const (
@@ -81,7 +82,6 @@ var _ = Describe("#MachineController", func() {
 	gcpProviderSpecNoTagsToSearch := []byte("{\"canIpForward\":true,\"deletionProtection\":false,\"description\":\"Machine created to test out-of-tree gcp mcm driver.\",\"disks\":[{\"autoDelete\":true,\"boot\":true,\"sizeGb\":50,\"type\":\"pd-standard\",\"image\":\"projects/coreos-cloud/global/images/coreos-stable-2135-6-0-v20190801\",\"labels\":{\"name\":\"test-mc-gcp\"}}],\"labels\":{\"name\":\"test-mc-gcp\"},\"machineType\":\"n1-standard-2\",\"metadata\":[{\"key\":\"gcp\",\"value\":\"my-value\"}],\"networkInterfaces\":[{\"network\":\"dummyShoot\",\"subnetwork\":\"dummyShoot\"}],\"scheduling\":{\"automaticRestart\":true,\"onHostMaintenance\":\"MIGRATE\",\"preemptible\":false},\"secretRef\":{\"name\":\"dummySecret\",\"namespace\":\"dummy\"},\"serviceAccounts\":[{\"email\":\"mcmDummy@dummy.com\",\"scopes\":[\"https://www.googleapis.com/auth/compute\"]}],\"region\":\"europe-dummy\",\"zone\":\"europe-dummy\"}")
 	gcpProviderSpecInvalidPostZone := []byte("{\"canIpForward\":true,\"deletionProtection\":false,\"description\":\"Machine created to test out-of-tree gcp mcm driver.\",\"disks\":[{\"autoDelete\":true,\"boot\":true,\"sizeGb\":50,\"type\":\"pd-standard\",\"image\":\"projects/coreos-cloud/global/images/coreos-stable-2135-6-0-v20190801\",\"labels\":{\"name\":\"test-mc-gcp\"}}],\"labels\":{\"name\":\"test-mc-gcp\"},\"machineType\":\"n1-standard-2\",\"metadata\":[{\"key\":\"gcp\",\"value\":\"my-value\"}],\"networkInterfaces\":[{\"network\":\"dummyShoot\",\"subnetwork\":\"dummyShoot\"}],\"scheduling\":{\"automaticRestart\":true,\"onHostMaintenance\":\"MIGRATE\",\"preemptible\":false},\"secretRef\":{\"name\":\"dummySecret\",\"namespace\":\"dummy\"},\"serviceAccounts\":[{\"email\":\"mcmDummy@dummy.com\",\"scopes\":[\"https://www.googleapis.com/auth/compute\"]}],\"tags\":[\"kubernetes-io-cluster-dummy-machine\",\"kubernetes-io-role-mcm\",\"dummy-machine\"],\"region\":\"europe-dummy\",\"zone\":\"invalid post\"}")
 	gcpProviderSpecInvalidListZone := []byte("{\"canIpForward\":true,\"deletionProtection\":false,\"description\":\"Machine created to test out-of-tree gcp mcm driver.\",\"disks\":[{\"autoDelete\":true,\"boot\":true,\"sizeGb\":50,\"type\":\"pd-standard\",\"image\":\"projects/coreos-cloud/global/images/coreos-stable-2135-6-0-v20190801\",\"labels\":{\"name\":\"test-mc-gcp\"}}],\"labels\":{\"name\":\"test-mc-gcp\"},\"machineType\":\"n1-standard-2\",\"metadata\":[{\"key\":\"gcp\",\"value\":\"my-value\"}],\"networkInterfaces\":[{\"network\":\"dummyShoot\",\"subnetwork\":\"dummyShoot\"}],\"scheduling\":{\"automaticRestart\":true,\"onHostMaintenance\":\"MIGRATE\",\"preemptible\":false},\"secretRef\":{\"name\":\"dummySecret\",\"namespace\":\"dummy\"},\"serviceAccounts\":[{\"email\":\"mcmDummy@dummy.com\",\"scopes\":[\"https://www.googleapis.com/auth/compute\"]}],\"tags\":[\"kubernetes-io-cluster-dummy-machine\",\"kubernetes-io-role-mcm\",\"dummy-machine\"],\"region\":\"europe-dummy\",\"zone\":\"invalid list\"}")
-	gcpProviderSpecExpectedAfterMigration := []byte("{\"APIVersion\":\"mcm.gardener.cloud/v1alpha1\",\"canIpForward\":true,\"deletionProtection\":false,\"description\":\"Machine created to test out-of-tree gcp mcm driver.\",\"disks\":[{\"autoDelete\":true,\"boot\":true,\"sizeGb\":50,\"type\":\"pd-standard\",\"interface\":\"test-interface\",\"image\":\"projects/coreos-cloud/global/images/coreos-stable-2135-6-0-v20190801\",\"labels\":{\"name\":\"test-mc-gcp\"}}],\"labels\":{\"name\":\"test-mc-gcp\"},\"machineType\":\"n1-standard-2\",\"metadata\":[{\"key\":\"gcp\",\"value\":\"my-value\"}],\"networkInterfaces\":[{\"network\":\"dummyShoot\",\"subnetwork\":\"dummyShoot\"}],\"region\":\"europe-dummy\",\"scheduling\":{\"automaticRestart\":true,\"onHostMaintenance\":\"MIGRATE\",\"preemptible\":false},\"serviceAccounts\":[{\"email\":\"mcmDummy@dummy.com\",\"scopes\":[\"https://www.googleapis.com/auth/compute\"]}],\"tags\":[\"kubernetes-io-cluster-dummy-machine\",\"kubernetes-io-role-mcm\",\"dummy-machine\"],\"zone\":\"europe-dummy\"}")
 
 	gcpPVSpecIntree := &corev1.PersistentVolumeSpec{
 		PersistentVolumeSource: corev1.PersistentVolumeSource{
@@ -761,150 +761,6 @@ var _ = Describe("#MachineController", func() {
 			}),
 		)
 	})
-	Describe("##GenerateMachineClassForMigration", func() {
-		type setup struct {
-		}
-		type action struct {
-			machineRequest *driver.GenerateMachineClassForMigrationRequest
-		}
-		type expect struct {
-			machineClass *v1alpha1.MachineClass
-			err          error
-		}
-		type data struct {
-			setup  setup
-			action action
-			expect expect
-		}
-
-		DescribeTable("###table",
-			func(data *data) {
-
-				ctx := context.Background()
-				_, err := ms.GenerateMachineClassForMigration(ctx, data.action.machineRequest)
-				if data.expect.err != nil {
-					Expect(err).To(HaveOccurred())
-					Expect(err).To(Equal(err))
-				} else {
-					Expect(err).ToNot(HaveOccurred())
-					Expect(data.action.machineRequest.MachineClass.ProviderSpec).To(Equal(data.expect.machineClass.ProviderSpec))
-					Expect(data.action.machineRequest.MachineClass.Provider).To(Equal(ProviderGCP))
-					Expect(data.action.machineRequest.MachineClass.SecretRef).To(Equal(data.expect.machineClass.SecretRef))
-					Expect(data.action.machineRequest.MachineClass.CredentialsSecretRef).To(Equal(data.expect.machineClass.CredentialsSecretRef))
-				}
-			},
-
-			Entry("With valid migration request", &data{
-				setup: setup{},
-				action: action{
-					machineRequest: &driver.GenerateMachineClassForMigrationRequest{
-						ProviderSpecificMachineClass: &v1alpha1.GCPMachineClass{
-							ObjectMeta: metav1.ObjectMeta{
-								Name:      TestMachineClassName,
-								Namespace: TestNamaspace,
-							},
-							Spec: v1alpha1.GCPMachineClassSpec{
-								CanIpForward:       true,
-								DeletionProtection: false,
-								Description:        getStringPtr("Machine created to test out-of-tree gcp mcm driver."),
-								Disks: []*v1alpha1.GCPDisk{
-									{
-										AutoDelete: getBoolPtr(true),
-										Boot:       true,
-										SizeGb:     50,
-										Type:       "pd-standard",
-										Interface:  "test-interface",
-										Image:      "projects/coreos-cloud/global/images/coreos-stable-2135-6-0-v20190801",
-										Labels: map[string]string{
-											"name": "test-mc-gcp",
-										},
-									},
-								},
-								Labels: map[string]string{
-									"name": "test-mc-gcp",
-								},
-								MachineType: "n1-standard-2",
-								Metadata: []*v1alpha1.GCPMetadata{
-									{
-										Key:   "gcp",
-										Value: getStringPtr("my-value"),
-									},
-								},
-								NetworkInterfaces: []*v1alpha1.GCPNetworkInterface{
-									{
-										DisableExternalIP: false,
-										Network:           "dummyShoot",
-										Subnetwork:        "dummyShoot",
-									},
-								},
-								Scheduling: v1alpha1.GCPScheduling{
-									AutomaticRestart:  true,
-									OnHostMaintenance: "MIGRATE",
-									Preemptible:       false,
-								},
-								SecretRef: &corev1.SecretReference{
-									Name:      "test-secret",
-									Namespace: TestNamaspace,
-								},
-								CredentialsSecretRef: &corev1.SecretReference{
-									Name:      "test-credential",
-									Namespace: TestNamaspace,
-								},
-								ServiceAccounts: []v1alpha1.GCPServiceAccount{
-									{
-										Email: "mcmDummy@dummy.com",
-										Scopes: []string{
-											"https://www.googleapis.com/auth/compute",
-										},
-									},
-								},
-								Tags: []string{
-									"kubernetes-io-cluster-dummy-machine",
-									"kubernetes-io-role-mcm",
-									"dummy-machine",
-								},
-								Region: "europe-dummy",
-								Zone:   "europe-dummy",
-							},
-						},
-						MachineClass: &v1alpha1.MachineClass{
-							ObjectMeta: metav1.ObjectMeta{
-								Name:      TestMachineClassName,
-								Namespace: TestNamaspace,
-							},
-							Provider: ProviderGCP,
-						},
-						ClassSpec: &v1alpha1.ClassSpec{
-							Kind: GCPMachineClassKind,
-							Name: TestMachineClassName,
-						},
-					},
-				},
-				expect: expect{
-					machineClass: &v1alpha1.MachineClass{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      TestMachineClassName,
-							Namespace: TestNamaspace,
-						},
-						ProviderSpec: runtime.RawExtension{
-							Raw:    gcpProviderSpecExpectedAfterMigration,
-							Object: nil,
-						},
-						SecretRef: &corev1.SecretReference{
-							Name:      "test-secret",
-							Namespace: TestNamaspace,
-						},
-						CredentialsSecretRef: &corev1.SecretReference{
-							Name:      "test-credential",
-							Namespace: TestNamaspace,
-						},
-						Provider: ProviderGCP,
-					},
-				},
-			}),
-		)
-	})
-
 })
 
 func getBoolPtr(b bool) *bool {

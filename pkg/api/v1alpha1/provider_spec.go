@@ -194,6 +194,15 @@ type GCPDisk struct {
 	// If the source image is deleted later, this field will not be set.
 	Image string `json:"image"`
 
+	// KmsKeyName: key name of the cloud kms disk encryption key.
+	KmsKeyName string `json:"kmsKeyName"`
+
+	// KmsKeyServiceAccount: The service account granted the `roles/cloudkms.cryptoKeyEncrypterDecrypter` for the key name.
+	// One can do this using:
+	//  gcloud projects add-iam-policy-binding projectId --member
+	//	serviceAccount:name@projectIdgserviceaccount.com --role roles/cloudkms.cryptoKeyEncrypterDecrypter
+	KmsKeyServiceAccount string `json:"kmsKeyServiceAccount"`
+
 	// Labels: Labels to apply to this disk. These can be later modified by
 	// the disks.setLabels method. This field is only applicable for
 	// persistent disks.

@@ -27,16 +27,17 @@ import (
 	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/api/v1alpha1"
 	errors2 "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/errors"
 	"github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/validation"
-	v1alpha1 "github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
+	"github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
-	compute "google.golang.org/api/compute/v1"
+	"google.golang.org/api/compute/v1"
 	"google.golang.org/api/googleapi"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
+
 )
 
 const (
@@ -122,6 +123,14 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 				},
 			}
 		}
+		if disk.KmsKeyName != "" {
+			attachedDisk.DiskEncryptionKey = &compute.CustomerEncryptionKey{
+				KmsKeyName:           disk.KmsKeyName,
+				KmsKeyServiceAccount: disk.KmsKeyServiceAccount,
+			}
+			klog.V(3).Infof("(CreateMachineUtil) Set attachedDisk.KmsKeyName: %q, attachedDisk.KmsKeyServiceAccount",
+				disk.KmsKeyName, disk.KmsKeyServiceAccount)
+		}
 		disks = append(disks, &attachedDisk)
 	}
 	instance.Disks = disks
@@ -165,7 +174,6 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 		})
 	}
 	instance.ServiceAccounts = serviceAccounts
-
 	operation, err := computeService.Instances.Insert(project, zone, instance).Context(ctx).Do()
 	if err != nil {
 		return "", err
