@@ -24,9 +24,6 @@ import (
 	"strings"
 	"time"
 
-	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/api/v1alpha1"
-	errors2 "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/errors"
-	"github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/validation"
 	"github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
@@ -38,6 +35,9 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
 
+	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/api/v1alpha1"
+	errors2 "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/errors"
+	"github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/validation"
 )
 
 const (
@@ -128,7 +128,7 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 				KmsKeyName:           disk.KmsKeyName,
 				KmsKeyServiceAccount: disk.KmsKeyServiceAccount,
 			}
-			klog.V(3).Infof("(CreateMachineUtil) Set attachedDisk.KmsKeyName: %q, attachedDisk.KmsKeyServiceAccount",
+			klog.V(3).Infof("(CreateMachineUtil) Set attachedDisk.KmsKeyName: %q, attachedDisk.KmsKeyServiceAccount: %q",
 				disk.KmsKeyName, disk.KmsKeyServiceAccount)
 		}
 		disks = append(disks, &attachedDisk)
