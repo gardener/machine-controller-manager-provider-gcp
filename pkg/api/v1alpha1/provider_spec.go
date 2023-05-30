@@ -194,19 +194,27 @@ type GCPDisk struct {
 	// If the source image is deleted later, this field will not be set.
 	Image string `json:"image"`
 
-	// KmsKeyName: key name of the cloud kms disk encryption key.
-	KmsKeyName string `json:"kmsKeyName"`
-
-	// KmsKeyServiceAccount: The service account granted the `roles/cloudkms.cryptoKeyEncrypterDecrypter` for the key name.
-	// One can do this using:
-	//  gcloud projects add-iam-policy-binding projectId --member
-	//	serviceAccount:name@projectIdgserviceaccount.com --role roles/cloudkms.cryptoKeyEncrypterDecrypter
-	KmsKeyServiceAccount string `json:"kmsKeyServiceAccount"`
+	// Encryption: Encryption details for this disk
+	Encryption *GCPDiskEncryption `json:"encryption"`
 
 	// Labels: Labels to apply to this disk. These can be later modified by
 	// the disks.setLabels method. This field is only applicable for
 	// persistent disks.
 	Labels map[string]string `json:"labels"`
+}
+
+// GCPDiskEncryption holds references to encryption data
+type GCPDiskEncryption struct {
+	// KmsKeyName: key name of the cloud kms disk encryption key. Not optional
+	KmsKeyName string `json:"kmsKeyName"`
+
+	// KmsKeyServiceAccount: The service account granted the `roles/cloudkms.cryptoKeyEncrypterDecrypter` for the key name.
+	// If empty, then the role should be given to the Compute Engine Service Agent Account. This usually has the format
+	// service-PROJECT_NUMBER@compute-system.iam.gserviceaccount.com. See: https://cloud.google.com/iam/docs/service-agents#compute-engine-service-agent
+	// One can add IAM roles using the gcloud CLI:
+	//  gcloud projects add-iam-policy-binding projectId --member
+	//	serviceAccount:name@projectIdgserviceaccount.com --role roles/cloudkms.cryptoKeyEncrypterDecrypter
+	KmsKeyServiceAccount string `json:"kmsKeyServiceAccount"`
 }
 
 // GCPMetadata describes metadata for GCP.

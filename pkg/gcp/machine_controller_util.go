@@ -123,13 +123,13 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 				},
 			}
 		}
-		if disk.KmsKeyName != "" {
+		if disk.Encryption != nil {
 			attachedDisk.DiskEncryptionKey = &compute.CustomerEncryptionKey{
-				KmsKeyName:           disk.KmsKeyName,
-				KmsKeyServiceAccount: disk.KmsKeyServiceAccount,
+				KmsKeyName:           strings.TrimSpace(disk.Encryption.KmsKeyName),
+				KmsKeyServiceAccount: strings.TrimSpace(disk.Encryption.KmsKeyServiceAccount),
 			}
-			klog.V(3).Infof("(CreateMachineUtil) Set attachedDisk.KmsKeyName: %q, attachedDisk.KmsKeyServiceAccount: %q",
-				disk.KmsKeyName, disk.KmsKeyServiceAccount)
+			klog.V(3).Infof("(CreateMachineUtil) Set attachedDisk.DiskEncryptionKey.KmsKeyName: %q, attachedDisk.DiskEncryptionKey.KmsKeyServiceAccount: %q",
+				attachedDisk.DiskEncryptionKey.KmsKeyName, attachedDisk.DiskEncryptionKey.KmsKeyServiceAccount)
 		}
 		disks = append(disks, &attachedDisk)
 	}
