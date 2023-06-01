@@ -120,7 +120,7 @@ func validateGCPDisks(disks []*api.GCPDisk, fldPath *field.Path) []error {
 			if kmsKeyName == "" {
 				allErrs = append(allErrs, field.Required(idxPath.Child("kmsKeyName"), "kmsKeyName is required to be specified"))
 			}
-// to deal with situation where  just spaces have been specified for `kmsKeyServiceAccount`
+			// to deal with situation where  just spaces have been specified for `kmsKeyServiceAccount`
 			if disk.Encryption.KmsKeyServiceAccount != "" && kmsKeyServiceAccount == "" {
 				allErrs = append(allErrs, field.Required(idxPath.Child("kmsKeyServiceAccount"), "kmsKeyServiceAccount should either be explicitly specified without spaces or left un-specified to default to the Compute Service Agent"))
 			}

@@ -74,7 +74,7 @@ const (
 	// FailAtSpecValidationNoKmsKeyName if kmsKeyName missing
 	FailAtSpecValidationNoKmsKeyName string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on decodeProviderSpecAndSecret: machine codes error: code = [Internal] message = [Error while validating ProviderSpec [spec.disks[0].kmsKeyName: Required value: kmsKeyName is required to be specified]]]"
 	// FailAtSpecValidationInvalidKmsServiceAccount if kmsKeyServiceAccount invalid
-	FailAtSpecValidationInvalidKmsServiceAccount string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on decodeProviderSpecAndSecret: machine codes error: code = [Internal] message = [Error while validating ProviderSpec [spec.disks[0].kmsKeyServiceAccount: Required value: kmsKeyServiceAccount should either be explicitly specified or left un-specified to default to the Compute Service Agent]]]"
+	FailAtSpecValidationInvalidKmsServiceAccount string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on decodeProviderSpecAndSecret: machine codes error: code = [Internal] message = [Error while validating ProviderSpec [spec.disks[0].kmsKeyServiceAccount: Required value: kmsKeyServiceAccount should either be explicitly specified without spaces or left un-specified to default to the Compute Service Agent]]]"
 
 	UnsupportedProviderError string = "machine codes error: code = [InvalidArgument] message = [Requested for Provider 'aws', we only support 'GCP']"
 )
