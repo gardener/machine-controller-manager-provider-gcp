@@ -14,6 +14,9 @@ providerSpec:
       sizeGb: 50 # Size of disk
       type: pd-standard # Specifies the type of the disk
       image: projects/coreos-cloud/global/images/coreos-stable-1688-5-3-v20180403 # Disk image name
+#     encryption: # disk encryption config (optional)
+#       kmsKeyName: "projects/projectId/locations/region/keyRings/keyRingName/cryptoKeys/keyName" # FQN of kms key
+#       kmsKeyServiceAccount: "id@project.iam.gserviceaccount.com" # email of service account (optional)
       labels:
         name: test-mc # Label assigned to the disk
   labels:

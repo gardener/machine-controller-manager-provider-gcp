@@ -18,10 +18,12 @@ package validation
 
 import (
 	"fmt"
+	"strings"
 
-	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+
+	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/api/v1alpha1"
 )
 
 const (
@@ -111,6 +113,17 @@ func validateGCPDisks(disks []*api.GCPDisk, fldPath *field.Path) []error {
 		}
 		if disk.Boot && "" == disk.Image {
 			allErrs = append(allErrs, field.Required(idxPath.Child("image"), "image is required for boot disk"))
+		}
+		if disk.Encryption != nil {
+			var kmsKeyName = strings.TrimSpace(disk.Encryption.KmsKeyName)
+			var kmsKeyServiceAccount = strings.TrimSpace(disk.Encryption.KmsKeyServiceAccount)
+			if kmsKeyName == "" {
+				allErrs = append(allErrs, field.Required(idxPath.Child("kmsKeyName"), "kmsKeyName is required to be specified"))
+			}
+			// to deal with situation where  just spaces have been specified for `kmsKeyServiceAccount`
+			if disk.Encryption.KmsKeyServiceAccount != "" && kmsKeyServiceAccount == "" {
+				allErrs = append(allErrs, field.Required(idxPath.Child("kmsKeyServiceAccount"), "kmsKeyServiceAccount should either be explicitly specified without spaces or left un-specified to default to the Compute Service Agent"))
+			}
 		}
 	}
 
