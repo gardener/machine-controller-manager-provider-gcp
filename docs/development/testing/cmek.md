@@ -129,7 +129,7 @@
 1. You can check that the encrypted disks have been created:
     1. Describe the instance: 
     `gcloud compute instances describe shoot--userid--shootName-worker-1-z1-65c6b-9ptm7 --zone zone` 
-    1. The persistent disks should look like below with  have a disk encryoption key
+    1. The persistent disks should look like the one below with a disk encryption key.
     ```yaml
       disks:
       - autoDelete: true
