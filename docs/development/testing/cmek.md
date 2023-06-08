@@ -120,7 +120,7 @@
                   kmsKeyName: "projects/projectId/locations/<zoneName>/keyRings/<keyRingName>/cryptoKeys/alpha"
                   kmsKeyServiceAccount: "user@projectId.iam.gserviceaccount.com" 
       ```
-1. Apply the shoot YAML agaisnt the `nodeless` cluster and wait till once the shoot has reconciled and the machine(s) in pool are in `Running` phase.
+1. Apply the shoot YAML against the nodeless cluster and wait until the shoot has reconciled and the machine(s) in the worker pool are in `Running` phase.
 1. Use `gardenctl` to target the shooted seed and get the provider machine name and zone
    ```
    kubectl get mc -A -o=jsonpath='{.items[*].spec.providerID}'
@@ -169,4 +169,4 @@
       source: <...>
       type: PERSISTENT
     ```
-1. One can change the shoot YAML by adding removing volumes and once the shoot has re-conciled and the new machine in `Running` phase, the persistent disks associated wth the machine VM should be correspondingly added/removed and still be configured with the specified encryoption key.
+1. One can change the shoot YAML by adding/removing volumes. Once the shoot has reconciled with the new machines in the Running phase, the persistent disks associated with the VM should be added/removed and still be configured with the specified encryption key. 
