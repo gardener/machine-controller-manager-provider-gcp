@@ -1,7 +1,7 @@
 ## Specification
 ### ProviderSpec Schema
 <br>
-<h3 id="GCPProviderSpec">
+<h3 id="settings.gardener.cloud/v1alpha1.GCPProviderSpec">
 <b>GCPProviderSpec</b>
 </h3>
 <p>
@@ -26,7 +26,7 @@ string
 </td>
 <td>
 <code>
-settings.gardener.cloud/v1
+settings.gardener.cloud/v1alpha1
 </code>
 </td>
 </tr>
@@ -104,7 +104,7 @@ property when you create the resource.</p>
 </td>
 <td>
 <em>
-<a href="#?id=GCPDisk">
+<a href="#%23settings.gardener.cloud%2fv1alpha1.GCPDisk">
 []GCPDisk
 </a>
 </em>
@@ -112,6 +112,22 @@ property when you create the resource.</p>
 <td>
 <p>Disks: Array of disks associated with this instance. Persistent disks
 must be created before you can assign them.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>gpu</code>
+</td>
+<td>
+<em>
+<a href="#%23settings.gardener.cloud%2fv1alpha1.GCPGpu">
+GCPGpu
+</a>
+</em>
+</td>
+<td>
+<p>Gpu: Configurations related to GPU which would be attached to the instance. Enough
+Quota of the particular GPU should be available.</p>
 </td>
 </tr>
 <tr>
@@ -162,7 +178,7 @@ machine types.</p>
 </td>
 <td>
 <em>
-<a href="#?id=GCPMetadata">
+<a href="#%23settings.gardener.cloud%2fv1alpha1.GCPMetadata">
 []GCPMetadata
 </a>
 </em>
@@ -178,7 +194,7 @@ This includes custom metadata and predefined keys.</p>
 </td>
 <td>
 <em>
-<a href="#?id=GCPNetworkInterface">
+<a href="#%23settings.gardener.cloud%2fv1alpha1.GCPNetworkInterface">
 []GCPNetworkInterface
 </a>
 </em>
@@ -209,7 +225,7 @@ string
 </td>
 <td>
 <em>
-<a href="#?id=GCPScheduling">
+<a href="#%23settings.gardener.cloud%2fv1alpha1.GCPScheduling">
 GCPScheduling
 </a>
 </em>
@@ -224,7 +240,7 @@ GCPScheduling
 </td>
 <td>
 <em>
-<a href="#?id=GCPServiceAccount">
+<a href="#%23settings.gardener.cloud%2fv1alpha1.GCPServiceAccount">
 []GCPServiceAccount
 </a>
 </em>
@@ -268,12 +284,12 @@ string
 </tbody>
 </table>
 <br>
-<h3 id="GCPDisk">
+<h3 id="settings.gardener.cloud/v1alpha1.GCPDisk">
 <b>GCPDisk</b>
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#?id=GCPProviderSpec">GCPProviderSpec</a>)
+<a href="#%23settings.gardener.cloud%2fv1alpha1.GCPProviderSpec">GCPProviderSpec</a>)
 </p>
 <p>
 <p>GCPDisk describes disks for GCP.</p>
@@ -413,6 +429,21 @@ global/images/family/my-image-family</p>
 </tr>
 <tr>
 <td>
+<code>encryption</code>
+</td>
+<td>
+<em>
+<a href="#%23settings.gardener.cloud%2fv1alpha1.GCPDiskEncryption">
+GCPDiskEncryption
+</a>
+</em>
+</td>
+<td>
+<p>Encryption: Encryption details for this disk</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>labels</code>
 </td>
 <td>
@@ -429,12 +460,111 @@ persistent disks.</p>
 </tbody>
 </table>
 <br>
-<h3 id="GCPMetadata">
+<h3 id="settings.gardener.cloud/v1alpha1.GCPDiskEncryption">
+<b>GCPDiskEncryption</b>
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#%23settings.gardener.cloud%2fv1alpha1.GCPDisk">GCPDisk</a>)
+</p>
+<p>
+<p>GCPDiskEncryption holds references to encryption data</p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>kmsKeyName</code>
+</td>
+<td>
+<em>
+string
+</em>
+</td>
+<td>
+<p>KmsKeyName: key name of the cloud kms disk encryption key. Not optional</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>kmsKeyServiceAccount</code>
+</td>
+<td>
+<em>
+string
+</em>
+</td>
+<td>
+<p>KmsKeyServiceAccount: The service account granted the <code>roles/cloudkms.cryptoKeyEncrypterDecrypter</code> for the key name.
+If empty, then the role should be given to the Compute Engine Service Agent Account. This usually has the format
+service-PROJECT_NUMBER@compute-system.iam.gserviceaccount.com. See: <a href="https://cloud.google.com/iam/docs/service-agents#compute-engine-service-agent">https://cloud.google.com/iam/docs/service-agents#compute-engine-service-agent</a>
+One can add IAM roles using the gcloud CLI:
+gcloud projects add-iam-policy-binding projectId &ndash;member
+serviceAccount:name@projectIdgserviceaccount.com &ndash;role roles/cloudkms.cryptoKeyEncrypterDecrypter</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br>
+<h3 id="settings.gardener.cloud/v1alpha1.GCPGpu">
+<b>GCPGpu</b>
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#%23settings.gardener.cloud%2fv1alpha1.GCPProviderSpec">GCPProviderSpec</a>)
+</p>
+<p>
+<p>GCPGpu describes gpu configurations for GCP</p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>acceleratorType</code>
+</td>
+<td>
+<em>
+string
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>count</code>
+</td>
+<td>
+<em>
+int64
+</em>
+</td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+<br>
+<h3 id="settings.gardener.cloud/v1alpha1.GCPMetadata">
 <b>GCPMetadata</b>
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#?id=GCPProviderSpec">GCPProviderSpec</a>)
+<a href="#%23settings.gardener.cloud%2fv1alpha1.GCPProviderSpec">GCPProviderSpec</a>)
 </p>
 <p>
 <p>GCPMetadata describes metadata for GCP.</p>
@@ -484,12 +614,12 @@ must be less than or equal to 262144 bytes (256 KiB).</p>
 </tbody>
 </table>
 <br>
-<h3 id="GCPNetworkInterface">
+<h3 id="settings.gardener.cloud/v1alpha1.GCPNetworkInterface">
 <b>GCPNetworkInterface</b>
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#?id=GCPProviderSpec">GCPProviderSpec</a>)
+<a href="#%23settings.gardener.cloud%2fv1alpha1.GCPProviderSpec">GCPProviderSpec</a>)
 </p>
 <p>
 <p>GCPNetworkInterface describes network interfaces for GCP</p>
@@ -565,12 +695,12 @@ are all valid URLs:
 </tbody>
 </table>
 <br>
-<h3 id="GCPScheduling">
+<h3 id="settings.gardener.cloud/v1alpha1.GCPScheduling">
 <b>GCPScheduling</b>
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#?id=GCPProviderSpec">GCPProviderSpec</a>)
+<a href="#%23settings.gardener.cloud%2fv1alpha1.GCPProviderSpec">GCPProviderSpec</a>)
 </p>
 <p>
 <p>GCPScheduling describes scheduling configuration for GCP.</p>
@@ -641,12 +771,12 @@ after the instance has been created.</p>
 </tbody>
 </table>
 <br>
-<h3 id="GCPServiceAccount">
+<h3 id="settings.gardener.cloud/v1alpha1.GCPServiceAccount">
 <b>GCPServiceAccount</b>
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#?id=GCPProviderSpec">GCPProviderSpec</a>)
+<a href="#%23settings.gardener.cloud%2fv1alpha1.GCPProviderSpec">GCPProviderSpec</a>)
 </p>
 <p>
 <p>GCPServiceAccount describes service accounts for GCP.</p>

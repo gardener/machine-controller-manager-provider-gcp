@@ -120,3 +120,6 @@ clean:
 	@rm -rf bin/
 	@rm -f *linux-amd64
 	@rm -f *darwin-amd64
+
+generate:
+	@./hack/api-reference/generate-spec-doc.sh
