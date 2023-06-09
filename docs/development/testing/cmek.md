@@ -40,8 +40,9 @@
      ```yaml
           - autoDelete: true
              boot: true
-             kmsKeyName: projects/projectId/locations/<region>/keyRings/<keyRingName>/cryptoKeys/alpha
-             kmsKeyServiceAccount: user@projectId.iam.gserviceaccount.com
+             encryption:
+               kmsKeyName: projects/projectId/locations/<region>/keyRings/<keyRingName>/cryptoKeys/alpha
+               kmsKeyServiceAccount: user@projectId.iam.gserviceaccount.com
       ```
       Please note that you can omit `kmsKeyServiceAccount`. This will then default to the Compute Engine Service Agent Account. See https://cloud.google.com/iam/docs/service-agents#compute-engine-service-agent
 1.  Trigger restart of `Machine`
@@ -117,8 +118,8 @@
                volume:
                   interface: "SCSI" # applies only for scratch disks. misleading field name
                   encryption:
-                  kmsKeyName: "projects/projectId/locations/<zoneName>/keyRings/<keyRingName>/cryptoKeys/alpha"
-                  kmsKeyServiceAccount: "user@projectId.iam.gserviceaccount.com" 
+                     kmsKeyName: "projects/projectId/locations/<zoneName>/keyRings/<keyRingName>/cryptoKeys/alpha"
+                     kmsKeyServiceAccount: "user@projectId.iam.gserviceaccount.com" 
       ```
 1. Apply the shoot YAML against the nodeless cluster and wait until the shoot has reconciled and the machine(s) in the worker pool are in `Running` phase.
 1. Use `gardenctl` to target the shooted seed and get the provider machine name and zone
