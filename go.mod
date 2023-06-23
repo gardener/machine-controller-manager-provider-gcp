@@ -3,7 +3,7 @@ module github.com/gardener/machine-controller-manager-provider-gcp
 go 1.20
 
 require (
-	github.com/gardener/machine-controller-manager v0.49.1
+	github.com/gardener/machine-controller-manager v0.49.3
 	github.com/onsi/ginkgo v1.16.2
 	github.com/onsi/gomega v1.23.0
 	github.com/pkg/errors v0.9.1
