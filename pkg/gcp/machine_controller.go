@@ -76,7 +76,7 @@ func (ms *MachinePlugin) CreateMachine(ctx context.Context, req *driver.CreateMa
 	}
 
 	providerSpec, err := decodeProviderSpecAndSecret(req.MachineClass, req.Secret)
-	if err != nil {    
+	if err != nil {
 		return nil, prepareErrorf(err, "Create machine %q failed on decodeProviderSpecAndSecret", req.Machine.Name)
 	}
 

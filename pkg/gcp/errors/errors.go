@@ -32,11 +32,11 @@ func (e *MachineNotFoundError) Error() string {
 }
 
 // MachineResourceExhaustedError is used to indicate resource exhausted error in PluginSPI
-type MachineResourceExhaustedError struct{
+type MachineResourceExhaustedError struct {
 	// error msg of error classified as resource exhausted
 	Msg string
 }
 
-func (e *MachineResourceExhaustedError) Error() string{
+func (e *MachineResourceExhaustedError) Error() string {
 	return e.Msg
 }

@@ -17,9 +17,9 @@ PROJECT_NAME        := gardener
 BINARY_PATH         := bin/
 IMAGE_REPOSITORY    := eu.gcr.io/gardener-project/gardener/machine-controller-manager-provider-gcp
 IMAGE_TAG           := $(shell cat VERSION)
-CONTROL_NAMESPACE   := default
-CONTROL_KUBECONFIG  := 
-TARGET_KUBECONFIG   := 
+CONTROL_NAMESPACE   :=   shoot--i544024--gcp3
+CONTROL_KUBECONFIG  :=   dev/kubeconfigs/kubeconfig_control.yaml
+TARGET_KUBECONFIG   :=   dev/kubeconfigs/kubeconfig_target.yaml
 # Below ones are used in tests
 MACHINECLASS_V1 	:= dev/machineclassv1.yaml
 MACHINECLASS_V2 	:= 
