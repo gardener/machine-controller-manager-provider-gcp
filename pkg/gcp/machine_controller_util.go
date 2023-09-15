@@ -442,6 +442,7 @@ func getUserData(userData string) *compute.MetadataItems {
 
 func classifyIfResourceExhaustedError(err error) error {
 	gerr, ok := err.(*googleapi.Error)
+	// https://cloud.google.com/compute/docs/troubleshooting/troubleshooting-vm-creation#zone_availability also depends on error message, that's why adopted this approach
 	if ok && strings.Contains(gerr.Message, "does not exist in zone") {
 		return &errors2.MachineResourceExhaustedError{Msg: err.Error()}
 	}
