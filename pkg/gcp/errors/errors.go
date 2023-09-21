@@ -30,3 +30,13 @@ type MachineNotFoundError struct {
 func (e *MachineNotFoundError) Error() string {
 	return fmt.Sprintf("machine name=%s, uuid=%s not found", e.Name, e.MachineID)
 }
+
+// MachineResourceExhaustedError is used to indicate resource exhausted error in PluginSPI
+type MachineResourceExhaustedError struct {
+	// error msg of error classified as resource exhausted
+	Msg string
+}
+
+func (e *MachineResourceExhaustedError) Error() string {
+	return e.Msg
+}

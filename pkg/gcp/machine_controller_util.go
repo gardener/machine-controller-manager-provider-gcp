@@ -180,7 +180,7 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 	instance.ServiceAccounts = serviceAccounts
 	operation, err := computeService.Instances.Insert(project, zone, instance).Context(ctx).Do()
 	if err != nil {
-		return "", err
+		return "", classifyIfResourceExhaustedError(err)
 	}
 
 	if err := WaitUntilOperationCompleted(computeService, project, zone, operation.Name); err != nil {
@@ -375,6 +375,9 @@ func prepareErrorf(err error, format string, args ...interface{}) error {
 	case *errors2.MachineNotFoundError:
 		code = codes.NotFound
 		wrapped = err
+	case *errors2.MachineResourceExhaustedError:
+		code = codes.ResourceExhausted
+		wrapped = errors.Wrap(err, fmt.Sprintf(format, args...))
 	default:
 		code = codes.Internal
 		wrapped = errors.Wrap(err, fmt.Sprintf(format, args...))
@@ -408,11 +411,16 @@ func WaitUntilOperationCompleted(computeService *compute.Service, project, zone,
 			if op.Error == nil {
 				return true, nil
 			}
-			var err []error
+			var (
+				errorMessages []string
+				latestOpErr   *compute.OperationErrorErrors
+			)
 			for _, opErr := range op.Error.Errors {
-				err = append(err, fmt.Errorf("%s", *opErr))
+				latestOpErr = opErr
+				errorMessages = append(errorMessages, opErr.Message)
 			}
-			return false, fmt.Errorf("The following errors occurred: %+v", err)
+
+			return false, checkIfResourceExhaustedError(latestOpErr, errorMessages)
 		}
 		return false, nil
 	})
@@ -430,4 +438,21 @@ func getUserData(userData string) *compute.MetadataItems {
 		Key:   "startup-script",
 		Value: &userData,
 	}
+}
+
+func classifyIfResourceExhaustedError(err error) error {
+	gerr, ok := err.(*googleapi.Error)
+	// https://cloud.google.com/compute/docs/troubleshooting/troubleshooting-vm-creation#zone_availability also depends on error message, that's why adopted this approach
+	if ok && strings.Contains(gerr.Message, "does not exist in zone") {
+		return &errors2.MachineResourceExhaustedError{Msg: err.Error()}
+	}
+	return err
+}
+
+func checkIfResourceExhaustedError(opErr *compute.OperationErrorErrors, errorMessages []string) error {
+	combinedErrMsg := strings.Join(errorMessages, "; ")
+	if opErr.Code == "RESOURCE_POOL_EXHAUSTED" || opErr.Code == "ZONE_RESOURCE_POOL_EXHAUSTED" || opErr.Code == "ZONE_RESOURCE_POOL_EXHAUSTED_WITH_DETAILS" || strings.Contains(opErr.Code, "QUOTA") {
+		return &errors2.MachineResourceExhaustedError{Msg: combinedErrMsg}
+	}
+	return fmt.Errorf(combinedErrMsg)
 }
