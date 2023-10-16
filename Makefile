@@ -17,23 +17,15 @@ PROJECT_NAME        := gardener
 BINARY_PATH         := bin/
 IMAGE_REPOSITORY    := eu.gcr.io/gardener-project/gardener/machine-controller-manager-provider-gcp
 IMAGE_TAG           := $(shell cat VERSION)
-CONTROL_NAMESPACE   := default
-CONTROL_KUBECONFIG  := 
-TARGET_KUBECONFIG   := 
-# Below ones are used in tests
-MACHINECLASS_V1 	:= dev/machineclassv1.yaml
-MACHINECLASS_V2 	:= 
-MCM_IMAGE			:=
-MC_IMAGE			:= 
 
-# MCM_IMAGE			:= eu.gcr.io/gardener-project/gardener/machine-controller-manager:v0.39.0
-# MC_IMAGE			:= $(IMAGE_REPOSITORY):v0.7.0
 MACHINE_CONTROLLER_MANAGER_DEPLOYMENT_NAME := machine-controller-manager
 TAGS_ARE_STRINGS := true
 LEADER_ELECT := "true"
 #########################################
 # Rules for starting machine-controller locally
 #########################################
+
+include .env
 
 .PHONY: start
 start:
