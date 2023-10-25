@@ -25,7 +25,7 @@ LEADER_ELECT := "true"
 # Rules for starting machine-controller locally
 #########################################
 
-include .env
+-include .env
 
 .PHONY: start
 start:
