@@ -1,6 +1,6 @@
 module github.com/gardener/machine-controller-manager-provider-gcp
 
-go 1.20
+go 1.21
 
 require (
 	github.com/gardener/machine-controller-manager v0.50.0
