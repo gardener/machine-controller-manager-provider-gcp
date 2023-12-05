@@ -70,6 +70,7 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 			DeletionProtection: providerSpec.DeletionProtection,
 			Labels:             providerSpec.Labels,
 			MachineType:        fmt.Sprintf("zones/%s/machineTypes/%s", zone, providerSpec.MachineType),
+			MinCpuPlatform:     providerSpec.MinCPUPlatform,
 			Name:               machineName,
 			Scheduling: &compute.Scheduling{
 				AutomaticRestart:  &providerSpec.Scheduling.AutomaticRestart,
