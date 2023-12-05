@@ -86,6 +86,12 @@ type GCPProviderSpec struct {
 	// This includes custom metadata and predefined keys.
 	Metadata []*GCPMetadata `json:"metadata,omitempty"`
 
+	// MinCpuPlatform: The name of the minimum CPU platform that is requested
+	// for this instance. This is passed along verbatim.
+	// For more information and a list of possible names see
+	// https://cloud.google.com/compute/docs/instances/specify-min-cpu-platform
+	MinCpuPlatform string `json:"minCpuPlatform,omitempty"`
+
 	// NetworkInterfaces: An array of network configurations for this
 	// instance. These specify how interfaces are configured to interact
 	// with other network services, such as connecting to the internet.

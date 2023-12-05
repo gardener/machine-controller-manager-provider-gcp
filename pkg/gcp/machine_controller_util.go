@@ -82,6 +82,10 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 		}
 	)
 
+	if providerSpec.MinCpuPlatform != "" {
+		instance.MinCpuPlatform = providerSpec.MinCpuPlatform
+	}
+
 	if providerSpec.Gpu != nil {
 		instance.GuestAccelerators = []*compute.AcceleratorConfig{
 			{
