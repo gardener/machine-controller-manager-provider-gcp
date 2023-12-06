@@ -1,26 +1,11 @@
 machine-controller-manager-provider-gcp:
   base_definition:
-    repo: ~
+    traits:
+      version:
+        inject_effective_version: true
+      component_descriptor:
+        ocm_repository: europe-docker.pkg.dev/gardener-project/snapshots
   inherit:
-    publish_template: &publish_anchor
-      publish:
-        dockerimages:
-          machine-controller-manager-provider-gcp:
-            inputs:
-              repos:
-                source: ~ # default
-              steps:
-                build: ~
-            image: 'eu.gcr.io/gardener-project/gardener/machine-controller-manager-provider-gcp'
-            resource_labels:
-            - name: 'gardener.cloud/cve-categorisation'
-              value:
-                network_exposure: 'protected'
-                authentication_enforced: false
-                user_interaction: 'gardener-operator'
-                confidentiality_requirement: 'high'
-                integrity_requirement: 'high'
-                availability_requirement: 'low'
     steps_template: &steps_anchor
       steps:
         check:
@@ -30,27 +15,44 @@ machine-controller-manager-provider-gcp:
           output_dir: 'binary'
         test:
           image: 'europe-docker.pkg.dev/gardener-project/releases/testmachinery/base-step:stable'
-    version_template: &version_anchor
-      version:
-        inject_effective_version: true
   jobs:
     head-update:
       <<: *steps_anchor
       traits:
-        <<: *version_anchor
-        component_descriptor: ~
+        component_descriptor:
+          ocm_repository_mappings:
+            - repository: europe-docker.pkg.dev/gardener-project/releases
         draft_release: ~
-        <<: *publish_anchor
+        publish:
+          dockerimages: &default_images
+            machine-controller-manager-provider-gcp: &mcmpg-image
+              inputs:
+                repos:
+                  source: ~ # default
+                steps:
+                  build: ~
+              image: europe-docker.pkg.dev/gardener-project/snapshots/gardener/machine-controller-manager-provider-gcp
+              resource_labels:
+              - name: 'gardener.cloud/cve-categorisation'
+                value:
+                  network_exposure: 'protected'
+                  authentication_enforced: false
+                  user_interaction: 'gardener-operator'
+                  confidentiality_requirement: 'high'
+                  integrity_requirement: 'high'
+                  availability_requirement: 'low'
     pull-request:
       <<: *steps_anchor
       traits:
-        <<: *version_anchor
         pull-request: ~
-        <<: *publish_anchor
+        publish:
+          dockerimages:
+            <<: *default_images
     create-upgrade-prs:
       traits:
-        component_descriptor: ~
-        version: ~
+        component_descriptor:
+          ocm_repository_mappings:
+            - repository: europe-docker.pkg.dev/gardener-project/releases
         cronjob:
           interval: '24h'
         update_component_deps:
@@ -59,15 +61,21 @@ machine-controller-manager-provider-gcp:
     release:
       <<: *steps_anchor
       traits:
-        <<: *publish_anchor
         version:
           preprocess: 'finalize'
+        component_descriptor:
+          ocm_repository: europe-docker.pkg.dev/gardener-project/releases
         release:
           nextversion: 'bump_minor'
+        publish:
+          dockerimages:
+            <<: *default_images
+            machine-controller-manager-provider-gcp:
+              <<: *mcmpg-image
+              image: europe-docker.pkg.dev/gardener-project/releases/gardener/machine-controller-manager-provider-gcp
         slack:
           default_channel: 'internal_scp_workspace'
           channel_cfgs:
             internal_scp_workspace:
               channel_name: 'C0170QTBJUW' # gardener-mcm
               slack_cfg_name: 'scp_workspace'
-        component_descriptor: ~
