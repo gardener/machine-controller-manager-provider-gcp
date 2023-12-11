@@ -25,6 +25,7 @@ providerSpec:
   metadata: # Metadata key-value pairs
     - key: ash
       value: my-value
+# minCpuPlatform: Intel Skylake # minimum CPU platform to request for the instance (optional).
   networkInterfaces:
     - network: network-name # Network name to attach the instance to
       subnetwork: sub-net-name # Subnet name to attach the instance to
