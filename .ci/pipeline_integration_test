@@ -100,9 +100,8 @@ function request_kubeconfig() {
 # Fetch *-ci-it cluster kubeconfig
 function fetch_oot_cluster_kubeconfig() {
     NAMESPACE=garden-mcm-ci
-    SHOOT_NAME=aws-ci-it
-    request_kubeconfig $NAMESPACE $SHOOT_NAME "dev/target_kubeconfig.yaml"
-    request_kubeconfig $NAMESPACE $SHOOT_NAME "dev/control_kubeconfig.yaml"
+    request_kubeconfig $NAMESPACE $TEST_SHOOT "dev/target_kubeconfig.yaml"
+    request_kubeconfig $NAMESPACE $TEST_SHOOT "dev/control_kubeconfig.yaml"
 }
 
 function fetch_userdata(){
