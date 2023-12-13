@@ -189,6 +189,10 @@ function setup_environment() {
     echo "machineclass fetched successfully"
 }
 
+function fetch_existing_nodes() {
+    kubectl --kubeconfig=$TARGET_KUBECONFIG get nodes --no-headers | wc -l
+}
+
 function check_cluster_state() {
     printf "\t\t\t----- Checking Test Environment -------\n"
 
