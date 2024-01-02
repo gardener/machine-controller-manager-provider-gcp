@@ -95,6 +95,13 @@ func (ms *MachinePlugin) CreateMachine(ctx context.Context, req *driver.CreateMa
 	return response, nil
 }
 
+// InitializeMachine should handle post-creation, one-time VM instance initialization operations. (Ex: Like setting up special network config, etc)
+// At this point in time, there are no special VM instance initialization activties in the GCP provider.
+// See [driver.Driver.InitializeMachine] for further information
+func (_ *MachinePlugin) InitializeMachine(ctx context.Context, request *driver.InitializeMachineRequest) (*driver.InitializeMachineResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "InitializeMachine is not yet implemented by the gcp provider")
+}
+
 // DeleteMachine handles a machine deletion request
 //
 // REQUEST PARAMETERS (driver.DeleteMachineRequest)
