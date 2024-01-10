@@ -31,9 +31,10 @@
 package controller_test
 
 import (
-	"github.com/gardener/machine-controller-manager-provider-gcp/test/integration/provider"
 	"github.com/gardener/machine-controller-manager/pkg/test/integration/common"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
+
+	"github.com/gardener/machine-controller-manager-provider-gcp/test/integration/provider"
 )
 
 // the timeout is changed to accommodate for time taken by node-critical components to get ready. PR - https://github.com/gardener/machine-controller-manager/pull/778

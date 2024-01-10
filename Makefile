@@ -13,6 +13,7 @@
 # limitations under the License.
 
 -include .env
+export
 
 PROVIDER_NAME       := Gcp
 PROJECT_NAME        := gardener
@@ -20,6 +21,7 @@ BINARY_PATH         := bin/
 IMAGE_REPOSITORY    := europe-docker.pkg.dev/gardener-project/public/gardener/machine-controller-manager-provider-gcp
 IMAGE_TAG           := $(shell cat VERSION)
 MACHINE_CONTROLLER_MANAGER_DEPLOYMENT_NAME := machine-controller-manager
+CONTROL_CLUSTER_NAMESPACE := ${CONTROL_NAMESPACE}
 TAGS_ARE_STRINGS := true
 LEADER_ELECT := "true"
 #########################################
@@ -75,6 +77,7 @@ test-integration:
 	export MCM_CONTAINER_IMAGE=$(MCM_IMAGE); \
 	export CONTROL_CLUSTER_NAMESPACE=$(CONTROL_NAMESPACE); \
 	export MACHINE_CONTROLLER_MANAGER_DEPLOYMENT_NAME=$(MACHINE_CONTROLLER_MANAGER_DEPLOYMENT_NAME); \
+	if [[ -z "${IS_CONTROL_CLUSTER_SEED}" ]]; then export IS_CONTROL_CLUSTER_SEED=true; fi; \
 	export TAGS_ARE_STRINGS=$(TAGS_ARE_STRINGS); \
 	.ci/local_integration_test
 #########################################
