@@ -1,9 +1,0 @@
-{
- "providerSpec": {
-  "tags": [
-   "",
-   "kubernetes-io-cluster-",
-   "kubernetes-io-role-integration-test"
-  ]
- }
-}
