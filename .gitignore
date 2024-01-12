@@ -14,3 +14,17 @@
 # Output of the go coverage tool
 *coverprofile.out*
 /local/
+*.test
+.DS_Store
+/tmp
+.env
+
+# IT logs
+.ci/controllers-test/logs/*.log
+.ci/controllers-test/logs/*.log.*
+
+# Binaries for IT test
+kubectl
+yq_linux*
+main
+cmi-plugin

@@ -23,8 +23,7 @@ import (
 
 	v1alpha1 "github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -78,6 +77,17 @@ const (
 
 	UnsupportedProviderError string = "machine codes error: code = [InvalidArgument] message = [Requested for Provider 'aws', we only support 'GCP']"
 )
+
+var ms *MachinePlugin
+var mockPluginSPIImpl *fake.PluginSPIImpl
+
+var _ = BeforeSuite(func() {
+	// Start a mock server to listen to mock client requests
+	// This is rquired as compute sdk doesn't offer any interface so the mocking is done via a mock http client pass to the compute service
+	go fake.NewMockServer()
+	mockPluginSPIImpl = &fake.PluginSPIImpl{Client: &http.Client{}}
+	ms = NewGCPPlugin(mockPluginSPIImpl)
+})
 
 var _ = Describe("#MachineController", func() {
 	gcpProviderSpec := []byte("{\"canIpForward\":true,\"deletionProtection\":false,\"description\":\"Machine created to test out-of-tree gcp mcm driver.\",\"disks\":[{\"autoDelete\":true,\"boot\":true,\"sizeGb\":50,\"type\":\"pd-standard\",\"image\":\"projects/coreos-cloud/global/images/coreos-stable-2135-6-0-v20190801\",\"labels\":{\"name\":\"test-mc-gcp\"}}],\"labels\":{\"name\":\"test-mc-gcp\"},\"machineType\":\"n1-standard-2\",\"metadata\":[{\"key\":\"gcp\",\"value\":\"my-value\"}],\"networkInterfaces\":[{\"network\":\"dummyShoot\",\"subnetwork\":\"dummyShoot\"}],\"scheduling\":{\"automaticRestart\":true,\"onHostMaintenance\":\"MIGRATE\",\"preemptible\":false},\"secretRef\":{\"name\":\"dummySecret\",\"namespace\":\"dummy\"},\"serviceAccounts\":[{\"email\":\"mcmDummy@dummy.com\",\"scopes\":[\"https://www.googleapis.com/auth/compute\"]}],\"tags\":[\"kubernetes-io-cluster-dummy-machine\",\"kubernetes-io-role-mcm\",\"dummy-machine\"],\"region\":\"europe-dummy\",\"zone\":\"europe-dummy\"}")
@@ -136,17 +146,6 @@ var _ = Describe("#MachineController", func() {
 		"userData":                []byte("dummy-data"),
 		api.GCPServiceAccountJSON: []byte("{\"type\":\"service_account\",\"project_id\":10}"),
 	}
-
-	var ms *MachinePlugin
-	var mockPluginSPIImpl *fake.PluginSPIImpl
-
-	var _ = BeforeSuite(func() {
-		// Start a mock server to listen to mock client requests
-		// This is rquired as compute sdk doesn't offer any interface so the mocking is done via a mock http client pass to the compute service
-		go fake.NewMockServer()
-		mockPluginSPIImpl = &fake.PluginSPIImpl{Client: &http.Client{}}
-		ms = NewGCPPlugin(mockPluginSPIImpl)
-	})
 
 	var _ = BeforeEach(func() {
 		// Reinitialise instances
