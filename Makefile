@@ -78,7 +78,7 @@ test-integration:
 	export CONTROL_CLUSTER_NAMESPACE=$(CONTROL_NAMESPACE); \
 	export MACHINE_CONTROLLER_MANAGER_DEPLOYMENT_NAME=$(MACHINE_CONTROLLER_MANAGER_DEPLOYMENT_NAME); \
 	if [[ -z "${IS_CONTROL_CLUSTER_SEED}" ]]; then export IS_CONTROL_CLUSTER_SEED=true; fi; \
-	if [[ -z "${TARGET_RESOURCE_GROUP}" ]]; then echo "Please set env-var TARGET_RESOURCE_GROUP to cluster name ">&2; exit 1; fi; \
+	if [[ -z "${TARGET_CLUSTER_NAME}" ]]; then echo "Please set env-var TARGET_CLUSTER_NAME ">&2; exit 1; fi; \
 	export TAGS_ARE_STRINGS=$(TAGS_ARE_STRINGS); \
 	.ci/local_integration_test
 #########################################
