@@ -16,7 +16,7 @@ TEST_SHOOT=gcp-ci-it
 CREDENTIALS_SECRET_NAME=shoot-operator-gcp-team
 GARDEN_CORE_NAMESPACE=garden-core
 KUBECONFIG_EXPIRY=10800
-export TARGET_RESOURCE_GROUP=$TEST_SHOOT # Due to some azure assumption in IT code in MCM. TODO: remove this in later release of MCM
+export TARGET_CLUSTER_NAME=$TEST_SHOOT
 
 #these variables are accessed in test/integration/controller so prefixed by ${SOURCE_PATH} for absolute path
 declare CONTROL_KUBECONFIG=${SOURCE_PATH}/dev/control_kubeconfig.yaml
