@@ -27,15 +27,8 @@ import (
 )
 
 const (
-	// DiskTypeStandard is the standard disk type
-	DiskTypeStandard = "pd-standard"
-	// DiskTypeSSD is the SSD disk type
-	DiskTypeSSD = "pd-ssd"
 	// DiskTypeScratch is the SCRATCH disk type
 	DiskTypeScratch = "SCRATCH"
-	// DiskTypePDBalanced is the balanced disk type
-	DiskTypePDBalanced = "pd-balanced"
-
 	// DiskInterfaceNVME is the NVME disk interface
 	DiskInterfaceNVME = "NVME"
 	// DiskInterfaceSCSI is the SCSI disk interface
@@ -104,9 +97,6 @@ func validateGCPDisks(disks []*api.GCPDisk, fldPath *field.Path) []error {
 		idxPath := fldPath.Index(i)
 		if disk.SizeGb < 20 {
 			allErrs = append(allErrs, field.Invalid(idxPath.Child("sizeGb"), disk.SizeGb, "disk size must be at least 20 GB"))
-		}
-		if disk.Type != DiskTypeStandard && disk.Type != DiskTypeSSD && disk.Type != DiskTypeScratch && disk.Type != DiskTypePDBalanced {
-			allErrs = append(allErrs, field.NotSupported(idxPath.Child("type"), disk.Type, []string{DiskTypeStandard, DiskTypeSSD, DiskTypeScratch, DiskTypePDBalanced}))
 		}
 		if disk.Type == DiskTypeScratch && (disk.Interface != DiskInterfaceNVME && disk.Interface != DiskInterfaceSCSI) {
 			allErrs = append(allErrs, field.NotSupported(idxPath.Child("interface"), disk.Interface, []string{DiskInterfaceNVME, DiskInterfaceSCSI}))
