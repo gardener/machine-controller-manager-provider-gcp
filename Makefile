@@ -24,6 +24,7 @@ MACHINE_CONTROLLER_MANAGER_DEPLOYMENT_NAME := machine-controller-manager
 CONTROL_CLUSTER_NAMESPACE := ${CONTROL_NAMESPACE}
 TAGS_ARE_STRINGS := true
 LEADER_ELECT := "true"
+IMAGE_PLATFORM := linux/amd64
 #########################################
 # Rules for starting machine-controller locally
 #########################################
@@ -98,7 +99,7 @@ build:
 
 .PHONY: docker-image
 docker-image:
-	@docker build -t $(IMAGE_REPOSITORY):$(IMAGE_TAG) .
+	@docker buildx build --platform=$(IMAGE_PLATFORM) -t $(IMAGE_REPOSITORY):$(IMAGE_TAG) .
 
 .PHONY: docker-push
 docker-push:
