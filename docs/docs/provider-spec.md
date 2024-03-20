@@ -190,6 +190,20 @@ This includes custom metadata and predefined keys.</p>
 </tr>
 <tr>
 <td>
+<code>minCpuPlatform</code>
+</td>
+<td>
+<em>
+string
+</em>
+</td>
+<td>
+<p>MinCpuPlatform: The name of the minimum CPU platform that is requested
+for this instance.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>networkInterfaces</code>
 </td>
 <td>
