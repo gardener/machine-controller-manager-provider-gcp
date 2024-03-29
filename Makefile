@@ -41,13 +41,12 @@ start:
 check:
 	.ci/check
 #########################################
-# Rules for re-vendoring
+# Rules for tidying
 #########################################
 
-.PHONY: revendor
-revendor:
+.PHONY: tidy
+tidy:
 	@env GO111MODULE=on go mod tidy -v
-	@env GO111MODULE=on go mod vendor -v
 
 #########################################
 # Rules for testing

@@ -13,8 +13,6 @@ go install github.com/onsi/ginkgo/v2/ginkgo
 echo "Successfully fetched Ginkgo framework"
 ginkgo version
 
-export GOFLAGS=-mod=vendor
-
 ##############################################################################
 
 function test_with_coverage() {
