@@ -79,30 +79,26 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 
 	disks := []*compute.AttachedDisk{}
 	for _, disk := range providerSpec.Disks {
-		var attachedDisk compute.AttachedDisk
-		autoDelete := false
+		attachedDisk := compute.AttachedDisk{
+			// default Type: PERSISTENT
+			AutoDelete: false,
+		}
 		if disk.AutoDelete == nil || *disk.AutoDelete == true {
-			autoDelete = true
+			attachedDisk.AutoDelete = true
 		}
 		if disk.Type == validation.DiskTypeScratch {
-			attachedDisk = compute.AttachedDisk{
-				AutoDelete: autoDelete,
-				Type:       disk.Type,
-				Interface:  disk.Interface,
-				InitializeParams: &compute.AttachedDiskInitializeParams{
-					DiskType: fmt.Sprintf("zones/%s/diskTypes/%s", zone, "local-ssd"),
-				},
+			attachedDisk.Type = validation.DiskTypeScratch
+			attachedDisk.Interface = disk.Interface
+			attachedDisk.InitializeParams = &compute.AttachedDiskInitializeParams{
+				DiskType: fmt.Sprintf("zones/%s/diskTypes/%s", zone, "local-ssd"),
 			}
 		} else {
-			attachedDisk = compute.AttachedDisk{
-				AutoDelete: autoDelete,
-				Boot:       disk.Boot,
-				InitializeParams: &compute.AttachedDiskInitializeParams{
-					DiskSizeGb:  disk.SizeGb,
-					DiskType:    fmt.Sprintf("zones/%s/diskTypes/%s", zone, disk.Type),
-					Labels:      disk.Labels,
-					SourceImage: disk.Image,
-				},
+			attachedDisk.Boot = disk.Boot
+			attachedDisk.InitializeParams = &compute.AttachedDiskInitializeParams{
+				DiskSizeGb:  disk.SizeGb,
+				DiskType:    fmt.Sprintf("zones/%s/diskTypes/%s", zone, disk.Type),
+				Labels:      disk.Labels,
+				SourceImage: disk.Image,
 			}
 		}
 		if disk.Encryption != nil {
