@@ -425,8 +425,7 @@ specify the image by its family name. For example, specify
 family/debian-9 to use the latest Debian 9
 image:
 projects/debian-cloud/global/images/family/debian-9</p>
-<p>Alternati
-vely, use a specific version of a public operating system
+<p>Alternatively, use a specific version of a public operating system
 image:
 projects/debian-cloud/global/images/debian-9-stretch-vYYYYMMDD</p>
 <p>To create a disk with a custom image that you created, specify the
@@ -469,6 +468,37 @@ map[string]string
 <p>Labels: Labels to apply to this disk. These can be later modified by
 the disks.setLabels method. This field is only applicable for
 persistent disks.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>provisionedIops</code>
+</td>
+<td>
+<em>
+*int64
+</em>
+</td>
+<td>
+<p>ProvisionedIops of disk to create.
+Only for use with disks of type pd-extreme and hyperdisk-extreme.
+The IOPS must be specified within defined limits</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>provisionedThroughput</code>
+</td>
+<td>
+<em>
+*int64
+</em>
+</td>
+<td>
+<p>ProvisionedThroughput of disk to create.
+Only for hyperdisk-balanced or hyperdisk-throughput volumes,
+measured in MiB per second, that the disk can handle.
+The throughput must be specified within defined limits</p>
 </td>
 </tr>
 </tbody>
