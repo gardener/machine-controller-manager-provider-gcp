@@ -77,28 +77,30 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 		instance.Description = *providerSpec.Description
 	}
 
-	disks := []*compute.AttachedDisk{}
+	var disks []*compute.AttachedDisk
 	for _, disk := range providerSpec.Disks {
 		attachedDisk := compute.AttachedDisk{
-			// default Type: PERSISTENT
+			Type:       validation.DiskTypePersistent,
+			Boot:       disk.Boot,
 			AutoDelete: false,
+			InitializeParams: &compute.AttachedDiskInitializeParams{
+				DiskSizeGb:            disk.SizeGb,
+				DiskType:              fmt.Sprintf("zones/%s/diskTypes/%s", zone, disk.Type),
+				Labels:                disk.Labels,
+				SourceImage:           disk.Image,
+				ProvisionedIops:       disk.ProvisionedIops,
+				ProvisionedThroughput: disk.ProvisionedThroughput,
+			},
 		}
 		if disk.AutoDelete == nil || *disk.AutoDelete == true {
 			attachedDisk.AutoDelete = true
 		}
 		if disk.Type == validation.DiskTypeScratch {
 			attachedDisk.Type = validation.DiskTypeScratch
+			attachedDisk.Boot = false
 			attachedDisk.Interface = disk.Interface
 			attachedDisk.InitializeParams = &compute.AttachedDiskInitializeParams{
 				DiskType: fmt.Sprintf("zones/%s/diskTypes/%s", zone, "local-ssd"),
-			}
-		} else {
-			attachedDisk.Boot = disk.Boot
-			attachedDisk.InitializeParams = &compute.AttachedDiskInitializeParams{
-				DiskSizeGb:  disk.SizeGb,
-				DiskType:    fmt.Sprintf("zones/%s/diskTypes/%s", zone, disk.Type),
-				Labels:      disk.Labels,
-				SourceImage: disk.Image,
 			}
 		}
 		if disk.Encryption != nil {
@@ -117,7 +119,7 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 	}
 	instance.Disks = disks
 
-	metadataItems := []*compute.MetadataItems{}
+	var metadataItems []*compute.MetadataItems
 	metadataItems = append(metadataItems, getUserData(string(secret.Data["userData"])))
 
 	for _, metadata := range providerSpec.Metadata {
@@ -130,7 +132,7 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 		Items: metadataItems,
 	}
 
-	networkInterfaces := []*compute.NetworkInterface{}
+	var networkInterfaces []*compute.NetworkInterface
 	for _, nic := range providerSpec.NetworkInterfaces {
 		computeNIC := &compute.NetworkInterface{}
 
@@ -148,7 +150,7 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 	}
 	instance.NetworkInterfaces = networkInterfaces
 
-	serviceAccounts := []*compute.ServiceAccount{}
+	var serviceAccounts []*compute.ServiceAccount
 	for _, sa := range providerSpec.ServiceAccounts {
 		serviceAccounts = append(serviceAccounts, &compute.ServiceAccount{
 			Email:  sa.Email,

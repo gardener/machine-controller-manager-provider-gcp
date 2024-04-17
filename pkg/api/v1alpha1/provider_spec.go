@@ -165,8 +165,7 @@ type GCPDisk struct {
 	// projects/debian-cloud/global/images/family/debian-9
 	//
 	//
-	// Alternati
-	// vely, use a specific version of a public operating system
+	// Alternatively, use a specific version of a public operating system
 	// image:
 	// projects/debian-cloud/global/images/debian-9-stretch-vYYYYMMDD
 	//
@@ -195,6 +194,17 @@ type GCPDisk struct {
 	// the disks.setLabels method. This field is only applicable for
 	// persistent disks.
 	Labels map[string]string `json:"labels"`
+
+	// ProvisionedIops of disk to create.
+	// Only for use with disks of type pd-extreme and hyperdisk-extreme.
+	// The IOPS must be specified within defined limits
+	ProvisionedIops int64 `json:"provisionedIops"`
+
+	// ProvisionedThroughput of disk to create.
+	// Only for hyperdisk-balanced or hyperdisk-throughput volumes,
+	// measured in MiB per second, that the disk can handle.
+	// The throughput must be specified within defined limits
+	ProvisionedThroughput int64 `json:"provisionedThroughput"`
 }
 
 // GCPDiskEncryption holds references to encryption data
