@@ -84,16 +84,11 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 			Boot:       disk.Boot,
 			AutoDelete: false,
 			InitializeParams: &compute.AttachedDiskInitializeParams{
-				DiskSizeGb:            disk.SizeGb,
-				DiskType:              fmt.Sprintf("zones/%s/diskTypes/%s", zone, disk.Type),
-				Labels:                disk.Labels,
-				SourceImage:           disk.Image,
-				ProvisionedIops:       disk.ProvisionedIops,
-				ProvisionedThroughput: disk.ProvisionedThroughput,
+				DiskSizeGb:  disk.SizeGb,
+				DiskType:    fmt.Sprintf("zones/%s/diskTypes/%s", zone, disk.Type),
+				Labels:      disk.Labels,
+				SourceImage: disk.Image,
 			},
-		}
-		if disk.AutoDelete == nil || *disk.AutoDelete == true {
-			attachedDisk.AutoDelete = true
 		}
 		if disk.Type == validation.DiskTypeScratch {
 			attachedDisk.Type = validation.DiskTypeScratch
@@ -102,6 +97,9 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 			attachedDisk.InitializeParams = &compute.AttachedDiskInitializeParams{
 				DiskType: fmt.Sprintf("zones/%s/diskTypes/%s", zone, "local-ssd"),
 			}
+		}
+		if disk.AutoDelete == nil || *disk.AutoDelete == true {
+			attachedDisk.AutoDelete = true
 		}
 		if disk.Encryption != nil {
 			attachedDisk.DiskEncryptionKey = &compute.CustomerEncryptionKey{
@@ -114,6 +112,20 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 				disk.Labels["name"],
 				attachedDisk.DiskEncryptionKey.KmsKeyName,
 				attachedDisk.DiskEncryptionKey.KmsKeyServiceAccount)
+		}
+		if disk.ProvisionedIops != nil {
+			attachedDisk.InitializeParams.ProvisionedIops = *disk.ProvisionedIops
+			if *disk.ProvisionedIops == 0 {
+				attachedDisk.InitializeParams.ForceSendFields = append(
+					attachedDisk.ForceSendFields, "ProvisionedIops")
+			}
+		}
+		if disk.ProvisionedThroughput != nil {
+			attachedDisk.InitializeParams.ProvisionedThroughput = *disk.ProvisionedThroughput
+			if *disk.ProvisionedThroughput == 0 {
+				attachedDisk.InitializeParams.ForceSendFields = append(
+					attachedDisk.ForceSendFields, "ProvisionedThroughput")
+			}
 		}
 		disks = append(disks, &attachedDisk)
 	}
