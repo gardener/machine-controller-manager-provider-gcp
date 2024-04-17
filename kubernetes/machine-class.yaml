@@ -17,6 +17,8 @@ providerSpec:
 #     encryption: # disk encryption config (optional)
 #       kmsKeyName: "projects/projectId/locations/region/keyRings/keyRingName/cryptoKeys/keyName" # FQN of kms key
 #       kmsKeyServiceAccount: "id@project.iam.gserviceaccount.com" # email of service account (optional)
+#     provisionedIops: 3000 # IOPS that the disk can handle (optional)
+#     provisionedThroughput: 140 # throughput unit in MB per sec (optional)
       labels:
         name: test-mc # Label assigned to the disk
   labels:

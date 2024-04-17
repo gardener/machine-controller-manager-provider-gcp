@@ -17,6 +17,8 @@ import (
 const (
 	// DiskTypeScratch is the SCRATCH disk type
 	DiskTypeScratch = "SCRATCH"
+	// DiskTypePersistent is the PERSISTENT disk type
+	DiskTypePersistent = "PERSISTENT"
 	// DiskInterfaceNVME is the NVME disk interface
 	DiskInterfaceNVME = "NVME"
 	// DiskInterfaceSCSI is the SCSI disk interface
