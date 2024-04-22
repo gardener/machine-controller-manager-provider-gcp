@@ -75,9 +75,9 @@ func (ms *MachinePlugin) CreateMachine(ctx context.Context, req *driver.CreateMa
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	providerSpec, err := decodeProviderSpecAndSecret(req.MachineClass, req.Secret)
+	providerSpec, err := decodeProviderSpecAndValidate(req.MachineClass, req.Secret)
 	if err != nil {
-		return nil, prepareErrorf(err, "Create machine %q failed on decodeProviderSpecAndSecret", req.Machine.Name)
+		return nil, prepareErrorf(err, "Create machine %q failed on decodeProviderSpecAndValidate", req.Machine.Name)
 	}
 
 	providerID, err := ms.CreateMachineUtil(ctx, req.Machine.Name, providerSpec, req.Secret)
@@ -165,9 +165,9 @@ func (ms *MachinePlugin) GetMachineStatus(ctx context.Context, req *driver.GetMa
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	providerSpec, err := decodeProviderSpecAndSecret(req.MachineClass, req.Secret)
+	providerSpec, err := decodeProviderSpecAndValidate(req.MachineClass, req.Secret)
 	if err != nil {
-		return nil, prepareErrorf(err, "Machine status %q failed on decodeProviderSpecAndSecret", req.Machine.Name)
+		return nil, prepareErrorf(err, "Machine status %q failed on decodeProviderSpecAndValidate", req.Machine.Name)
 	}
 
 	providerID, err := ms.GetMachineStatusUtil(ctx, req.Machine.Name, req.Machine.Spec.ProviderID, providerSpec, req.Secret)
@@ -208,9 +208,9 @@ func (ms *MachinePlugin) ListMachines(ctx context.Context, req *driver.ListMachi
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	providerSpec, err := decodeProviderSpecAndSecret(req.MachineClass, req.Secret)
+	providerSpec, err := decodeProviderSpecAndValidate(req.MachineClass, req.Secret)
 	if err != nil {
-		return nil, prepareErrorf(err, "List machines failed on decodeProviderSpecAndSecret")
+		return nil, prepareErrorf(err, "List machines failed on decodeProviderSpecAndValidate")
 	}
 
 	machineList, err := ms.ListMachinesUtil(ctx, providerSpec, req.Secret)

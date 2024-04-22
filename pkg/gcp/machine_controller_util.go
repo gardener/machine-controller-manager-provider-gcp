@@ -330,8 +330,8 @@ func getVMs(ctx context.Context, machineID string, providerSpec *api.GCPProvider
 	return listOfVMs, nil
 }
 
-// decodeProviderSpecAndSecret converts request parameters to api.ProviderSpec
-func decodeProviderSpecAndSecret(machineClass *v1alpha1.MachineClass, secret *corev1.Secret) (*api.GCPProviderSpec, error) {
+// decodeProviderSpecAndValidate converts request parameters to api.ProviderSpec
+func decodeProviderSpecAndValidate(machineClass *v1alpha1.MachineClass, secret *corev1.Secret) (*api.GCPProviderSpec, error) {
 	providerSpec, err := decodeProviderSpec(machineClass)
 	if err != nil {
 		return nil, err
