@@ -32,7 +32,7 @@ const (
 	// CreateFailAtJSONUnmarshalling is the error message returned when an malformed JSON is sent to the plugin by the caller
 	CreateFailAtJSONUnmarshalling string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on decodeProviderSpecAndValidate: machine codes error: code = [Internal] message = [unexpected end of JSON input]]"
 	// DeleteFailAtJSONUnmarshalling is the error message returned when an malformed JSON is sent to the plugin by the caller
-	DeleteFailAtJSONUnmarshalling string = "machine codes error: code = [Internal] message = [Delete machine \"dummy-machine\" failed on decodeProviderSpecAndValidate: machine codes error: code = [Internal] message = [unexpected end of JSON input]]"
+	DeleteFailAtJSONUnmarshalling string = "machine codes error: code = [Internal] message = [Delete machine \"dummy-machine\" failed on decodeProviderSpec: machine codes error: code = [Internal] message = [unexpected end of JSON input]]"
 	// ListFailAtJSONUnmarshalling is the error message returned when an malformed JSON is sent to the plugin by the caller
 	ListFailAtJSONUnmarshalling string = "machine codes error: code = [Internal] message = [List machines failed on decodeProviderSpecAndValidate: machine codes error: code = [Internal] message = [unexpected end of JSON input]]"
 	// FailAtNoSecretsPassed is the error message returned when no secrets are passed to the the plugin by the caller
