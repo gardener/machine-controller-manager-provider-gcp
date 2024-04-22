@@ -83,9 +83,6 @@ func validateGCPDisks(disks []*api.GCPDisk, fldPath *field.Path) []error {
 
 	for i, disk := range disks {
 		idxPath := fldPath.Index(i)
-		if disk.SizeGb < 20 {
-			allErrs = append(allErrs, field.Invalid(idxPath.Child("sizeGb"), disk.SizeGb, "disk size must be at least 20 GB"))
-		}
 		if disk.Type == DiskTypeScratch && (disk.Interface != DiskInterfaceNVME && disk.Interface != DiskInterfaceSCSI) {
 			allErrs = append(allErrs, field.NotSupported(idxPath.Child("interface"), disk.Interface, []string{DiskInterfaceNVME, DiskInterfaceSCSI}))
 		}
