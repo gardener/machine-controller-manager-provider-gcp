@@ -19,6 +19,7 @@ import (
 	"google.golang.org/api/compute/v1"
 	"google.golang.org/api/googleapi"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
 
@@ -331,6 +332,22 @@ func getVMs(ctx context.Context, machineID string, providerSpec *api.GCPProvider
 
 // decodeProviderSpecAndSecret converts request parameters to api.ProviderSpec
 func decodeProviderSpecAndSecret(machineClass *v1alpha1.MachineClass, secret *corev1.Secret) (*api.GCPProviderSpec, error) {
+	providerSpec, err := decodeProviderSpec(machineClass)
+	if err != nil {
+		return nil, err
+	}
+
+	// Validate the Spec and Secrets
+	ValidationErr := validation.ValidateGCPProviderSpec(providerSpec, secret)
+	if ValidationErr != nil {
+		err = fmt.Errorf("Error while validating ProviderSpec %v", ValidationErr)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return providerSpec, nil
+}
+
+func decodeProviderSpec(machineClass *v1alpha1.MachineClass) (*api.GCPProviderSpec, error) {
 	var providerSpec *api.GCPProviderSpec
 
 	// If machineClass is nil
@@ -344,14 +361,23 @@ func decodeProviderSpecAndSecret(machineClass *v1alpha1.MachineClass, secret *co
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	// Validate the Spec and Secrets
-	ValidationErr := validation.ValidateGCPProviderSpec(providerSpec, secret)
-	if ValidationErr != nil {
-		err = fmt.Errorf("Error while validating ProviderSpec %v", ValidationErr)
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
 	return providerSpec, nil
+}
+
+// validateForDeletion checks all fields necessary for deletion
+func validateForDeletion(providerSpec *api.GCPProviderSpec, secret *corev1.Secret) error {
+	var allErrs []error
+
+	if "" == providerSpec.Zone {
+		allErrs = append(allErrs, field.Required(field.NewPath("spec", "zone"), "zone is required"))
+	}
+	allErrs = append(allErrs, validation.ValidateSecrets(secret)...)
+
+	if len(allErrs) > 0 {
+		err := fmt.Errorf("Error while validating ProviderSpec %v", allErrs)
+		return status.Error(codes.Internal, err.Error())
+	}
+	return nil
 }
 
 func prepareErrorf(err error, format string, args ...interface{}) error {

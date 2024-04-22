@@ -26,11 +26,12 @@ const (
 // ValidateGCPProviderSpec validates gcp provider spec
 func ValidateGCPProviderSpec(spec *api.GCPProviderSpec, secrets *corev1.Secret) []error {
 	allErrs := validateGCPMachineClassSpec(spec, field.NewPath("spec"))
-	allErrs = append(allErrs, validateSecrets(secrets)...)
+	allErrs = append(allErrs, ValidateSecrets(secrets)...)
 	return allErrs
 }
 
-func validateSecrets(secret *corev1.Secret) []error {
+// ValidateSecrets validates gcp k8s secret
+func ValidateSecrets(secret *corev1.Secret) []error {
 	var allErrs []error
 
 	if secret == nil {

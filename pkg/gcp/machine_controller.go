@@ -118,9 +118,13 @@ func (ms *MachinePlugin) DeleteMachine(ctx context.Context, req *driver.DeleteMa
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	providerSpec, err := decodeProviderSpecAndSecret(req.MachineClass, req.Secret)
+	providerSpec, err := decodeProviderSpec(req.MachineClass)
 	if err != nil {
-		return nil, prepareErrorf(err, "Delete machine %q failed on decodeProviderSpecAndSecret", req.Machine.Name)
+		return nil, prepareErrorf(err, "Delete machine %q failed on decodeProviderSpec", req.Machine.Name)
+	}
+	err = validateForDeletion(providerSpec, req.Secret)
+	if err != nil {
+		return nil, prepareErrorf(err, "Delete machine %q failed on validateForDeletion", req.Machine.Name)
 	}
 
 	providerID, err := ms.DeleteMachineUtil(ctx, req.Machine.Name, req.Machine.Spec.ProviderID, providerSpec, req.Secret)
