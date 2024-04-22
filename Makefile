@@ -11,7 +11,6 @@ BINARY_PATH         := bin/
 IMAGE_REPOSITORY    := europe-docker.pkg.dev/gardener-project/public/gardener/machine-controller-manager-provider-gcp
 IMAGE_TAG           := $(shell cat VERSION)
 MACHINE_CONTROLLER_MANAGER_DEPLOYMENT_NAME := machine-controller-manager
-CONTROL_CLUSTER_NAMESPACE := ${CONTROL_NAMESPACE}
 TAGS_ARE_STRINGS := true
 LEADER_ELECT := "true"
 #########################################
