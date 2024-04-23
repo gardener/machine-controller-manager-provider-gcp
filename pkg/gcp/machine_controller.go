@@ -95,6 +95,7 @@ func (ms *MachinePlugin) CreateMachine(ctx context.Context, req *driver.CreateMa
 	return response, nil
 }
 
+// InitializeMachine handles VM initialization for GCP VM's. Currently, un-implemented.
 func (ms *MachinePlugin) InitializeMachine(ctx context.Context, _ *driver.InitializeMachineRequest) (*driver.InitializeMachineResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "GCP Provider does not yet implement InitializeMachine")
 }
