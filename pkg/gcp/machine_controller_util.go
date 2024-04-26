@@ -84,10 +84,12 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 			Boot:       disk.Boot,
 			AutoDelete: false,
 			InitializeParams: &compute.AttachedDiskInitializeParams{
-				DiskSizeGb:  disk.SizeGb,
-				DiskType:    fmt.Sprintf("zones/%s/diskTypes/%s", zone, disk.Type),
-				Labels:      disk.Labels,
-				SourceImage: disk.Image,
+				DiskSizeGb:            disk.SizeGb,
+				DiskType:              fmt.Sprintf("zones/%s/diskTypes/%s", zone, disk.Type),
+				Labels:                disk.Labels,
+				SourceImage:           disk.Image,
+				ProvisionedIops:       disk.ProvisionedIops,
+				ProvisionedThroughput: disk.ProvisionedThroughput,
 			},
 		}
 		if disk.Type == validation.DiskTypeScratch {
@@ -112,20 +114,6 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 				disk.Labels["name"],
 				attachedDisk.DiskEncryptionKey.KmsKeyName,
 				attachedDisk.DiskEncryptionKey.KmsKeyServiceAccount)
-		}
-		if disk.ProvisionedIops != nil {
-			attachedDisk.InitializeParams.ProvisionedIops = *disk.ProvisionedIops
-			if *disk.ProvisionedIops == 0 {
-				attachedDisk.InitializeParams.ForceSendFields = append(
-					attachedDisk.ForceSendFields, "ProvisionedIops")
-			}
-		}
-		if disk.ProvisionedThroughput != nil {
-			attachedDisk.InitializeParams.ProvisionedThroughput = *disk.ProvisionedThroughput
-			if *disk.ProvisionedThroughput == 0 {
-				attachedDisk.InitializeParams.ForceSendFields = append(
-					attachedDisk.ForceSendFields, "ProvisionedThroughput")
-			}
 		}
 		disks = append(disks, &attachedDisk)
 	}
