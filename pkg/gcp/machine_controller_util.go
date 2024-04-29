@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/utils/ptr"
+
 	"github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
@@ -82,7 +84,7 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 		attachedDisk := compute.AttachedDisk{
 			Type:       validation.DiskTypePersistent,
 			Boot:       disk.Boot,
-			AutoDelete: false,
+			AutoDelete: ptr.Deref(disk.AutoDelete, true),
 			InitializeParams: &compute.AttachedDiskInitializeParams{
 				DiskSizeGb:            disk.SizeGb,
 				DiskType:              fmt.Sprintf("zones/%s/diskTypes/%s", zone, disk.Type),
@@ -99,9 +101,6 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 			attachedDisk.InitializeParams = &compute.AttachedDiskInitializeParams{
 				DiskType: fmt.Sprintf("zones/%s/diskTypes/%s", zone, "local-ssd"),
 			}
-		}
-		if disk.AutoDelete == nil || *disk.AutoDelete == true {
-			attachedDisk.AutoDelete = true
 		}
 		if disk.Encryption != nil {
 			attachedDisk.DiskEncryptionKey = &compute.CustomerEncryptionKey{
