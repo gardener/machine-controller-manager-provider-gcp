@@ -95,11 +95,14 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 			},
 		}
 		if disk.Type == validation.DiskTypeScratch {
-			attachedDisk.Type = validation.DiskTypeScratch
-			attachedDisk.Boot = false
-			attachedDisk.Interface = disk.Interface
-			attachedDisk.InitializeParams = &compute.AttachedDiskInitializeParams{
-				DiskType: fmt.Sprintf("zones/%s/diskTypes/%s", zone, "local-ssd"),
+			attachedDisk = compute.AttachedDisk{
+				Type:       validation.DiskTypeScratch,
+				Boot:       false,
+				AutoDelete: ptr.Deref(disk.AutoDelete, true),
+				Interface:  disk.Interface,
+				InitializeParams: &compute.AttachedDiskInitializeParams{
+					DiskType: fmt.Sprintf("zones/%s/diskTypes/%s", zone, "local-ssd"),
+				},
 			}
 		}
 		if disk.Encryption != nil {
