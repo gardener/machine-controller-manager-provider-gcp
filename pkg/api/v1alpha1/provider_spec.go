@@ -10,6 +10,15 @@ const (
 	// GCPAlternativeServiceAccountJSON is a constant for a key name of a secret containing the GCP credentials (service
 	// account json).
 	GCPAlternativeServiceAccountJSON = "serviceaccount.json"
+
+	// GCPDiskTypeScratch is the SCRATCH disk type
+	GCPDiskTypeScratch = "SCRATCH"
+	// GCPDiskTypePersistent is the PERSISTENT disk type
+	GCPDiskTypePersistent = "PERSISTENT"
+	// GCPDiskInterfaceNVME is the NVME disk interface
+	GCPDiskInterfaceNVME = "NVME"
+	// GCPDiskInterfaceSCSI is the SCSI disk interface
+	GCPDiskInterfaceSCSI = "SCSI"
 )
 
 // +genclient

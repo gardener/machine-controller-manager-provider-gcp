@@ -82,7 +82,7 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 	var disks []*compute.AttachedDisk
 	for _, disk := range providerSpec.Disks {
 		attachedDisk := compute.AttachedDisk{
-			Type:       validation.DiskTypePersistent,
+			Type:       api.GCPDiskTypePersistent,
 			Boot:       disk.Boot,
 			AutoDelete: ptr.Deref(disk.AutoDelete, true),
 			InitializeParams: &compute.AttachedDiskInitializeParams{
@@ -94,9 +94,9 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 				ProvisionedThroughput: disk.ProvisionedThroughput,
 			},
 		}
-		if disk.Type == validation.DiskTypeScratch {
+		if disk.Type == api.GCPDiskTypeScratch {
 			attachedDisk = compute.AttachedDisk{
-				Type:       validation.DiskTypeScratch,
+				Type:       api.GCPDiskTypeScratch,
 				Boot:       false,
 				AutoDelete: ptr.Deref(disk.AutoDelete, true),
 				Interface:  disk.Interface,
