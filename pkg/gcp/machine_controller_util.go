@@ -28,14 +28,8 @@ import (
 )
 
 const (
-	// GCPProviderPrefix is the prefix used by the GCP provider
-	GCPProviderPrefix = "gce://"
-
-	// GCPMachineClassKind for GCPMachineClass
-	GCPMachineClassKind = "GCPMachineClass"
-
-	// MachineClassKind for MachineClass
-	MachineClassKind = "MachineClass"
+	// ProviderPrefix is the prefix used by the GCP provider
+	ProviderPrefix = "gce://"
 )
 
 // CreateMachineUtil method is used to create a GCP machine
@@ -182,21 +176,7 @@ func encodeMachineID(project, zone, name string) string {
 	if name == "" {
 		return ""
 	}
-	return fmt.Sprintf("%s/%s/%s/%s", GCPProviderPrefix, project, zone, name)
-}
-
-func decodeMachineID(id string) (string, string, string, error) {
-	gceSplit := strings.Split(id, "gce:///")
-	if len(gceSplit) != 2 {
-		return "", "", "", fmt.Errorf("Invalid format of machine id: %s", id)
-	}
-
-	gce := strings.Split(gceSplit[1], "/")
-	if len(gce) != 3 {
-		return "", "", "", fmt.Errorf("Invalid format of machine id: %s", id)
-	}
-
-	return gce[0], gce[1], gce[2], nil
+	return fmt.Sprintf("%s/%s/%s/%s", ProviderPrefix, project, zone, name)
 }
 
 // DeleteMachineUtil deletes a VM by name
@@ -329,8 +309,8 @@ func getVMs(ctx context.Context, machineID string, providerSpec *api.GCPProvider
 	return listOfVMs, nil
 }
 
-// decodeProviderSpecAndSecret converts request parameters to api.ProviderSpec
-func decodeProviderSpecAndSecret(machineClass *v1alpha1.MachineClass, secret *corev1.Secret) (*api.GCPProviderSpec, error) {
+// decodeProviderSpecAndValidateSecret converts request parameters to api.ProviderSpec
+func decodeProviderSpecAndValidateSecret(machineClass *v1alpha1.MachineClass, secret *corev1.Secret) (*api.GCPProviderSpec, error) {
 	var providerSpec *api.GCPProviderSpec
 
 	// If machineClass is nil
@@ -344,14 +324,30 @@ func decodeProviderSpecAndSecret(machineClass *v1alpha1.MachineClass, secret *co
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	// Validate the Spec and Secrets
-	ValidationErr := validation.ValidateGCPProviderSpec(providerSpec, secret)
-	if ValidationErr != nil {
-		err = fmt.Errorf("Error while validating ProviderSpec %v", ValidationErr)
+	// Validate the Secret
+	validationErr := validation.ValidateSecret(secret)
+	if validationErr != nil {
+		err = fmt.Errorf("error while validating Secret %v", validationErr)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return providerSpec, nil
+}
+
+func validateProviderSpec(providerSpec *api.GCPProviderSpec) error {
+	if validationErr := validation.ValidateProviderSpec(providerSpec); validationErr != nil {
+		err := fmt.Errorf("error while validating ProviderSpec %v", validationErr)
+		return status.Error(codes.Internal, err.Error())
+	}
+	return nil
+}
+
+func validateZone(zone string) error {
+	if err := validation.ValidateZone(zone); err != nil {
+		err = fmt.Errorf("error while validating Zone %v", err)
+		return status.Error(codes.InvalidArgument, err.Error())
+	}
+	return nil
 }
 
 func prepareErrorf(err error, format string, args ...interface{}) error {
