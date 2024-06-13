@@ -13,7 +13,7 @@ import (
 	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/api/v1alpha1"
 	"github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp"
 	"github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/errors"
-	validation "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/validation"
+	"github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/validation"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/yaml"
 )
@@ -49,9 +49,13 @@ func TestPluginSPIImpl(t *testing.T) {
 	ms := gcp.NewGCPPlugin(&gcp.PluginSPIImpl{})
 	ctx := context.TODO()
 
-	ValidationErr := validation.ValidateGCPProviderSpec(cfg.ProviderSpec, cfg.Secrets)
-	if ValidationErr != nil {
-		t.Errorf("Error while validating ProviderSpec %v", ValidationErr)
+	validationErr := validation.ValidateProviderSpec(cfg.ProviderSpec)
+	if validationErr != nil {
+		t.Errorf("Error while validating ProviderSpec %v", validationErr)
+		return
+	}
+	if validationErr = validation.ValidateSecret(cfg.Secrets); validationErr != nil {
+		t.Errorf("Error while validating Secret %v", validationErr)
 		return
 	}
 

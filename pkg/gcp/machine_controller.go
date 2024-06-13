@@ -75,11 +75,16 @@ func (ms *MachinePlugin) CreateMachine(ctx context.Context, req *driver.CreateMa
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	providerSpec, err := decodeProviderSpecAndSecret(req.MachineClass, req.Secret)
+	providerSpec, err := decodeProviderSpec(req.MachineClass)
 	if err != nil {
-		return nil, prepareErrorf(err, "Create machine %q failed on decodeProviderSpecAndSecret", req.Machine.Name)
+		return nil, prepareErrorf(err, "Create machine %q failed on decodeProviderSpec", req.Machine.Name)
 	}
-
+	if err = validateProviderSpec(providerSpec); err != nil {
+		return nil, prepareErrorf(err, "Create machine %q failed on validateProviderSpec", req.Machine.Name)
+	}
+	if err = validateSecret(req.Secret); err != nil {
+		return nil, prepareErrorf(err, "Create machine %q failed on validateSecret", req.Machine.Name)
+	}
 	providerID, err := ms.CreateMachineUtil(ctx, req.Machine.Name, providerSpec, req.Secret)
 	if err != nil {
 		return nil, prepareErrorf(err, "Create machine %q failed", req.Machine.Name)
@@ -123,11 +128,16 @@ func (ms *MachinePlugin) DeleteMachine(ctx context.Context, req *driver.DeleteMa
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	providerSpec, err := decodeProviderSpecAndSecret(req.MachineClass, req.Secret)
+	providerSpec, err := decodeProviderSpec(req.MachineClass)
 	if err != nil {
-		return nil, prepareErrorf(err, "Delete machine %q failed on decodeProviderSpecAndSecret", req.Machine.Name)
+		return nil, prepareErrorf(err, "Delete machine %q failed on decodeProviderSpec", req.Machine.Name)
 	}
-
+	if err = validateZone(providerSpec.Zone); err != nil {
+		return nil, prepareErrorf(err, "Delete machine %q failed on validateZone", req.Machine.Name)
+	}
+	if err = validateSecret(req.Secret); err != nil {
+		return nil, prepareErrorf(err, "Delete machine %q failed on validateSecret", req.Machine.Name)
+	}
 	providerID, err := ms.DeleteMachineUtil(ctx, req.Machine.Name, req.Machine.Spec.ProviderID, providerSpec, req.Secret)
 	if err != nil {
 		return nil, prepareErrorf(err, "Delete machine %q failed", req.Machine.Name)
@@ -166,11 +176,16 @@ func (ms *MachinePlugin) GetMachineStatus(ctx context.Context, req *driver.GetMa
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	providerSpec, err := decodeProviderSpecAndSecret(req.MachineClass, req.Secret)
+	providerSpec, err := decodeProviderSpec(req.MachineClass)
 	if err != nil {
-		return nil, prepareErrorf(err, "Machine status %q failed on decodeProviderSpecAndSecret", req.Machine.Name)
+		return nil, prepareErrorf(err, "Machine status %q failed on decodeProviderSpec", req.Machine.Name)
 	}
-
+	if err = validateZone(providerSpec.Zone); err != nil {
+		return nil, prepareErrorf(err, "Machine status %q failed on validateZone", req.Machine.Name)
+	}
+	if err = validateSecret(req.Secret); err != nil {
+		return nil, prepareErrorf(err, "Machine status %q failed on validateSecret", req.Machine.Name)
+	}
 	providerID, err := ms.GetMachineStatusUtil(ctx, req.Machine.Name, req.Machine.Spec.ProviderID, providerSpec, req.Secret)
 	if err != nil {
 		return nil, prepareErrorf(err, "Machine status %q failed", req.Machine.Name)
@@ -209,11 +224,16 @@ func (ms *MachinePlugin) ListMachines(ctx context.Context, req *driver.ListMachi
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	providerSpec, err := decodeProviderSpecAndSecret(req.MachineClass, req.Secret)
+	providerSpec, err := decodeProviderSpec(req.MachineClass)
 	if err != nil {
-		return nil, prepareErrorf(err, "List machines failed on decodeProviderSpecAndSecret")
+		return nil, prepareErrorf(err, "List machines failed on decodeProviderSpec")
 	}
-
+	if err = validateZone(providerSpec.Zone); err != nil {
+		return nil, prepareErrorf(err, "List machines failed on validateZone")
+	}
+	if err = validateSecret(req.Secret); err != nil {
+		return nil, prepareErrorf(err, "List machines failed on validateSecret")
+	}
 	machineList, err := ms.ListMachinesUtil(ctx, providerSpec, req.Secret)
 	if err != nil {
 		return nil, prepareErrorf(err, "List machines failed")

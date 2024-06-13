@@ -23,35 +23,9 @@ const (
 	DiskInterfaceSCSI = "SCSI"
 )
 
-// ValidateGCPProviderSpec validates gcp provider spec
-func ValidateGCPProviderSpec(spec *api.GCPProviderSpec, secrets *corev1.Secret) []error {
-	allErrs := validateGCPMachineClassSpec(spec, field.NewPath("spec"))
-	allErrs = append(allErrs, validateSecrets(secrets)...)
-	return allErrs
-}
-
-func validateSecrets(secret *corev1.Secret) []error {
-	var allErrs []error
-
-	if secret == nil {
-		allErrs = append(allErrs, fmt.Errorf("secret object that has been passed by the MCM is nil"))
-	} else {
-		_, serviceAccountJSONExists := secret.Data[api.GCPServiceAccountJSON]
-		_, serviceAccountJSONAlternativeExists := secret.Data[api.GCPAlternativeServiceAccountJSON]
-		_, userDataExists := secret.Data["userData"]
-
-		if !serviceAccountJSONExists && !serviceAccountJSONAlternativeExists {
-			allErrs = append(allErrs, fmt.Errorf("secret %s or %s is required field", api.GCPServiceAccountJSON, api.GCPAlternativeServiceAccountJSON))
-		}
-		if !userDataExists {
-			allErrs = append(allErrs, fmt.Errorf("secret userData is required field"))
-		}
-	}
-
-	return allErrs
-}
-
-func validateGCPMachineClassSpec(spec *api.GCPProviderSpec, fldPath *field.Path) []error {
+// ValidateProviderSpec validates gcp provider spec
+func ValidateProviderSpec(spec *api.GCPProviderSpec) []error {
+	fldPath := field.NewPath("spec")
 	var allErrs []error
 
 	allErrs = append(allErrs, validateGCPDisks(spec.Disks, fldPath.Child("disks"))...)
@@ -74,6 +48,36 @@ func validateGCPMachineClassSpec(spec *api.GCPProviderSpec, fldPath *field.Path)
 	return allErrs
 }
 
+// ValidateZone validates the zone in the providerSpec
+func ValidateZone(zone string) error {
+	if zone == "" {
+		return fmt.Errorf("zone cannot be empty")
+	}
+	return nil
+}
+
+// ValidateSecret validates the machine class secret
+func ValidateSecret(secret *corev1.Secret) []error {
+	var allErrs []error
+
+	if secret == nil {
+		allErrs = append(allErrs, fmt.Errorf("secret object that has been passed by the MCM is nil"))
+	} else {
+		_, serviceAccountJSONExists := secret.Data[api.GCPServiceAccountJSON]
+		_, serviceAccountJSONAlternativeExists := secret.Data[api.GCPAlternativeServiceAccountJSON]
+		_, userDataExists := secret.Data["userData"]
+
+		if !serviceAccountJSONExists && !serviceAccountJSONAlternativeExists {
+			allErrs = append(allErrs, fmt.Errorf("secret %s or %s is required field", api.GCPServiceAccountJSON, api.GCPAlternativeServiceAccountJSON))
+		}
+		if !userDataExists {
+			allErrs = append(allErrs, fmt.Errorf("secret userData is required field"))
+		}
+	}
+
+	return allErrs
+}
+
 func validateGCPDisks(disks []*api.GCPDisk, fldPath *field.Path) []error {
 	var allErrs []error
 
@@ -83,9 +87,6 @@ func validateGCPDisks(disks []*api.GCPDisk, fldPath *field.Path) []error {
 
 	for i, disk := range disks {
 		idxPath := fldPath.Index(i)
-		if disk.SizeGb < 20 {
-			allErrs = append(allErrs, field.Invalid(idxPath.Child("sizeGb"), disk.SizeGb, "disk size must be at least 20 GB"))
-		}
 		if disk.Type == DiskTypeScratch && (disk.Interface != DiskInterfaceNVME && disk.Interface != DiskInterfaceSCSI) {
 			allErrs = append(allErrs, field.NotSupported(idxPath.Child("interface"), disk.Interface, []string{DiskInterfaceNVME, DiskInterfaceSCSI}))
 		}

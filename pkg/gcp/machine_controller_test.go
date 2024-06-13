@@ -21,24 +21,20 @@ import (
 )
 
 const (
-	// TestNamaspace is the test namespace used
-	TestNamaspace string = "test"
-	// TestClassName is the test class name used
-	TestMachineClassName string = "test-mc"
 	// FailAtNotFound is the error message returned when a resource is not found
 	FailAtNotFound string = "machine codes error: code = [NotFound] message = [machine name=non-existent-dummy-machine, uuid= not found]"
 	// FailAtJSONUnmarshalling is the error message returned when an malformed JSON is sent to the plugin by the caller
-	FailAtJSONUnmarshalling string = "machine codes error: code = [Internal] message = [Machine status \"dummy-machine\" failed on decodeProviderSpecAndSecret: machine codes error: code = [Internal] message = [unexpected end of JSON input]]"
+	FailAtJSONUnmarshalling string = "machine codes error: code = [Internal] message = [Machine status \"dummy-machine\" failed on decodeProviderSpec: machine codes error: code = [Internal] message = [unexpected end of JSON input]]"
 	// CreateFailAtJSONUnmarshalling is the error message returned when an malformed JSON is sent to the plugin by the caller
-	CreateFailAtJSONUnmarshalling string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on decodeProviderSpecAndSecret: machine codes error: code = [Internal] message = [unexpected end of JSON input]]"
+	CreateFailAtJSONUnmarshalling string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on decodeProviderSpec: machine codes error: code = [Internal] message = [unexpected end of JSON input]]"
 	// DeleteFailAtJSONUnmarshalling is the error message returned when an malformed JSON is sent to the plugin by the caller
-	DeleteFailAtJSONUnmarshalling string = "machine codes error: code = [Internal] message = [Delete machine \"dummy-machine\" failed on decodeProviderSpecAndSecret: machine codes error: code = [Internal] message = [unexpected end of JSON input]]"
+	DeleteFailAtJSONUnmarshalling string = "machine codes error: code = [Internal] message = [Delete machine \"dummy-machine\" failed on decodeProviderSpec: machine codes error: code = [Internal] message = [unexpected end of JSON input]]"
 	// ListFailAtJSONUnmarshalling is the error message returned when an malformed JSON is sent to the plugin by the caller
-	ListFailAtJSONUnmarshalling string = "machine codes error: code = [Internal] message = [List machines failed on decodeProviderSpecAndSecret: machine codes error: code = [Internal] message = [unexpected end of JSON input]]"
+	ListFailAtJSONUnmarshalling string = "machine codes error: code = [Internal] message = [List machines failed on decodeProviderSpec: machine codes error: code = [Internal] message = [unexpected end of JSON input]]"
 	// FailAtNoSecretsPassed is the error message returned when no secrets are passed to the the plugin by the caller
-	FailAtNoSecretsPassed string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on decodeProviderSpecAndSecret: machine codes error: code = [Internal] message = [Error while validating ProviderSpec [secret serviceAccountJSON or serviceaccount.json is required field secret userData is required field]]]"
+	FailAtNoSecretsPassed string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on validateSecret: machine codes error: code = [Internal] message = [error while validating Secret [secret serviceAccountJSON or serviceaccount.json is required field secret userData is required field]]]"
 	// FailAtSecretsWithNoUserData is the error message returned when secrets map has no userdata provided by the caller
-	FailAtSecretsWithNoUserData string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on decodeProviderSpecAndSecret: machine codes error: code = [Internal] message = [Error while validating ProviderSpec [secret userData is required field]]]"
+	FailAtSecretsWithNoUserData string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on validateSecret: machine codes error: code = [Internal] message = [error while validating Secret [secret userData is required field]]]"
 	// FailAtInvalidProjectID is the error returned when an invalid project id value is provided by the caller
 	FailAtInvalidProjectID string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed: json: cannot unmarshal number into Go struct field .project_id of type string]"
 	// FailAtInvalidZonePostCall is the  error returned when a post call should fail with an invalid zone is sent in the POST call -- this is used to simulate server error
@@ -54,13 +50,13 @@ const (
 	// FailAtMethodNotImplemented is the error returned for methods which are not yet implemented
 	FailAtMethodNotImplemented string = "rpc error: code = Unimplemented desc = "
 	// FailAtSpecValidation fails at spec validation
-	FailAtSpecValidation string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on decodeProviderSpecAndSecret: machine codes error: code = [Internal] message = [Error while validating ProviderSpec [spec.zone: Required value: zone is required]]]"
+	FailAtSpecValidation string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on validateProviderSpec: machine codes error: code = [Internal] message = [error while validating ProviderSpec [spec.zone: Required value: zone is required]]]"
 	// FailAtNonExistingMachine because existing machine is not found
 	FailAtNonExistingMachine string = "rpc error: code = NotFound desc = Machine with the name \"non-existent-dummy-machine\" not found"
 	// FailAtSpecValidationNoKmsKeyName if kmsKeyName missing
-	FailAtSpecValidationNoKmsKeyName string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on decodeProviderSpecAndSecret: machine codes error: code = [Internal] message = [Error while validating ProviderSpec [spec.disks[0].kmsKeyName: Required value: kmsKeyName is required to be specified]]]"
+	FailAtSpecValidationNoKmsKeyName string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on validateProviderSpec: machine codes error: code = [Internal] message = [error while validating ProviderSpec [spec.disks[0].kmsKeyName: Required value: kmsKeyName is required to be specified]]]"
 	// FailAtSpecValidationInvalidKmsServiceAccount if kmsKeyServiceAccount invalid
-	FailAtSpecValidationInvalidKmsServiceAccount string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on decodeProviderSpecAndSecret: machine codes error: code = [Internal] message = [Error while validating ProviderSpec [spec.disks[0].kmsKeyServiceAccount: Required value: kmsKeyServiceAccount should either be explicitly specified without spaces or left un-specified to default to the Compute Service Agent]]]"
+	FailAtSpecValidationInvalidKmsServiceAccount string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on validateProviderSpec: machine codes error: code = [Internal] message = [error while validating ProviderSpec [spec.disks[0].kmsKeyServiceAccount: Required value: kmsKeyServiceAccount should either be explicitly specified without spaces or left un-specified to default to the Compute Service Agent]]]"
 
 	UnsupportedProviderError string = "machine codes error: code = [InvalidArgument] message = [Requested for Provider 'aws', we only support 'GCP']"
 )
