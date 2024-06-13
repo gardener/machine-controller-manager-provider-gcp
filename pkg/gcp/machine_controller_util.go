@@ -309,34 +309,33 @@ func getVMs(ctx context.Context, machineID string, providerSpec *api.GCPProvider
 	return listOfVMs, nil
 }
 
-// decodeProviderSpecAndValidateSecret converts request parameters to api.ProviderSpec
-func decodeProviderSpecAndValidateSecret(machineClass *v1alpha1.MachineClass, secret *corev1.Secret) (*api.GCPProviderSpec, error) {
+// decodeProviderSpec converts request parameters to api.ProviderSpec
+func decodeProviderSpec(machineClass *v1alpha1.MachineClass) (*api.GCPProviderSpec, error) {
 	var providerSpec *api.GCPProviderSpec
-
 	// If machineClass is nil
 	if machineClass == nil {
 		return nil, status.Error(codes.Internal, "MachineClass ProviderSpec is nil")
 	}
-
 	// Extract providerSpec
 	err := json.Unmarshal(machineClass.ProviderSpec.Raw, &providerSpec)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-
-	// Validate the Secret
-	validationErr := validation.ValidateSecret(secret)
-	if validationErr != nil {
-		err = fmt.Errorf("error while validating Secret %v", validationErr)
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
 	return providerSpec, nil
 }
 
 func validateProviderSpec(providerSpec *api.GCPProviderSpec) error {
 	if validationErr := validation.ValidateProviderSpec(providerSpec); validationErr != nil {
 		err := fmt.Errorf("error while validating ProviderSpec %v", validationErr)
+		return status.Error(codes.Internal, err.Error())
+	}
+	return nil
+}
+
+func validateSecret(secret *corev1.Secret) error {
+	validationErr := validation.ValidateSecret(secret)
+	if validationErr != nil {
+		err := fmt.Errorf("error while validating Secret %v", validationErr)
 		return status.Error(codes.Internal, err.Error())
 	}
 	return nil
