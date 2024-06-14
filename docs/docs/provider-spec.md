@@ -476,13 +476,15 @@ persistent disks.</p>
 </td>
 <td>
 <em>
-*int64
+int64
 </em>
 </td>
 <td>
 <p>ProvisionedIops of disk to create.
 Only for use with disks of type pd-extreme and hyperdisk-extreme.
-The IOPS must be specified within defined limits</p>
+The IOPS must be specified within defined limits
+the value zero will be omitted from the request because GCP client
+will not write any &ldquo;empty&rdquo; values to the request</p>
 </td>
 </tr>
 <tr>
@@ -491,14 +493,16 @@ The IOPS must be specified within defined limits</p>
 </td>
 <td>
 <em>
-*int64
+int64
 </em>
 </td>
 <td>
 <p>ProvisionedThroughput of disk to create.
 Only for hyperdisk-balanced or hyperdisk-throughput volumes,
 measured in MiB per second, that the disk can handle.
-The throughput must be specified within defined limits</p>
+The throughput must be specified within defined limits
+the value zero will be omitted from the request because GCP client
+will not write any &ldquo;empty&rdquo; values to the request</p>
 </td>
 </tr>
 </tbody>
