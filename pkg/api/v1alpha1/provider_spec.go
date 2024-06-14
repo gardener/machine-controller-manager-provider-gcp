@@ -204,13 +204,17 @@ type GCPDisk struct {
 	// ProvisionedIops of disk to create.
 	// Only for use with disks of type pd-extreme and hyperdisk-extreme.
 	// The IOPS must be specified within defined limits
-	ProvisionedIops int64 `json:"provisionedIops"`
+	// the value zero will be omitted from the request because GCP client
+	// will not write any "empty" values to the request
+	ProvisionedIops int64 `json:"provisionedIops,omitempty"`
 
 	// ProvisionedThroughput of disk to create.
 	// Only for hyperdisk-balanced or hyperdisk-throughput volumes,
 	// measured in MiB per second, that the disk can handle.
 	// The throughput must be specified within defined limits
-	ProvisionedThroughput int64 `json:"provisionedThroughput"`
+	// the value zero will be omitted from the request because GCP client
+	// will not write any "empty" values to the request
+	ProvisionedThroughput int64 `json:"provisionedThroughput,omitempty"`
 }
 
 // GCPDiskEncryption holds references to encryption data
