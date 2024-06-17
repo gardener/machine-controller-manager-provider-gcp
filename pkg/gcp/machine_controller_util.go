@@ -79,47 +79,7 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 		instance.Description = *providerSpec.Description
 	}
 
-	var disks []*compute.AttachedDisk
-	for _, disk := range providerSpec.Disks {
-		attachedDisk := compute.AttachedDisk{
-			Type:       api.GCPDiskTypePersistent,
-			Boot:       disk.Boot,
-			AutoDelete: ptr.Deref(disk.AutoDelete, true),
-			InitializeParams: &compute.AttachedDiskInitializeParams{
-				DiskSizeGb:            disk.SizeGb,
-				DiskType:              fmt.Sprintf("zones/%s/diskTypes/%s", zone, disk.Type),
-				Labels:                disk.Labels,
-				SourceImage:           disk.Image,
-				ProvisionedIops:       disk.ProvisionedIops,
-				ProvisionedThroughput: disk.ProvisionedThroughput,
-			},
-		}
-		if disk.Type == api.GCPDiskTypeScratch {
-			attachedDisk = compute.AttachedDisk{
-				Type:       api.GCPDiskTypeScratch,
-				Boot:       false,
-				AutoDelete: ptr.Deref(disk.AutoDelete, true),
-				Interface:  disk.Interface,
-				InitializeParams: &compute.AttachedDiskInitializeParams{
-					DiskType: fmt.Sprintf("zones/%s/diskTypes/%s", zone, "local-ssd"),
-				},
-			}
-		}
-		if disk.Encryption != nil {
-			attachedDisk.DiskEncryptionKey = &compute.CustomerEncryptionKey{
-				KmsKeyName:           strings.TrimSpace(disk.Encryption.KmsKeyName),
-				KmsKeyServiceAccount: strings.TrimSpace(disk.Encryption.KmsKeyServiceAccount),
-			}
-			klog.V(3).Infof("(CreateMachineUtil) For machineName: %q, diskLabel: %q, DiskEncryptionKey.KmsKeyName: %q, "+
-				"DiskEncryptionKey.KmsKeyServiceAccount: %q",
-				machineName,
-				disk.Labels["name"],
-				attachedDisk.DiskEncryptionKey.KmsKeyName,
-				attachedDisk.DiskEncryptionKey.KmsKeyServiceAccount)
-		}
-		disks = append(disks, &attachedDisk)
-	}
-	instance.Disks = disks
+	instance.Disks = createAttachedDisks(providerSpec.Disks, zone, machineName)
 
 	var metadataItems []*compute.MetadataItems
 	metadataItems = append(metadataItems, getUserData(string(secret.Data["userData"])))
@@ -170,6 +130,54 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 	}
 
 	return encodeMachineID(project, zone, machineName), nil
+}
+
+func createAttachedDisks(disks []*api.GCPDisk, zone, machineName string) []*compute.AttachedDisk {
+	attachedDisks := make([]*compute.AttachedDisk, 0, len(disks))
+	for _, disk := range disks {
+		var attachedDisk compute.AttachedDisk
+		switch disk.Type {
+		case api.GCPDiskTypeScratch:
+			attachedDisk = compute.AttachedDisk{
+				Type:       api.GCPDiskTypeScratch,
+				Boot:       false,
+				AutoDelete: ptr.Deref(disk.AutoDelete, true),
+				Interface:  disk.Interface,
+				InitializeParams: &compute.AttachedDiskInitializeParams{
+					DiskType: fmt.Sprintf("zones/%s/diskTypes/%s", zone, "local-ssd"),
+				},
+			}
+		default:
+			attachedDisk = compute.AttachedDisk{
+				Type:       api.GCPDiskTypePersistent,
+				Boot:       disk.Boot,
+				AutoDelete: ptr.Deref(disk.AutoDelete, true),
+				InitializeParams: &compute.AttachedDiskInitializeParams{
+					DiskSizeGb:            disk.SizeGb,
+					DiskType:              fmt.Sprintf("zones/%s/diskTypes/%s", zone, disk.Type),
+					Labels:                disk.Labels,
+					SourceImage:           disk.Image,
+					ProvisionedIops:       disk.ProvisionedIops,
+					ProvisionedThroughput: disk.ProvisionedThroughput,
+				},
+			}
+		}
+
+		if disk.Encryption != nil {
+			attachedDisk.DiskEncryptionKey = &compute.CustomerEncryptionKey{
+				KmsKeyName:           strings.TrimSpace(disk.Encryption.KmsKeyName),
+				KmsKeyServiceAccount: strings.TrimSpace(disk.Encryption.KmsKeyServiceAccount),
+			}
+			klog.V(3).Infof("(CreateMachineUtil) For machineName: %q, diskLabel: %q, DiskEncryptionKey.KmsKeyName: %q, "+
+				"DiskEncryptionKey.KmsKeyServiceAccount: %q",
+				machineName,
+				disk.Labels["name"],
+				attachedDisk.DiskEncryptionKey.KmsKeyName,
+				attachedDisk.DiskEncryptionKey.KmsKeyServiceAccount)
+		}
+		attachedDisks = append(attachedDisks, &attachedDisk)
+	}
+	return attachedDisks
 }
 
 func encodeMachineID(project, zone, name string) string {
