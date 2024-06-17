@@ -14,15 +14,6 @@ import (
 	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/api/v1alpha1"
 )
 
-const (
-	// DiskTypeScratch is the SCRATCH disk type
-	DiskTypeScratch = "SCRATCH"
-	// DiskInterfaceNVME is the NVME disk interface
-	DiskInterfaceNVME = "NVME"
-	// DiskInterfaceSCSI is the SCSI disk interface
-	DiskInterfaceSCSI = "SCSI"
-)
-
 // ValidateProviderSpec validates gcp provider spec
 func ValidateProviderSpec(spec *api.GCPProviderSpec) []error {
 	fldPath := field.NewPath("spec")
@@ -87,8 +78,8 @@ func validateGCPDisks(disks []*api.GCPDisk, fldPath *field.Path) []error {
 
 	for i, disk := range disks {
 		idxPath := fldPath.Index(i)
-		if disk.Type == DiskTypeScratch && (disk.Interface != DiskInterfaceNVME && disk.Interface != DiskInterfaceSCSI) {
-			allErrs = append(allErrs, field.NotSupported(idxPath.Child("interface"), disk.Interface, []string{DiskInterfaceNVME, DiskInterfaceSCSI}))
+		if disk.Type == api.GCPDiskTypeScratch && (disk.Interface != api.GCPDiskInterfaceNVME && disk.Interface != api.GCPDiskInterfaceSCSI) {
+			allErrs = append(allErrs, field.NotSupported(idxPath.Child("interface"), disk.Interface, []string{api.GCPDiskInterfaceNVME, api.GCPDiskInterfaceSCSI}))
 		}
 		if disk.Boot && "" == disk.Image {
 			allErrs = append(allErrs, field.Required(idxPath.Child("image"), "image is required for boot disk"))

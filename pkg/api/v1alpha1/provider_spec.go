@@ -11,8 +11,14 @@ const (
 	// account json).
 	GCPAlternativeServiceAccountJSON = "serviceaccount.json"
 
-	// APIVersionV1alpha1 is the API version for MCM
-	APIVersionV1alpha1 = "mcm.gardener.cloud/v1alpha1"
+	// GCPDiskTypeScratch is the SCRATCH disk type
+	GCPDiskTypeScratch = "SCRATCH"
+	// GCPDiskTypePersistent is the PERSISTENT disk type
+	GCPDiskTypePersistent = "PERSISTENT"
+	// GCPDiskInterfaceNVME is the NVME disk interface
+	GCPDiskInterfaceNVME = "NVME"
+	// GCPDiskInterfaceSCSI is the SCSI disk interface
+	GCPDiskInterfaceSCSI = "SCSI"
 )
 
 // +genclient
@@ -165,8 +171,7 @@ type GCPDisk struct {
 	// projects/debian-cloud/global/images/family/debian-9
 	//
 	//
-	// Alternati
-	// vely, use a specific version of a public operating system
+	// Alternatively, use a specific version of a public operating system
 	// image:
 	// projects/debian-cloud/global/images/debian-9-stretch-vYYYYMMDD
 	//
@@ -195,6 +200,21 @@ type GCPDisk struct {
 	// the disks.setLabels method. This field is only applicable for
 	// persistent disks.
 	Labels map[string]string `json:"labels"`
+
+	// ProvisionedIops of disk to create.
+	// Only for use with disks of type pd-extreme and hyperdisk-extreme.
+	// The IOPS must be specified within defined limits
+	// the value zero will be omitted from the request because GCP client
+	// will not write any "empty" values to the request
+	ProvisionedIops int64 `json:"provisionedIops,omitempty"`
+
+	// ProvisionedThroughput of disk to create.
+	// Only for hyperdisk-balanced or hyperdisk-throughput volumes,
+	// measured in MiB per second, that the disk can handle.
+	// The throughput must be specified within defined limits
+	// the value zero will be omitted from the request because GCP client
+	// will not write any "empty" values to the request
+	ProvisionedThroughput int64 `json:"provisionedThroughput,omitempty"`
 }
 
 // GCPDiskEncryption holds references to encryption data

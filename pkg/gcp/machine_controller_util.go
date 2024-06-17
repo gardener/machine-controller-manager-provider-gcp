@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/utils/ptr"
+
 	"github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
@@ -77,51 +79,9 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 		instance.Description = *providerSpec.Description
 	}
 
-	disks := []*compute.AttachedDisk{}
-	for _, disk := range providerSpec.Disks {
-		var attachedDisk compute.AttachedDisk
-		autoDelete := false
-		if disk.AutoDelete == nil || *disk.AutoDelete == true {
-			autoDelete = true
-		}
-		if disk.Type == validation.DiskTypeScratch {
-			attachedDisk = compute.AttachedDisk{
-				AutoDelete: autoDelete,
-				Type:       disk.Type,
-				Interface:  disk.Interface,
-				InitializeParams: &compute.AttachedDiskInitializeParams{
-					DiskType: fmt.Sprintf("zones/%s/diskTypes/%s", zone, "local-ssd"),
-				},
-			}
-		} else {
-			attachedDisk = compute.AttachedDisk{
-				AutoDelete: autoDelete,
-				Boot:       disk.Boot,
-				InitializeParams: &compute.AttachedDiskInitializeParams{
-					DiskSizeGb:  disk.SizeGb,
-					DiskType:    fmt.Sprintf("zones/%s/diskTypes/%s", zone, disk.Type),
-					Labels:      disk.Labels,
-					SourceImage: disk.Image,
-				},
-			}
-		}
-		if disk.Encryption != nil {
-			attachedDisk.DiskEncryptionKey = &compute.CustomerEncryptionKey{
-				KmsKeyName:           strings.TrimSpace(disk.Encryption.KmsKeyName),
-				KmsKeyServiceAccount: strings.TrimSpace(disk.Encryption.KmsKeyServiceAccount),
-			}
-			klog.V(3).Infof("(CreateMachineUtil) For machineName: %q, diskLabel: %q, DiskEncryptionKey.KmsKeyName: %q, "+
-				"DiskEncryptionKey.KmsKeyServiceAccount: %q",
-				machineName,
-				disk.Labels["name"],
-				attachedDisk.DiskEncryptionKey.KmsKeyName,
-				attachedDisk.DiskEncryptionKey.KmsKeyServiceAccount)
-		}
-		disks = append(disks, &attachedDisk)
-	}
-	instance.Disks = disks
+	instance.Disks = createAttachedDisks(providerSpec.Disks, zone, machineName)
 
-	metadataItems := []*compute.MetadataItems{}
+	var metadataItems []*compute.MetadataItems
 	metadataItems = append(metadataItems, getUserData(string(secret.Data["userData"])))
 
 	for _, metadata := range providerSpec.Metadata {
@@ -134,7 +94,7 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 		Items: metadataItems,
 	}
 
-	networkInterfaces := []*compute.NetworkInterface{}
+	var networkInterfaces []*compute.NetworkInterface
 	for _, nic := range providerSpec.NetworkInterfaces {
 		computeNIC := &compute.NetworkInterface{}
 
@@ -152,7 +112,7 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 	}
 	instance.NetworkInterfaces = networkInterfaces
 
-	serviceAccounts := []*compute.ServiceAccount{}
+	var serviceAccounts []*compute.ServiceAccount
 	for _, sa := range providerSpec.ServiceAccounts {
 		serviceAccounts = append(serviceAccounts, &compute.ServiceAccount{
 			Email:  sa.Email,
@@ -170,6 +130,54 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 	}
 
 	return encodeMachineID(project, zone, machineName), nil
+}
+
+func createAttachedDisks(disks []*api.GCPDisk, zone, machineName string) []*compute.AttachedDisk {
+	attachedDisks := make([]*compute.AttachedDisk, 0, len(disks))
+	for _, disk := range disks {
+		var attachedDisk compute.AttachedDisk
+		switch disk.Type {
+		case api.GCPDiskTypeScratch:
+			attachedDisk = compute.AttachedDisk{
+				Type:       api.GCPDiskTypeScratch,
+				Boot:       false,
+				AutoDelete: ptr.Deref(disk.AutoDelete, true),
+				Interface:  disk.Interface,
+				InitializeParams: &compute.AttachedDiskInitializeParams{
+					DiskType: fmt.Sprintf("zones/%s/diskTypes/%s", zone, "local-ssd"),
+				},
+			}
+		default:
+			attachedDisk = compute.AttachedDisk{
+				Type:       api.GCPDiskTypePersistent,
+				Boot:       disk.Boot,
+				AutoDelete: ptr.Deref(disk.AutoDelete, true),
+				InitializeParams: &compute.AttachedDiskInitializeParams{
+					DiskSizeGb:            disk.SizeGb,
+					DiskType:              fmt.Sprintf("zones/%s/diskTypes/%s", zone, disk.Type),
+					Labels:                disk.Labels,
+					SourceImage:           disk.Image,
+					ProvisionedIops:       disk.ProvisionedIops,
+					ProvisionedThroughput: disk.ProvisionedThroughput,
+				},
+			}
+		}
+
+		if disk.Encryption != nil {
+			attachedDisk.DiskEncryptionKey = &compute.CustomerEncryptionKey{
+				KmsKeyName:           strings.TrimSpace(disk.Encryption.KmsKeyName),
+				KmsKeyServiceAccount: strings.TrimSpace(disk.Encryption.KmsKeyServiceAccount),
+			}
+			klog.V(3).Infof("(CreateMachineUtil) For machineName: %q, diskLabel: %q, DiskEncryptionKey.KmsKeyName: %q, "+
+				"DiskEncryptionKey.KmsKeyServiceAccount: %q",
+				machineName,
+				disk.Labels["name"],
+				attachedDisk.DiskEncryptionKey.KmsKeyName,
+				attachedDisk.DiskEncryptionKey.KmsKeyServiceAccount)
+		}
+		attachedDisks = append(attachedDisks, &attachedDisk)
+	}
+	return attachedDisks
 }
 
 func encodeMachineID(project, zone, name string) string {
