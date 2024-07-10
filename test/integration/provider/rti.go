@@ -6,9 +6,8 @@ import (
 	"log"
 
 	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/api/v1alpha1"
-	gcp "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp"
-	providerDriver "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp"
-	v1alpha1 "github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
+	"github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp"
+	"github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -53,7 +52,7 @@ func (r *ResourcesTrackerImpl) InitializeResourcesTracker(machineClass *v1alpha1
 		return err
 	}
 
-	project, err := providerDriver.ExtractProject(r.SecretData)
+	project, err := gcp.ExtractProject(r.SecretData)
 	if err != nil {
 		return err
 	}
@@ -78,7 +77,7 @@ func (r *ResourcesTrackerImpl) probeResources() ([]string, []string, []string, e
 		return nil, nil, nil, err
 	}
 
-	project, err := providerDriver.ExtractProject(r.SecretData)
+	project, err := gcp.ExtractProject(r.SecretData)
 	if err != nil {
 		return nil, nil, nil, err
 	}

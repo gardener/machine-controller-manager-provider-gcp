@@ -8,7 +8,14 @@ set -e
 
 source "$(dirname ${0})/setupenv.src"
 
-go install  golang.org/x/lint/golint
+# Install golangci-lint (linting tool).
+if [[ -z "${GOLANGCI_LINT_VERSION}" ]]; then
+  export GOLANGCI_LINT_VERSION=v1.57.1
+fi
+echo "Fetching golangci-lint tool"
+go install github.com/golangci/golangci-lint/cmd/golangci-lint@"${GOLANGCI_LINT_VERSION}"
+echo "Successfully fetched golangci-lint"
+golangci-lint version
 
 ###############################################################################
 PACKAGES="$(go list -e ./... | grep -vE '/internal/flags')"
@@ -22,9 +29,8 @@ go vet ${PACKAGES}
 echo "Running gofmt..."
 gofmt -l -w -s ${PACKAGES_DIRS}
 
-# Execute lint checks.
-echo "Running golint..."
-for package in ${PACKAGES_DIRS}; do
-    golint -set_exit_status $(find $package -maxdepth 1 -name "*.go" | grep -vE 'zz_generated|_test.go')
-done
+echo "Executing golangci-lint"
+# golangci-lint can't be run from outside the directory
+(cd ${SOURCE_PATH} && golangci-lint run -c .golangci.yaml --timeout 10m)
+
 echo "Check script has passed successfully"
