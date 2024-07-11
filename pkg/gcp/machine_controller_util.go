@@ -35,7 +35,7 @@ const (
 )
 
 // CreateMachineUtil method is used to create a GCP machine
-func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName string, providerSpec *api.GCPProviderSpec, secret *corev1.Secret) (string, error) {
+func (ms *MachinePlugin) CreateMachineUtil(_ context.Context, machineName string, providerSpec *api.GCPProviderSpec, secret *corev1.Secret) (string, error) {
 	ctx, computeService, err := ms.SPI.NewComputeService(secret)
 	if err != nil {
 		return "", err
@@ -98,7 +98,7 @@ func (ms *MachinePlugin) CreateMachineUtil(ctx context.Context, machineName stri
 	for _, nic := range providerSpec.NetworkInterfaces {
 		computeNIC := &compute.NetworkInterface{}
 
-		if nic.DisableExternalIP == false {
+		if !nic.DisableExternalIP {
 			// When DisableExternalIP is false, implies Attach an external IP to VM
 			computeNIC.AccessConfigs = []*compute.AccessConfig{{}}
 		}
@@ -188,7 +188,7 @@ func encodeMachineID(project, zone, name string) string {
 }
 
 // DeleteMachineUtil deletes a VM by name
-func (ms *MachinePlugin) DeleteMachineUtil(ctx context.Context, machineName string, _ string, providerSpec *api.GCPProviderSpec, secret *corev1.Secret) (string, error) {
+func (ms *MachinePlugin) DeleteMachineUtil(_ context.Context, machineName string, _ string, providerSpec *api.GCPProviderSpec, secret *corev1.Secret) (string, error) {
 	ctx, computeService, err := ms.SPI.NewComputeService(secret)
 	if err != nil {
 		return "", err
@@ -220,7 +220,7 @@ func (ms *MachinePlugin) DeleteMachineUtil(ctx context.Context, machineName stri
 }
 
 // GetMachineStatusUtil checks for existence of VM by name
-func (ms *MachinePlugin) GetMachineStatusUtil(ctx context.Context, machineName string, _ string, providerSpec *api.GCPProviderSpec, secret *corev1.Secret) (string, error) {
+func (ms *MachinePlugin) GetMachineStatusUtil(_ context.Context, machineName string, _ string, providerSpec *api.GCPProviderSpec, secret *corev1.Secret) (string, error) {
 	ctx, computeService, err := ms.SPI.NewComputeService(secret)
 	if err != nil {
 		return "", err
@@ -244,7 +244,7 @@ func (ms *MachinePlugin) GetMachineStatusUtil(ctx context.Context, machineName s
 }
 
 // ListMachinesUtil lists all VMs in the DC or folder
-func (ms *MachinePlugin) ListMachinesUtil(ctx context.Context, providerSpec *api.GCPProviderSpec, secret *corev1.Secret) (map[string]string, error) {
+func (ms *MachinePlugin) ListMachinesUtil(_ context.Context, providerSpec *api.GCPProviderSpec, secret *corev1.Secret) (map[string]string, error) {
 	ctx, computeService, err := ms.SPI.NewComputeService(secret)
 	if err != nil {
 		return nil, err

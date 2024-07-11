@@ -27,4 +27,3 @@ if [[ "${SOURCE_PATH}" != *"$PATHINWS" || -z "$GOPATH" ]]; then
 else
   cd "$SOURCE_PATH"
 fi
-

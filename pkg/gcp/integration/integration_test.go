@@ -72,7 +72,7 @@ func TestPluginSPIImpl(t *testing.T) {
 		return
 	}
 
-	providerID, err = ms.DeleteMachineUtil(ctx, cfg.MachineName, providerID, cfg.ProviderSpec, cfg.Secrets)
+	_, err = ms.DeleteMachineUtil(ctx, cfg.MachineName, providerID, cfg.ProviderSpec, cfg.Secrets)
 	switch err.(type) {
 	case *errors.MachineNotFoundError:
 		// expected

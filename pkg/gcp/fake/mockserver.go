@@ -82,7 +82,7 @@ func decodeOperationType(r *http.Request, index int) string {
 func handleCreate(w http.ResponseWriter, r *http.Request) {
 
 	if decodeOperationType(r, 2) == "invalid post" {
-		http.Error(w, fmt.Sprint("Invalid post zone"), http.StatusBadRequest)
+		http.Error(w, "Invalid post zone", http.StatusBadRequest)
 		return
 	}
 
@@ -103,18 +103,18 @@ func handleCreate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	Instances = append(Instances, instance)
-	json.NewEncoder(w).Encode(operation)
+	_ = json.NewEncoder(w).Encode(operation)
 }
 
 func handleList(w http.ResponseWriter, r *http.Request) {
 	//error mock handling for create/delete calls
 	if decodeOperationType(r, 3) == "invalid list" {
-		http.Error(w, fmt.Sprint("Invalid list zone"), http.StatusBadRequest)
+		http.Error(w, "Invalid list zone", http.StatusBadRequest)
 		return
 	}
 	//error mock handling for listMachines call
 	if decodeOperationType(r, 2) == "invalid list" {
-		http.Error(w, fmt.Sprint("Invalid list zone"), http.StatusBadRequest)
+		http.Error(w, "Invalid list zone", http.StatusBadRequest)
 		return
 	}
 
@@ -125,20 +125,20 @@ func handleList(w http.ResponseWriter, r *http.Request) {
 			OperationType: "insert",
 			Kind:          "compute#operation",
 		}
-		json.NewEncoder(w).Encode(operation)
+		_ = json.NewEncoder(w).Encode(operation)
 	} else { // this is the regular list call handling for VM
 
 		instances := compute.InstanceList{
 			Items: Instances,
 		}
-		json.NewEncoder(w).Encode(instances)
+		_ = json.NewEncoder(w).Encode(instances)
 
 	}
 }
 
 func handleDelete(w http.ResponseWriter, r *http.Request) {
 	if decodeOperationType(r, 3) == "invalid post" {
-		http.Error(w, fmt.Sprint("Invalid post zone"), http.StatusBadRequest)
+		http.Error(w, "Invalid post zone", http.StatusBadRequest)
 		return
 	}
 
@@ -151,5 +151,5 @@ func handleDelete(w http.ResponseWriter, r *http.Request) {
 		OperationType: "delete",
 		Kind:          "compute#operation",
 	}
-	json.NewEncoder(w).Encode(operation)
+	_ = json.NewEncoder(w).Encode(operation)
 }

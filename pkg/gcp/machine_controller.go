@@ -101,7 +101,7 @@ func (ms *MachinePlugin) CreateMachine(ctx context.Context, req *driver.CreateMa
 }
 
 // InitializeMachine handles VM initialization for GCP VM's. Currently, un-implemented.
-func (ms *MachinePlugin) InitializeMachine(ctx context.Context, _ *driver.InitializeMachineRequest) (*driver.InitializeMachineResponse, error) {
+func (ms *MachinePlugin) InitializeMachine(_ context.Context, _ *driver.InitializeMachineRequest) (*driver.InitializeMachineResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "GCP Provider does not yet implement InitializeMachine")
 }
 
@@ -252,7 +252,7 @@ func (ms *MachinePlugin) ListMachines(ctx context.Context, req *driver.ListMachi
 //
 // RESPONSE PARAMETERS (driver.GetVolumeIDsResponse)
 // VolumeIDs             repeated string     VolumeIDs is a repeated list of VolumeIDs.
-func (ms *MachinePlugin) GetVolumeIDs(ctx context.Context, req *driver.GetVolumeIDsRequest) (*driver.GetVolumeIDsResponse, error) {
+func (ms *MachinePlugin) GetVolumeIDs(_ context.Context, req *driver.GetVolumeIDsRequest) (*driver.GetVolumeIDsResponse, error) {
 	// Log messages to track start of request
 	klog.V(2).Infof("GetVolumeIDs request has been received")
 	klog.V(4).Infof("PVSpecList = %q", req.PVSpecs)
