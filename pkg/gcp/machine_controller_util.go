@@ -379,7 +379,7 @@ func prepareErrorf(err error, format string, args ...interface{}) error {
 
 // ExtractProject returns the name of the project which is extracted from the secret
 func ExtractProject(credentialsData map[string][]byte) (string, error) {
-	serviceAccountJSON := extractCredentialsFromData(credentialsData, api.GCPServiceAccountJSON, api.GCPAlternativeServiceAccountJSON)
+	serviceAccountJSON := extractCredentialsFromData(credentialsData, api.GCPServiceAccountJSON, api.GCPAlternativeServiceAccountJSON, api.GCPCredentialsConfig)
 
 	var j struct {
 		Project string `json:"project_id"`
@@ -387,7 +387,12 @@ func ExtractProject(credentialsData map[string][]byte) (string, error) {
 	if err := json.Unmarshal([]byte(serviceAccountJSON), &j); err != nil {
 		return "Error", err
 	}
-	return j.Project, nil
+
+	if j.Project != "" {
+		return j.Project, nil
+	}
+
+	return string(credentialsData["projectID"]), nil
 }
 
 // WaitUntilOperationCompleted waits for the specified operation to be completed and returns true if it does else returns false
