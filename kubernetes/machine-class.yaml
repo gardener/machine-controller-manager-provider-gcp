@@ -5,7 +5,6 @@ metadata:
   namespace: default # Namespace where the controller would watch
 provider: GCP
 providerSpec:
-  dualStack: false # Set to true to enable IPv4/IPv6 dual-stack support when your subnet supports both protocols  
   canIpForward: true # Allows this instance to send and receive packets with non-matching destination or source IPs
   deletionProtection: false # DeletionProtection: Whether the resource should be protected against deletion
   description: Machine of shoot ash created by Machine-Controller-Manager. # Description of this resource
@@ -32,6 +31,8 @@ providerSpec:
   networkInterfaces:
     - network: network-name # Network name to attach the instance to
       subnetwork: sub-net-name # Subnet name to attach the instance to
+      dualStack: false # Set to true to enable IPv4/IPv6 dual-stack support when your subnet supports both protocols  
+
   scheduling:
     automaticRestart: true # Automatic restart of instance
     onHostMaintenance: MIGRATE # Host maintainance
