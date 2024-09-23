@@ -108,6 +108,12 @@ func (ms *MachinePlugin) CreateMachineUtil(_ context.Context, machineName string
 		if len(nic.Subnetwork) != 0 {
 			computeNIC.Subnetwork = fmt.Sprintf("regions/%s/subnetworks/%s", providerSpec.Region, nic.Subnetwork)
 		}
+
+		if providerSpec.DualStack {
+			computeNIC.StackType = "IPV4_IPV6"
+			computeNIC.Ipv6AccessType = "EXTERNAL"
+		}
+
 		networkInterfaces = append(networkInterfaces, computeNIC)
 	}
 	instance.NetworkInterfaces = networkInterfaces
