@@ -37,10 +37,6 @@ type GCPProviderSpec struct {
 	// Enabling IP Forwarding.
 	CanIPForward bool `json:"canIpForward"`
 
-	// DualStack enables the creation of machines with both IPv4 and IPv6 support.
-	// This allows seamless integration into modern, dual-stack network environments.
-	DualStack bool `json:"dualStack"`
-
 	// DeletionProtection: Whether the resource should be protected against
 	// deletion.
 	DeletionProtection bool `json:"deletionProtection"`
@@ -285,6 +281,10 @@ type GCPNetworkInterface struct {
 	// - https://www.googleapis.com/compute/v1/projects/project/regions/region/subnetworks/subnetwork
 	// - regions/region/subnetworks/subnetwork
 	Subnetwork string `json:"subnetwork,omitempty"`
+
+	// DualStack enables the creation of machines with both IPv4 and IPv6 support.
+	// This allows seamless integration into modern, dual-stack network environments.
+	DualStack bool `json:"dualStack"`
 }
 
 // GCPScheduling describes scheduling configuration for GCP.
