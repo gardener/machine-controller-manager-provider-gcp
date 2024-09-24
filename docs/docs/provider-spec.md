@@ -740,6 +740,20 @@ are all valid URLs:
 - regions/region/subnetworks/subnetwork</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>dualStack</code>
+</td>
+<td>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>DualStack enables the creation of machines with both IPv4 and IPv6 support.
+This allows seamless integration into modern, dual-stack network environments.</p>
+</td>
+</tr>
 </tbody>
 </table>
 <br>
