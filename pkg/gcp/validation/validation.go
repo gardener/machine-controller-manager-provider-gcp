@@ -56,10 +56,11 @@ func ValidateSecret(secret *corev1.Secret) []error {
 	} else {
 		_, serviceAccountJSONExists := secret.Data[api.GCPServiceAccountJSON]
 		_, serviceAccountJSONAlternativeExists := secret.Data[api.GCPAlternativeServiceAccountJSON]
+		_, credentialsConfigExists := secret.Data[api.GCPCredentialsConfig]
 		_, userDataExists := secret.Data["userData"]
 
-		if !serviceAccountJSONExists && !serviceAccountJSONAlternativeExists {
-			allErrs = append(allErrs, fmt.Errorf("secret %s or %s is required field", api.GCPServiceAccountJSON, api.GCPAlternativeServiceAccountJSON))
+		if !serviceAccountJSONExists && !serviceAccountJSONAlternativeExists && !credentialsConfigExists {
+			allErrs = append(allErrs, fmt.Errorf("secret %s, %s or %s is required field", api.GCPServiceAccountJSON, api.GCPAlternativeServiceAccountJSON, api.GCPCredentialsConfig))
 		}
 		if !userDataExists {
 			allErrs = append(allErrs, fmt.Errorf("secret userData is required field"))
