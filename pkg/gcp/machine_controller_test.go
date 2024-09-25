@@ -32,7 +32,7 @@ const (
 	// ListFailAtJSONUnmarshalling is the error message returned when an malformed JSON is sent to the plugin by the caller
 	ListFailAtJSONUnmarshalling string = "machine codes error: code = [Internal] message = [List machines failed on decodeProviderSpec: machine codes error: code = [Internal] message = [unexpected end of JSON input]]"
 	// FailAtNoSecretsPassed is the error message returned when no secrets are passed to the the plugin by the caller
-	FailAtNoSecretsPassed string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on validateSecret: machine codes error: code = [Internal] message = [error while validating Secret [secret serviceAccountJSON or serviceaccount.json is required field secret userData is required field]]]"
+	FailAtNoSecretsPassed string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on validateSecret: machine codes error: code = [Internal] message = [error while validating Secret [secret serviceAccountJSON, serviceaccount.json or credentialsConfig is required field secret userData is required field]]]"
 	// FailAtSecretsWithNoUserData is the error message returned when secrets map has no userdata provided by the caller
 	FailAtSecretsWithNoUserData string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on validateSecret: machine codes error: code = [Internal] message = [error while validating Secret [secret userData is required field]]]"
 	// FailAtInvalidProjectID is the error returned when an invalid project id value is provided by the caller
