@@ -120,6 +120,10 @@ var _ = Describe("#MachineController", func() {
 		"userData":                []byte("dummy-data"),
 		api.GCPServiceAccountJSON: []byte("{\"type\":\"service_account\",\"project_id\":\"sap-se-gcp-scp-k8s-dev\"}"),
 	}
+	gcpProviderSecretWithCredentialsConfig := map[string][]byte{
+		"userData":               []byte("dummy-data"),
+		api.GCPCredentialsConfig: []byte("{\"type\":\"service_account\",\"project_id\":\"sap-se-gcp-scp-k8s-dev\"}"),
+	}
 
 	gcpProviderSecretWithMisssingUserData := map[string][]byte{
 		// "userData":           []byte(""),
@@ -172,6 +176,22 @@ var _ = Describe("#MachineController", func() {
 						Machine:      newMachine("dummy-machine"),
 						MachineClass: newGCPMachineClass(gcpProviderSpec, ""),
 						Secret:       newSecret(gcpProviderSecret),
+					},
+				},
+				expect: expect{
+					machineResponse: &driver.CreateMachineResponse{
+						ProviderID: "gce:///sap-se-gcp-scp-k8s-dev/europe-dummy/dummy-machine",
+						NodeName:   "dummy-machine",
+					},
+					errToHaveOccurred: false,
+				},
+			}),
+			Entry("Creata a simple machine from secret with credentialsConfig", &data{
+				action: action{
+					machineRequest: &driver.CreateMachineRequest{
+						Machine:      newMachine("dummy-machine"),
+						MachineClass: newGCPMachineClass(gcpProviderSpec, ""),
+						Secret:       newSecret(gcpProviderSecretWithCredentialsConfig),
 					},
 				},
 				expect: expect{
