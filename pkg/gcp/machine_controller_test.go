@@ -16,7 +16,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/api/v1alpha1"
 	fake "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/fake"
 )
 
@@ -32,7 +31,7 @@ const (
 	// ListFailAtJSONUnmarshalling is the error message returned when an malformed JSON is sent to the plugin by the caller
 	ListFailAtJSONUnmarshalling string = "machine codes error: code = [Internal] message = [List machines failed on decodeProviderSpec: machine codes error: code = [Internal] message = [unexpected end of JSON input]]"
 	// FailAtNoSecretsPassed is the error message returned when no secrets are passed to the the plugin by the caller
-	FailAtNoSecretsPassed string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on validateSecret: machine codes error: code = [Internal] message = [error while validating Secret [secret serviceAccountJSON or serviceaccount.json is required field secret userData is required field]]]"
+	FailAtNoSecretsPassed string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on validateSecret: machine codes error: code = [Internal] message = [error while validating Secret [secret serviceAccountJSON, serviceaccount.json or credentialsConfig is required field secret userData is required field]]]"
 	// FailAtSecretsWithNoUserData is the error message returned when secrets map has no userdata provided by the caller
 	FailAtSecretsWithNoUserData string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on validateSecret: machine codes error: code = [Internal] message = [error while validating Secret [secret userData is required field]]]"
 	// FailAtInvalidProjectID is the error returned when an invalid project id value is provided by the caller
@@ -117,17 +116,21 @@ var _ = Describe("#MachineController", func() {
 	}
 
 	gcpProviderSecret := map[string][]byte{
-		"userData":                []byte("dummy-data"),
-		api.GCPServiceAccountJSON: []byte("{\"type\":\"service_account\",\"project_id\":\"sap-se-gcp-scp-k8s-dev\"}"),
+		"userData":           []byte("dummy-data"),
+		"serviceAccountJSON": []byte("{\"type\":\"service_account\",\"project_id\":\"sap-se-gcp-scp-k8s-dev\"}"),
+	}
+	gcpProviderSecretWithCredentialsConfig := map[string][]byte{
+		"userData":          []byte("dummy-data"),
+		"credentialsConfig": []byte("{\"type\":\"service_account\",\"project_id\":\"sap-se-gcp-scp-k8s-dev\"}"),
 	}
 
 	gcpProviderSecretWithMisssingUserData := map[string][]byte{
 		// "userData":           []byte(""),
-		api.GCPServiceAccountJSON: []byte("{\"type\":\"service_account\",\"project_id\":\"sap-se-gcp-scp-k8s-dev\"}"),
+		"serviceAccountJSON": []byte("{\"type\":\"service_account\",\"project_id\":\"sap-se-gcp-scp-k8s-dev\"}"),
 	}
 	gcpProviderSecretWithoutProjectID := map[string][]byte{
-		"userData":                []byte("dummy-data"),
-		api.GCPServiceAccountJSON: []byte("{\"type\":\"service_account\",\"project_id\":10}"),
+		"userData":           []byte("dummy-data"),
+		"serviceAccountJSON": []byte("{\"type\":\"service_account\",\"project_id\":10}"),
 	}
 
 	var _ = BeforeEach(func() {
@@ -136,8 +139,6 @@ var _ = Describe("#MachineController", func() {
 	})
 
 	Describe("##CreateMachine", func() {
-		type setup struct {
-		}
 		type action struct {
 			machineRequest *driver.CreateMachineRequest
 		}
@@ -147,7 +148,6 @@ var _ = Describe("#MachineController", func() {
 			errMessage        string
 		}
 		type data struct {
-			setup  setup
 			action action
 			expect expect
 		}
@@ -166,12 +166,28 @@ var _ = Describe("#MachineController", func() {
 				}
 			},
 
-			Entry("Creata a simple machine", &data{
+			Entry("Create a simple machine", &data{
 				action: action{
 					machineRequest: &driver.CreateMachineRequest{
 						Machine:      newMachine("dummy-machine"),
 						MachineClass: newGCPMachineClass(gcpProviderSpec, ""),
 						Secret:       newSecret(gcpProviderSecret),
+					},
+				},
+				expect: expect{
+					machineResponse: &driver.CreateMachineResponse{
+						ProviderID: "gce:///sap-se-gcp-scp-k8s-dev/europe-dummy/dummy-machine",
+						NodeName:   "dummy-machine",
+					},
+					errToHaveOccurred: false,
+				},
+			}),
+			Entry("Create a simple machine from secret with credentialsConfig", &data{
+				action: action{
+					machineRequest: &driver.CreateMachineRequest{
+						Machine:      newMachine("dummy-machine"),
+						MachineClass: newGCPMachineClass(gcpProviderSpec, ""),
+						Secret:       newSecret(gcpProviderSecretWithCredentialsConfig),
 					},
 				},
 				expect: expect{
@@ -198,7 +214,7 @@ var _ = Describe("#MachineController", func() {
 					errToHaveOccurred: false,
 				},
 			}),
-			Entry("Creata a simple machine with unsupported provider in MachineClass", &data{
+			Entry("Create a simple machine with unsupported provider in MachineClass", &data{
 				action: action{
 					machineRequest: &driver.CreateMachineRequest{
 						Machine:      newMachine("dummy-machine"),
@@ -332,8 +348,6 @@ var _ = Describe("#MachineController", func() {
 		)
 	})
 	Describe("##DeleteMachine", func() {
-		type setup struct {
-		}
 		type action struct {
 			machineRequest *driver.DeleteMachineRequest
 		}
@@ -343,7 +357,6 @@ var _ = Describe("#MachineController", func() {
 			errMessage        string
 		}
 		type data struct {
-			setup  setup
 			action action
 			expect expect
 		}
@@ -419,8 +432,6 @@ var _ = Describe("#MachineController", func() {
 		)
 	})
 	Describe("##ListMachines", func() {
-		type setup struct {
-		}
 		type action struct {
 			createMachine bool
 			createRequest *driver.CreateMachineRequest
@@ -428,7 +439,6 @@ var _ = Describe("#MachineController", func() {
 		}
 		type expect struct {
 			createResponse          *driver.CreateMachineResponse
-			listResponse            *driver.ListMachinesResponse
 			errToHaveOccurred       bool
 			listErrToHaveOccurred   bool
 			createErrToHaveOccurred bool
@@ -436,7 +446,6 @@ var _ = Describe("#MachineController", func() {
 			errMessage              string
 		}
 		type data struct {
-			setup  setup
 			action action
 			expect expect
 		}
@@ -542,8 +551,6 @@ var _ = Describe("#MachineController", func() {
 
 	})
 	Describe("##GetMachineStatus", func() {
-		type setup struct {
-		}
 		type action struct {
 			createMachine    bool
 			createRequest    *driver.CreateMachineRequest
@@ -559,7 +566,6 @@ var _ = Describe("#MachineController", func() {
 			machineCount               int
 		}
 		type data struct {
-			setup  setup
 			action action
 			expect expect
 		}
@@ -675,8 +681,6 @@ var _ = Describe("#MachineController", func() {
 		)
 	})
 	Describe("##GetVolumeIDs", func() {
-		type setup struct {
-		}
 		type action struct {
 			machineRequest *driver.GetVolumeIDsRequest
 		}
@@ -686,7 +690,6 @@ var _ = Describe("#MachineController", func() {
 			errMessage        string
 		}
 		type data struct {
-			setup  setup
 			action action
 			expect expect
 		}
@@ -775,14 +778,6 @@ var _ = Describe("#MachineController", func() {
 		)
 	})
 })
-
-func getBoolPtr(b bool) *bool {
-	return &b
-}
-
-func getStringPtr(s string) *string {
-	return &s
-}
 
 func newMachine(name string) *v1alpha1.Machine {
 	return &v1alpha1.Machine{
