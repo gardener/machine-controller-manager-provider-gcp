@@ -10,6 +10,8 @@ const (
 	// GCPAlternativeServiceAccountJSON is a constant for a key name of a secret containing the GCP credentials (service
 	// account json).
 	GCPAlternativeServiceAccountJSON = "serviceaccount.json"
+	// GCPCredentialsConfig is a constant for a key name of a secret containing the GCP credentials configuration.
+	GCPCredentialsConfig = "credentialsConfig"
 
 	// GCPDiskTypeScratch is the SCRATCH disk type
 	GCPDiskTypeScratch = "SCRATCH"

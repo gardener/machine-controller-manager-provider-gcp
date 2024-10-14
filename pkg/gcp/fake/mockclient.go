@@ -6,7 +6,7 @@ package mock
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"net/http"
 
 	compute "google.golang.org/api/compute/v1"
@@ -22,13 +22,14 @@ type PluginSPIImpl struct {
 }
 
 // NewComputeService creates a compute service instance using the mock
-func (ms *PluginSPIImpl) NewComputeService(secrets *corev1.Secret) (context.Context, *compute.Service, error) {
+func (ms *PluginSPIImpl) NewComputeService(secret *corev1.Secret) (context.Context, *compute.Service, error) {
 	ctx := context.Background()
 
-	_, serviceAccountJSON := secrets.Data[api.GCPServiceAccountJSON]
-	_, serviceAccountJSONAlternative := secrets.Data[api.GCPAlternativeServiceAccountJSON]
-	if !serviceAccountJSON && !serviceAccountJSONAlternative {
-		return nil, nil, fmt.Errorf("Missing secrets to connect to compute service")
+	_, serviceAccountJSON := secret.Data[api.GCPServiceAccountJSON]
+	_, serviceAccountJSONAlternative := secret.Data[api.GCPAlternativeServiceAccountJSON]
+	_, credentialsConfig := secret.Data[api.GCPCredentialsConfig]
+	if !serviceAccountJSON && !serviceAccountJSONAlternative && !credentialsConfig {
+		return nil, nil, errors.New("Missing secrets to connect to compute service")
 	}
 
 	// create a compute service using a mockclient work
