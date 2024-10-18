@@ -112,6 +112,12 @@ func (ms *MachinePlugin) CreateMachineUtil(_ context.Context, machineName string
 		if nic.DualStack {
 			computeNIC.StackType = "IPV4_IPV6"
 			computeNIC.Ipv6AccessType = "EXTERNAL"
+			computeNIC.AliasIpRanges = []*compute.AliasIpRange{
+				{
+					IpCidrRange:         "/24", // Specify the secondary IP alias range (for IPv4 Pods CIDR)
+					SubnetworkRangeName: "ipv4-pod-cidr",
+				},
+			}
 		}
 
 		networkInterfaces = append(networkInterfaces, computeNIC)
