@@ -742,16 +742,58 @@ are all valid URLs:
 </tr>
 <tr>
 <td>
-<code>dualStack</code>
+<code>stackType</code>
 </td>
 <td>
 <em>
-bool
+string
 </em>
 </td>
 <td>
-<p>DualStack enables the creation of machines with both IPv4 and IPv6 support.
-This allows seamless integration into modern, dual-stack network environments.</p>
+<p>StackType specifies the network stack type, such as IPV4_ONLY or IPV4_IPV6,
+to indicate the protocol version(s) supported for this network.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>ipv6accessType</code>
+</td>
+<td>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Ipv6AccessType defines the type of IPv6 access enabled, such as
+&ldquo;INTERNAL&rdquo; or &ldquo;EXTERNAL&rdquo;, to control IPv6 connectivity.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>ipCidrRange</code>
+</td>
+<td>
+<em>
+string
+</em>
+</td>
+<td>
+<p>IpCidrRange represents the mask size of the secondary range in a GCP subnet,
+which will be allocated and used by the virtual machines for internal networking.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>subnetworkRangeName</code>
+</td>
+<td>
+<em>
+string
+</em>
+</td>
+<td>
+<p>SubnetworkRangeName specifies the secondary IPv4 range in the subnetwork,
+which will serve as the IPv4 Pod CIDR for the dual-stack shoot cluster.</p>
 </td>
 </tr>
 </tbody>
