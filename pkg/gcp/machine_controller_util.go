@@ -109,13 +109,13 @@ func (ms *MachinePlugin) CreateMachineUtil(_ context.Context, machineName string
 			computeNIC.Subnetwork = fmt.Sprintf("regions/%s/subnetworks/%s", providerSpec.Region, nic.Subnetwork)
 		}
 
-		if nic.DualStack {
-			computeNIC.StackType = "IPV4_IPV6"
-			computeNIC.Ipv6AccessType = "EXTERNAL"
+		if nic.StackType == "IPV4_IPV6" {
+			computeNIC.StackType = nic.StackType
+			computeNIC.Ipv6AccessType = nic.Ipv6AccessType
 			computeNIC.AliasIpRanges = []*compute.AliasIpRange{
 				{
-					IpCidrRange:         "/24", // Specify the secondary IP alias range (for IPv4 Pods CIDR)
-					SubnetworkRangeName: "ipv4-pod-cidr",
+					IpCidrRange:         nic.IpCidrRange, // Specify the secondary IP alias range (for IPv4 Pods CIDR)
+					SubnetworkRangeName: nic.SubnetworkRangeName,
 				},
 			}
 		}
