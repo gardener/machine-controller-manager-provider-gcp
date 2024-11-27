@@ -42,7 +42,7 @@ func (h *httpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // NewMockServer creates an http server to mock the gcp compute api
 func NewMockServer() {
 
-	var srv = http.Server{
+	var srv = http.Server{ // #nosec  G112 (CWE-400) -- Only used for testing
 		Addr:    ":6666",
 		Handler: new(httpHandler),
 	}

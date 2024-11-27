@@ -28,3 +28,6 @@ kubectl
 yq_linux*
 main
 cmi-plugin
+
+# gosec
+gosec-report.sarif

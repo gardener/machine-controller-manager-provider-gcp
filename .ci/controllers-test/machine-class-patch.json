@@ -1,0 +1,9 @@
+{
+ "providerSpec": {
+  "tags": [
+   "shoot--i749592--it-gcp",
+   "kubernetes-io-cluster-shoot--i749592--it-gcp",
+   "kubernetes-io-role-integration-test"
+  ]
+ }
+}

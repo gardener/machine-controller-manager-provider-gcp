@@ -373,7 +373,7 @@ func prepareErrorf(err error, format string, args ...interface{}) error {
 		code = codes.Internal
 		wrapped = errors.Wrap(err, fmt.Sprintf(format, args...))
 	}
-	klog.V(2).Infof(wrapped.Error())
+	klog.V(2).Infof("%s", wrapped.Error())
 	return status.Error(code, wrapped.Error())
 }
 
@@ -450,5 +450,5 @@ func checkIfResourceExhaustedError(opErr *compute.OperationErrorErrors, errorMes
 	if opErr.Code == "RESOURCE_POOL_EXHAUSTED" || opErr.Code == "ZONE_RESOURCE_POOL_EXHAUSTED" || opErr.Code == "ZONE_RESOURCE_POOL_EXHAUSTED_WITH_DETAILS" || strings.Contains(opErr.Code, "QUOTA") {
 		return &errors2.MachineResourceExhaustedError{Msg: combinedErrMsg}
 	}
-	return fmt.Errorf(combinedErrMsg)
+	return fmt.Errorf("%s", combinedErrMsg)
 }
