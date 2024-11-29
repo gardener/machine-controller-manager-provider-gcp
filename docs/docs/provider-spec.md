@@ -295,6 +295,22 @@ string
 <p>Zone: in which instance is to be deployed</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>shieldedInstanceConfiguration</code>
+</td>
+<td>
+<em>
+<a href="#settings.gardener.cloud/v1alpha1.ShieldedInstanceConfiguration">
+ShieldedInstanceConfiguration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ShieldedInstanceConfiguration is a shielded instance configuration</p>
+</td>
+</tr>
 </tbody>
 </table>
 <br>
@@ -863,6 +879,70 @@ string
 <td>
 <p>Scopes: The list of scopes to be made available for this service
 account.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br>
+<h3 id="settings.gardener.cloud/v1alpha1.ShieldedInstanceConfiguration">
+<b>ShieldedInstanceConfiguration</b>
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#settings.gardener.cloud/v1alpha1.GCPProviderSpec">GCPProviderSpec</a>)
+</p>
+<p>
+<p>ShieldedInstanceConfiguration describes the shielded instance configuration for GCE VMs</p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>integrityMonitoring</code>
+</td>
+<td>
+<em>
+*bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>IntegrityMonitoring enables integrity monitoring</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>secureBoot</code>
+</td>
+<td>
+<em>
+*bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>SecureBoot enables secure boot</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>vtpm</code>
+</td>
+<td>
+<em>
+*bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Vtpm enables vTPM</p>
 </td>
 </tr>
 </tbody>

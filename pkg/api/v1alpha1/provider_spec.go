@@ -115,6 +115,25 @@ type GCPProviderSpec struct {
 
 	// Zone: in which instance is to be deployed
 	Zone string `json:"zone"`
+
+	// ShieldedInstanceConfiguration is a shielded instance configuration
+	// +optional
+	ShieldedInstanceConfiguration *ShieldedInstanceConfiguration `json:"shieldedInstanceConfiguration,omitempty"`
+}
+
+// ShieldedInstanceConfiguration describes the shielded instance configuration for GCE VMs
+type ShieldedInstanceConfiguration struct {
+	// IntegrityMonitoring enables integrity monitoring
+	// +optional
+	IntegrityMonitoring *bool `json:"integrityMonitoring,omitempty"`
+
+	// SecureBoot enables secure boot
+	// +optional
+	SecureBoot *bool `json:"secureBoot,omitempty"`
+
+	// Vtpm enables vTPM
+	// +optional
+	Vtpm *bool `json:"vtpm,omitempty"`
 }
 
 // GCPDisk describes disks for GCP.

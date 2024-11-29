@@ -75,6 +75,19 @@ func (ms *MachinePlugin) CreateMachineUtil(_ context.Context, machineName string
 		}
 	}
 
+	if providerSpec.ShieldedInstanceConfiguration != nil {
+		instance.ShieldedInstanceConfig = &compute.ShieldedInstanceConfig{}
+		if providerSpec.ShieldedInstanceConfiguration.IntegrityMonitoring != nil {
+			instance.ShieldedInstanceConfig.EnableIntegrityMonitoring = *providerSpec.ShieldedInstanceConfiguration.IntegrityMonitoring
+		}
+		if providerSpec.ShieldedInstanceConfiguration.SecureBoot != nil {
+			instance.ShieldedInstanceConfig.EnableSecureBoot = *providerSpec.ShieldedInstanceConfiguration.SecureBoot
+		}
+		if providerSpec.ShieldedInstanceConfiguration.Vtpm != nil {
+			instance.ShieldedInstanceConfig.EnableVtpm = *providerSpec.ShieldedInstanceConfiguration.Vtpm
+		}
+	}
+
 	if providerSpec.Description != nil {
 		instance.Description = *providerSpec.Description
 	}
