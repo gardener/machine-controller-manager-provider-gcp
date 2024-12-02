@@ -1,11 +1,11 @@
 module github.com/gardener/machine-controller-manager-provider-gcp
 
-go 1.22.0
+go 1.23.0
 
-toolchain go1.22.5
+toolchain go1.23.3
 
 require (
-	github.com/gardener/machine-controller-manager v0.55.0
+	github.com/gardener/machine-controller-manager v0.55.1
 	github.com/onsi/ginkgo/v2 v2.19.0
 	github.com/onsi/gomega v1.33.1
 	github.com/pkg/errors v0.9.1
