@@ -1,7 +1,9 @@
 # SPDX-FileCopyrightText: 2024 SAP SE or an SAP affiliate company and Gardener contributors
 #
 # SPDX-License-Identifier: Apache-2.0
-
+MCM_DIR   	:= $(shell go list -m -f "{{.Dir}}" github.com/gardener/machine-controller-manager)
+TOOLS_DIR := hack/tools
+include $(MCM_DIR)/hack/tools.mk
 -include .env
 export
 
@@ -96,3 +98,15 @@ clean:
 
 generate:
 	@./hack/api-reference/generate-spec-doc.sh
+
+.PHONY: add-license-headers
+add-license-headers: $(GO_ADD_LICENSE)
+	@./hack/add_license_headers.sh ${YEAR}
+
+.PHONY: sast
+sast: $(GOSEC)
+	@./hack/sast.sh
+
+.PHONY: sast-report
+sast-report: $(GOSEC)
+	@./hack/sast.sh --gosec-report true
