@@ -49,6 +49,10 @@ providerSpec:
     #- key2 # A set of additional tags attached to a machine (optional)
   region: europe-west1 # Region to attach the instanc
   zone: europe-west1-b
+# shieldedInstanceConfiguration: # An optional field to configure a shielded instance
+#   integrityMonitoring: false # Integrity monitoring is enabled by default for UEFI_COMPATIBLE machine images and can be disabled with this setting
+#   vtpm: false # A virtual Trusted Platform Module (vTPM) is enabled by default for UEFI_COMPATIBLE machine images and can be disabled with this setting
+#   secureBoot: true # This enables secureboot for the shielded instance
 secretRef: # If required
   name: test-secret
   namespace: default # Namespace where the controller would watch
