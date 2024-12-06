@@ -756,6 +756,62 @@ are all valid URLs:
 - regions/region/subnetworks/subnetwork</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>stackType</code>
+</td>
+<td>
+<em>
+string
+</em>
+</td>
+<td>
+<p>StackType specifies the network stack type, such as IPV4_ONLY or IPV4_IPV6,
+to indicate the protocol version(s) supported for this network.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>ipv6accessType</code>
+</td>
+<td>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Ipv6AccessType defines the type of IPv6 access enabled, such as
+&ldquo;INTERNAL&rdquo; or &ldquo;EXTERNAL&rdquo;, to control IPv6 connectivity.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>ipCidrRange</code>
+</td>
+<td>
+<em>
+string
+</em>
+</td>
+<td>
+<p>IpCidrRange represents the mask size of the secondary range in a GCP subnet,
+which will be allocated and used by the virtual machines for internal networking.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>subnetworkRangeName</code>
+</td>
+<td>
+<em>
+string
+</em>
+</td>
+<td>
+<p>SubnetworkRangeName specifies the secondary IPv4 range in the subnetwork,
+which will serve as the IPv4 Pod CIDR for the dual-stack shoot cluster.</p>
+</td>
+</tr>
 </tbody>
 </table>
 <br>
