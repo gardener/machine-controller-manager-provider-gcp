@@ -5,7 +5,6 @@
 package validation
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -202,29 +201,4 @@ func validateGCPGpu(gpu *api.GCPGpu, fldPath *field.Path) []error {
 	}
 
 	return allErrs
-}
-
-// Function to check the string format and mask size
-func validateMaskFormat(input string) error {
-	// Check if the string starts with "/"
-	if !strings.HasPrefix(input, "/") {
-		return errors.New("error: string must start with '/'")
-	}
-
-	// Extract the part after "/"
-	maskStr := input[1:]
-
-	// Try to convert the extracted part to an integer
-	maskSize, err := strconv.Atoi(maskStr)
-	if err != nil {
-		return errors.New("error: invalid mask size")
-	}
-
-	// Check if the mask size is within a valid range (0-32)
-	if maskSize < 0 || maskSize > 32 {
-		return errors.New("error: mask size must be between 0 and 32")
-	}
-
-	// If everything is valid, return nil (no error)
-	return nil
 }
