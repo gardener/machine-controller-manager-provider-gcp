@@ -5,7 +5,9 @@
 package validation
 
 import (
+	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	corev1 "k8s.io/api/core/v1"
@@ -110,12 +112,53 @@ func validateGCPNetworkInterfaces(interfaces []*api.GCPNetworkInterface, fldPath
 
 	for i, nic := range interfaces {
 		idxPath := fldPath.Index(i)
+
+		// Validate network and subnetwork
 		if "" == nic.Network && "" == nic.Subnetwork {
 			allErrs = append(allErrs, field.Required(idxPath, "either network or subnetwork or both is required"))
+		}
+
+		// Validate StackType
+		if nic.StackType != "" && (nic.StackType != "IPV4_IPV6" && nic.StackType != "IPV4_ONLY") {
+			allErrs = append(allErrs, field.Invalid(idxPath.Child("stackType"), nic.Ipv6AccessType, "StackType must be either IPV4_IPV6 or IPV4_ONLY"))
+		}
+
+		// Validate IPv6 Access Type
+		if nic.Ipv6AccessType != "" && (nic.IpCidrRange != "EXTERNAL" && nic.IpCidrRange != "INTERNAL") {
+			allErrs = append(allErrs, field.Invalid(idxPath.Child("ipv6AccessType"), nic.Ipv6AccessType, "IPv6 AccessType must be either EXTERNAL or INTERNAL"))
+		}
+
+		// Validate IP CIDR RANGE
+		if nic.IpCidrRange != "" {
+			if err := validateIpCidrRange(nic.IpCidrRange); err != nil {
+				allErrs = append(allErrs, field.Invalid(idxPath.Child("ipCidrRange"), nic.IpCidrRange, err.Error()))
+			}
 		}
 	}
 
 	return allErrs
+}
+
+// Function to validate CIDR range (e.g., "/xx" where xx is between 0 and 32)
+func validateIpCidrRange(cidrRange string) error {
+	// Check if the string starts with "/"
+	if !strings.HasPrefix(cidrRange, "/") {
+		return fmt.Errorf("CIDR range must start with '/'")
+	}
+
+	// Extract the mask size
+	maskStr := cidrRange[1:]
+	maskSize, err := strconv.Atoi(maskStr)
+	if err != nil {
+		return fmt.Errorf("invalid CIDR mask size: %s", maskStr)
+	}
+
+	// Validate mask size (0 to 32 for IPv4)
+	if maskSize < 0 || maskSize > 32 {
+		return fmt.Errorf("CIDR mask size must be between 0 and 32")
+	}
+
+	return nil
 }
 
 func validateGCPMetadata(metadata []*api.GCPMetadata, fldPath *field.Path) []error {
@@ -159,4 +202,29 @@ func validateGCPGpu(gpu *api.GCPGpu, fldPath *field.Path) []error {
 	}
 
 	return allErrs
+}
+
+// Function to check the string format and mask size
+func validateMaskFormat(input string) error {
+	// Check if the string starts with "/"
+	if !strings.HasPrefix(input, "/") {
+		return errors.New("error: string must start with '/'")
+	}
+
+	// Extract the part after "/"
+	maskStr := input[1:]
+
+	// Try to convert the extracted part to an integer
+	maskSize, err := strconv.Atoi(maskStr)
+	if err != nil {
+		return errors.New("error: invalid mask size")
+	}
+
+	// Check if the mask size is within a valid range (0-32)
+	if maskSize < 0 || maskSize > 32 {
+		return errors.New("error: mask size must be between 0 and 32")
+	}
+
+	// If everything is valid, return nil (no error)
+	return nil
 }
