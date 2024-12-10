@@ -121,6 +121,18 @@ func (ms *MachinePlugin) CreateMachineUtil(_ context.Context, machineName string
 		if len(nic.Subnetwork) != 0 {
 			computeNIC.Subnetwork = fmt.Sprintf("regions/%s/subnetworks/%s", providerSpec.Region, nic.Subnetwork)
 		}
+
+		if nic.StackType == "IPV4_IPV6" {
+			computeNIC.StackType = nic.StackType
+			computeNIC.Ipv6AccessType = nic.Ipv6AccessType
+			computeNIC.AliasIpRanges = []*compute.AliasIpRange{
+				{
+					IpCidrRange:         nic.IpCidrRange, // Specify the secondary IP alias range (for IPv4 Pods CIDR)
+					SubnetworkRangeName: nic.SubnetworkRangeName,
+				},
+			}
+		}
+
 		networkInterfaces = append(networkInterfaces, computeNIC)
 	}
 	instance.NetworkInterfaces = networkInterfaces

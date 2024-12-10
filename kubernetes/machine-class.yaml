@@ -31,6 +31,10 @@ providerSpec:
   networkInterfaces:
     - network: network-name # Network name to attach the instance to
       subnetwork: sub-net-name # Subnet name to attach the instance to
+      stackType: IPV4_IPV6 # Defines the stack type for the instance, enabling both IPv4 and IPv6 (dual-stack) support.
+      ipv6accessType: "EXTERNAL" # Configures IPv6 access type as external, allowing IPv6 traffic from outside the network.
+      ipCidrRange: "/24" # Specifies the CIDR range for the secondary IP range used by the instance.
+      subnetworkRangeName: "ipv4-cidr-range" # The name of the secondary IPv4 Range.
   scheduling:
     automaticRestart: true # Automatic restart of instance
     onHostMaintenance: MIGRATE # Host maintainance

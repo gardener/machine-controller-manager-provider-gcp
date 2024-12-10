@@ -300,6 +300,22 @@ type GCPNetworkInterface struct {
 	// - https://www.googleapis.com/compute/v1/projects/project/regions/region/subnetworks/subnetwork
 	// - regions/region/subnetworks/subnetwork
 	Subnetwork string `json:"subnetwork,omitempty"`
+
+	// StackType specifies the network stack type, such as IPV4_ONLY or IPV4_IPV6,
+	// to indicate the protocol version(s) supported for this network.
+	StackType string `json:"stackType"`
+
+	// Ipv6AccessType defines the type of IPv6 access enabled, such as
+	// "INTERNAL" or "EXTERNAL", to control IPv6 connectivity.
+	Ipv6AccessType string `json:"ipv6accessType"`
+
+	// IpCidrRange represents the mask size of the secondary range in a GCP subnet,
+	// which will be allocated and used by the virtual machines for internal networking.
+	IpCidrRange string `json:"ipCidrRange"`
+
+	// SubnetworkRangeName specifies the secondary IPv4 range in the subnetwork,
+	// which will serve as the IPv4 Pod CIDR for the dual-stack shoot cluster.
+	SubnetworkRangeName string `json:"subnetworkRangeName"`
 }
 
 // GCPScheduling describes scheduling configuration for GCP.
