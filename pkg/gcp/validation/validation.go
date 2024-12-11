@@ -87,8 +87,8 @@ func validateGCPDisks(disks []*api.GCPDisk, fldPath *field.Path) []error {
 			allErrs = append(allErrs, field.Required(idxPath.Child("image"), "image is required for boot disk"))
 		}
 		if disk.Encryption != nil {
-			var kmsKeyName = strings.TrimSpace(disk.Encryption.KmsKeyName)
-			var kmsKeyServiceAccount = strings.TrimSpace(disk.Encryption.KmsKeyServiceAccount)
+			kmsKeyName := strings.TrimSpace(disk.Encryption.KmsKeyName)
+			kmsKeyServiceAccount := strings.TrimSpace(disk.Encryption.KmsKeyServiceAccount)
 			if kmsKeyName == "" {
 				allErrs = append(allErrs, field.Required(idxPath.Child("kmsKeyName"), "kmsKeyName is required to be specified"))
 			}
@@ -117,14 +117,16 @@ func validateGCPNetworkInterfaces(interfaces []*api.GCPNetworkInterface, fldPath
 			allErrs = append(allErrs, field.Required(idxPath, "either network or subnetwork or both is required"))
 		}
 
-		// Validate StackType
-		if nic.StackType != "" && (nic.StackType != "IPV4_IPV6" && nic.StackType != "IPV4_ONLY") {
-			allErrs = append(allErrs, field.Invalid(idxPath.Child("stackType"), nic.Ipv6AccessType, "StackType must be either IPV4_IPV6 or IPV4_ONLY"))
+		switch nic.StackType {
+		case "", "IPV4_IPV6", "IPV4_ONLY":
+		default:
+			allErrs = append(allErrs, field.Invalid(idxPath.Child("stackType"), nic.StackType, "must be either IPV4_IPV6 or IPV4_ONLY"))
 		}
 
-		// Validate IPv6 Access Type
-		if nic.Ipv6AccessType != "" && (nic.IpCidrRange != "EXTERNAL" && nic.IpCidrRange != "INTERNAL") {
-			allErrs = append(allErrs, field.Invalid(idxPath.Child("ipv6AccessType"), nic.Ipv6AccessType, "IPv6 AccessType must be either EXTERNAL or INTERNAL"))
+		switch nic.Ipv6AccessType {
+		case "", "EXTERNAL", "INTERNAL":
+		default:
+			allErrs = append(allErrs, field.Invalid(idxPath.Child("ipv6AccessType"), nic.Ipv6AccessType, "must be either EXTERNAL or INTERNAL"))
 		}
 
 		// Validate IP CIDR RANGE
