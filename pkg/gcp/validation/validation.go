@@ -123,7 +123,7 @@ func validateGCPNetworkInterfaces(interfaces []*api.GCPNetworkInterface, fldPath
 		}
 
 		// Validate IPv6 Access Type
-		if nic.Ipv6AccessType != "" && (nic.IpCidrRange != "EXTERNAL" && nic.IpCidrRange != "INTERNAL") {
+		if nic.Ipv6AccessType != "" && (nic.Ipv6AccessType != "EXTERNAL" && nic.Ipv6AccessType != "INTERNAL") {
 			allErrs = append(allErrs, field.Invalid(idxPath.Child("ipv6AccessType"), nic.Ipv6AccessType, "IPv6 AccessType must be either EXTERNAL or INTERNAL"))
 		}
 
