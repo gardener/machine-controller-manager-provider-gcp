@@ -30,4 +30,5 @@ main
 cmi-plugin
 
 # gosec
+gosec
 gosec-report.sarif
