@@ -27,15 +27,23 @@ import (
 	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/api/v1alpha1"
 	errors2 "github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/errors"
 	"github.com/gardener/machine-controller-manager-provider-gcp/pkg/gcp/validation"
+	"github.com/gardener/machine-controller-manager-provider-gcp/pkg/instrument"
 )
 
 const (
 	// ProviderPrefix is the prefix used by the GCP provider
 	ProviderPrefix = "gce://"
+	// labels used for recording prometheus metrics
+	instanceCreateServiceLabel = "instance_create"
+	instanceDeleteServiceLabel = "instance_delete"
+	instanceListServiceLabel   = "instance_list"
+	instanceGetServiceLabel    = "instance_get"
+	operationGetServiceLabel   = "operations_get"
 )
 
 // CreateMachineUtil method is used to create a GCP machine
-func (ms *MachinePlugin) CreateMachineUtil(_ context.Context, machineName string, providerSpec *api.GCPProviderSpec, secret *corev1.Secret) (string, error) {
+func (ms *MachinePlugin) CreateMachineUtil(_ context.Context, machineName string, providerSpec *api.GCPProviderSpec, secret *corev1.Secret) (machineID string, err error) {
+	defer instrument.GcpAPIMetricRecorderFn(instanceCreateServiceLabel, &err)()
 	ctx, computeService, err := ms.SPI.NewComputeService(secret)
 	if err != nil {
 		return "", err
@@ -213,7 +221,9 @@ func encodeMachineID(project, zone, name string) string {
 }
 
 // DeleteMachineUtil deletes a VM by name
-func (ms *MachinePlugin) DeleteMachineUtil(_ context.Context, machineName string, _ string, providerSpec *api.GCPProviderSpec, secret *corev1.Secret) (string, error) {
+func (ms *MachinePlugin) DeleteMachineUtil(_ context.Context, machineName string, _ string, providerSpec *api.GCPProviderSpec, secret *corev1.Secret) (machineID string, err error) {
+	defer instrument.GcpAPIMetricRecorderFn(instanceDeleteServiceLabel, &err)()
+
 	ctx, computeService, err := ms.SPI.NewComputeService(secret)
 	if err != nil {
 		return "", err
@@ -269,7 +279,8 @@ func (ms *MachinePlugin) GetMachineStatusUtil(_ context.Context, machineName str
 }
 
 // ListMachinesUtil lists all VMs in the DC or folder
-func (ms *MachinePlugin) ListMachinesUtil(_ context.Context, providerSpec *api.GCPProviderSpec, secret *corev1.Secret) (map[string]string, error) {
+func (ms *MachinePlugin) ListMachinesUtil(_ context.Context, providerSpec *api.GCPProviderSpec, secret *corev1.Secret) (result map[string]string, err error) {
+	defer instrument.GcpAPIMetricRecorderFn(instanceListServiceLabel, &err)()
 	ctx, computeService, err := ms.SPI.NewComputeService(secret)
 	if err != nil {
 		return nil, err
@@ -280,7 +291,7 @@ func (ms *MachinePlugin) ListMachinesUtil(_ context.Context, providerSpec *api.G
 		return nil, err
 	}
 
-	result, err := getVMs(ctx, "", providerSpec, secret, project, computeService)
+	result, err = getVMs(ctx, "", providerSpec, secret, project, computeService)
 	if err != nil {
 		return nil, err
 	}
@@ -288,8 +299,9 @@ func (ms *MachinePlugin) ListMachinesUtil(_ context.Context, providerSpec *api.G
 	return result, nil
 }
 
-func getVMs(ctx context.Context, machineID string, providerSpec *api.GCPProviderSpec, _ *corev1.Secret, project string, computeService *compute.Service) (map[string]string, error) {
-	listOfVMs := make(map[string]string)
+func getVMs(ctx context.Context, machineID string, providerSpec *api.GCPProviderSpec, _ *corev1.Secret, project string, computeService *compute.Service) (listOfVMs map[string]string, err error) {
+	defer instrument.GcpAPIMetricRecorderFn(instanceGetServiceLabel, &err)()
+	listOfVMs = make(map[string]string)
 
 	searchClusterName := ""
 	searchNodeRole := ""
@@ -421,7 +433,8 @@ func ExtractProject(credentialsData map[string][]byte) (string, error) {
 }
 
 // WaitUntilOperationCompleted waits for the specified operation to be completed and returns true if it does else returns false
-func WaitUntilOperationCompleted(computeService *compute.Service, project, zone, operationName string) error {
+func WaitUntilOperationCompleted(computeService *compute.Service, project, zone, operationName string) (err error) {
+	defer instrument.GcpAPIMetricRecorderFn(operationGetServiceLabel, &err)()
 	return wait.Poll(5*time.Second, 300*time.Second, func() (bool, error) {
 		op, err := computeService.ZoneOperations.Get(project, zone, operationName).Do()
 		if err != nil {
