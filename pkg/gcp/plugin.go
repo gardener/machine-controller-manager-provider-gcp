@@ -31,6 +31,8 @@ import (
 	"google.golang.org/api/option"
 	corev1 "k8s.io/api/core/v1"
 
+	"github.com/gardener/gardener-extension-provider-gcp/pkg/gcp"
+
 	api "github.com/gardener/machine-controller-manager-provider-gcp/pkg/api/v1alpha1"
 )
 
@@ -55,6 +57,15 @@ type PluginSPIImpl struct{}
 func (spi *PluginSPIImpl) NewComputeService(secret *corev1.Secret) (context.Context, *compute.Service, error) {
 	ctx := context.Background()
 	credentialsConfigJSON := extractCredentialsFromData(secret.Data, api.GCPServiceAccountJSON, api.GCPAlternativeServiceAccountJSON, api.GCPCredentialsConfig)
+
+	sa, err := gcp.GetCredentialsConfigFromJSON([]byte(credentialsConfigJSON))
+	if err != nil {
+		return ctx, nil, fmt.Errorf("could not get service account. err: %w", err)
+	}
+
+	if sa.Type != gcp.ServiceAccountCredentialType {
+		return ctx, nil, fmt.Errorf("forbidden credential type %q used. Only %q is allowed", sa.Type, gcp.ServiceAccountCredentialType)
+	}
 
 	creds, err := google.CredentialsFromJSONWithParams(ctx, []byte(credentialsConfigJSON), google.CredentialsParams{
 		Scopes: []string{compute.CloudPlatformScope},
