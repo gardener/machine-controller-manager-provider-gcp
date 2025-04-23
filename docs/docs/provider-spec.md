@@ -521,6 +521,21 @@ the value zero will be omitted from the request because GCP client
 will not write any &ldquo;empty&rdquo; values to the request</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>storagePool</code>
+</td>
+<td>
+<em>
+string
+</em>
+</td>
+<td>
+<p>StoragePool in which the new disk is created.
+You can provide this as a partial or full URL to the resource. For example
+<a href="https://www.googleapis.com/compute/v1/projects/project/zones/zone">https://www.googleapis.com/compute/v1/projects/project/zones/zone</a></p>
+</td>
+</tr>
 </tbody>
 </table>
 <br>
