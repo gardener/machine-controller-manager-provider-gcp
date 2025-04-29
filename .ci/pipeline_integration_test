@@ -25,7 +25,7 @@ declare TEST_CREDS_SECRET=test-mc-secret
 declare IS_CONTROL_CLUSTER_SEED=true
 declare PROJECT=mcm-ci
 declare CONTROL_CLUSTER_NAMESPACE=shoot--"${PROJECT}"--"${TEST_SHOOT}"
-declate GNA_SECRET_NAME
+declare GNA_SECRET_NAME
 
 export CONTROL_KUBECONFIG
 export TARGET_KUBECONFIG
