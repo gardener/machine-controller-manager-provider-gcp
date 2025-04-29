@@ -184,6 +184,7 @@ func createAttachedDisks(disks []*api.GCPDisk, zone, machineName string) []*comp
 					SourceImage:           disk.Image,
 					ProvisionedIops:       disk.ProvisionedIops,
 					ProvisionedThroughput: disk.ProvisionedThroughput,
+					StoragePool:           disk.StoragePool,
 				},
 			}
 		}
