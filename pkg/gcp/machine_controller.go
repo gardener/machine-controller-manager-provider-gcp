@@ -80,7 +80,7 @@ func (ms *MachinePlugin) CreateMachine(ctx context.Context, req *driver.CreateMa
 
 	// Check if the MachineClass is for the supported cloud provider
 	if req.MachineClass.Provider != ProviderGCP {
-		err = fmt.Errorf("Requested for Provider '%s', we only support '%s'", req.MachineClass.Provider, ProviderGCP)
+		err = fmt.Errorf("requested for Provider '%s', we only support '%s'", req.MachineClass.Provider, ProviderGCP)
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
@@ -135,7 +135,7 @@ func (ms *MachinePlugin) DeleteMachine(ctx context.Context, req *driver.DeleteMa
 
 	// Check if the MachineClass is for the supported cloud provider
 	if req.MachineClass.Provider != ProviderGCP {
-		err := fmt.Errorf("Requested for Provider '%s', we only support '%s'", req.MachineClass.Provider, ProviderGCP)
+		err := fmt.Errorf("requested for Provider '%s', we only support '%s'", req.MachineClass.Provider, ProviderGCP)
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
@@ -185,7 +185,7 @@ func (ms *MachinePlugin) GetMachineStatus(ctx context.Context, req *driver.GetMa
 
 	// Check if the MachineClass is for the supported cloud provider
 	if req.MachineClass.Provider != ProviderGCP {
-		err = fmt.Errorf("Requested for Provider '%s', we only support '%s'", req.MachineClass.Provider, ProviderGCP)
+		err = fmt.Errorf("requested for Provider '%s', we only support '%s'", req.MachineClass.Provider, ProviderGCP)
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
@@ -235,7 +235,7 @@ func (ms *MachinePlugin) ListMachines(ctx context.Context, req *driver.ListMachi
 
 	// Check if the MachineClass is for the supported cloud provider
 	if req.MachineClass.Provider != ProviderGCP {
-		err = fmt.Errorf("Requested for Provider '%s', we only support '%s'", req.MachineClass.Provider, ProviderGCP)
+		err = fmt.Errorf("requested for Provider '%s', we only support '%s'", req.MachineClass.Provider, ProviderGCP)
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
