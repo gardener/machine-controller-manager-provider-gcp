@@ -57,7 +57,7 @@ const (
 	// FailAtSpecValidationInvalidKmsServiceAccount if kmsKeyServiceAccount invalid
 	FailAtSpecValidationInvalidKmsServiceAccount string = "machine codes error: code = [Internal] message = [Create machine \"dummy-machine\" failed on validateProviderSpec: machine codes error: code = [Internal] message = [error while validating ProviderSpec [spec.disks[0].kmsKeyServiceAccount: Required value: kmsKeyServiceAccount should either be explicitly specified without spaces or left un-specified to default to the Compute Service Agent]]]"
 
-	UnsupportedProviderError string = "machine codes error: code = [InvalidArgument] message = [Requested for Provider 'aws', we only support 'GCP']"
+	UnsupportedProviderError string = "machine codes error: code = [InvalidArgument] message = [requested for Provider 'aws', we only support 'GCP']"
 )
 
 var ms *MachinePlugin
