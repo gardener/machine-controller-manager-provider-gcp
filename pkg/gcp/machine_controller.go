@@ -24,6 +24,7 @@ package gcp
 import (
 	"fmt"
 
+	"github.com/gardener/machine-controller-manager-provider-gcp/pkg/instrument"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
@@ -36,6 +37,12 @@ const (
 	ProviderGCP = "GCP"
 	// gcePDDriverName is the name of the CSI driver for GCE PD
 	gcePDDriverName = "pd.csi.storage.gke.io"
+	// labels used for recording prometheus metrics
+	createMachineOperationLabel    = "create_machine"
+	deleteMachineOperationLabel    = "delete_machine"
+	getMachineStatusOperationLabel = "get_machine_status"
+	listMachinesOperationLabel     = "list_machine"
+	getVolumeIDsOperationLabel     = "get_volume_ids"
 )
 
 // CreateMachine handles a machine creation request
@@ -65,13 +72,15 @@ const (
 // It is optionally expected by the safety controller to use an identification mechanisms to map the VM Created by a providerSpec.
 // These could be done using tag(s)/resource-groups etc.
 // This logic is used by safety controller to delete orphan VMs which are not backed by any machine CRD
-func (ms *MachinePlugin) CreateMachine(ctx context.Context, req *driver.CreateMachineRequest) (*driver.CreateMachineResponse, error) {
+func (ms *MachinePlugin) CreateMachine(ctx context.Context, req *driver.CreateMachineRequest) (response *driver.CreateMachineResponse, err error) {
+	defer instrument.DriverAPIMetricRecorderFn(createMachineOperationLabel, &err)()
+
 	// Log messages to track start of request
 	klog.V(2).Infof("Create machine request has been received for %q", req.Machine.Name)
 
 	// Check if the MachineClass is for the supported cloud provider
 	if req.MachineClass.Provider != ProviderGCP {
-		err := fmt.Errorf("Requested for Provider '%s', we only support '%s'", req.MachineClass.Provider, ProviderGCP)
+		err = fmt.Errorf("requested for Provider '%s', we only support '%s'", req.MachineClass.Provider, ProviderGCP)
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
@@ -90,7 +99,7 @@ func (ms *MachinePlugin) CreateMachine(ctx context.Context, req *driver.CreateMa
 		return nil, prepareErrorf(err, "Create machine %q failed", req.Machine.Name)
 	}
 
-	response := &driver.CreateMachineResponse{
+	response = &driver.CreateMachineResponse{
 		ProviderID:     providerID,
 		NodeName:       req.Machine.Name,
 		LastKnownState: fmt.Sprintf("Created %s", providerID),
@@ -118,13 +127,15 @@ func (ms *MachinePlugin) InitializeMachine(_ context.Context, _ *driver.Initiali
 // LastKnownState       bytes(blob)        (Optional) Last known state of VM during the current operation.
 //
 //	Could be helpful to continue operations in future requests.
-func (ms *MachinePlugin) DeleteMachine(ctx context.Context, req *driver.DeleteMachineRequest) (*driver.DeleteMachineResponse, error) {
+func (ms *MachinePlugin) DeleteMachine(ctx context.Context, req *driver.DeleteMachineRequest) (response *driver.DeleteMachineResponse, err error) {
+	defer instrument.DriverAPIMetricRecorderFn(deleteMachineOperationLabel, &err)()
+
 	// Log messages to track delete request
 	klog.V(2).Infof("Machine deletion request has been received for %q", req.Machine.Name)
 
 	// Check if the MachineClass is for the supported cloud provider
 	if req.MachineClass.Provider != ProviderGCP {
-		err := fmt.Errorf("Requested for Provider '%s', we only support '%s'", req.MachineClass.Provider, ProviderGCP)
+		err := fmt.Errorf("requested for Provider '%s', we only support '%s'", req.MachineClass.Provider, ProviderGCP)
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
@@ -166,13 +177,15 @@ func (ms *MachinePlugin) DeleteMachine(ctx context.Context, req *driver.DeleteMa
 // NodeName             string              Returns the name of the node-object that the VM register's with Kubernetes.
 //
 //	This could be different from req.MachineName as well
-func (ms *MachinePlugin) GetMachineStatus(ctx context.Context, req *driver.GetMachineStatusRequest) (*driver.GetMachineStatusResponse, error) {
+func (ms *MachinePlugin) GetMachineStatus(ctx context.Context, req *driver.GetMachineStatusRequest) (response *driver.GetMachineStatusResponse, err error) {
+	defer instrument.DriverAPIMetricRecorderFn(getMachineStatusOperationLabel, &err)()
+
 	// Log messages to track start of request
 	klog.V(2).Infof("Machine status request has been received for %q", req.Machine.Name)
 
 	// Check if the MachineClass is for the supported cloud provider
 	if req.MachineClass.Provider != ProviderGCP {
-		err := fmt.Errorf("Requested for Provider '%s', we only support '%s'", req.MachineClass.Provider, ProviderGCP)
+		err = fmt.Errorf("requested for Provider '%s', we only support '%s'", req.MachineClass.Provider, ProviderGCP)
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
@@ -191,7 +204,7 @@ func (ms *MachinePlugin) GetMachineStatus(ctx context.Context, req *driver.GetMa
 		return nil, prepareErrorf(err, "Machine status %q failed", req.Machine.Name)
 	}
 
-	response := &driver.GetMachineStatusResponse{
+	response = &driver.GetMachineStatusResponse{
 		ProviderID: providerID,
 		NodeName:   req.Machine.Name,
 	}
@@ -214,13 +227,15 @@ func (ms *MachinePlugin) GetMachineStatus(ctx context.Context, req *driver.GetMa
 // MachineList           map<string,string>  A map containing the keys as the MachineID and value as the MachineName
 //
 //	for all machine's who where possibilly created by this ProviderSpec
-func (ms *MachinePlugin) ListMachines(ctx context.Context, req *driver.ListMachinesRequest) (*driver.ListMachinesResponse, error) {
+func (ms *MachinePlugin) ListMachines(ctx context.Context, req *driver.ListMachinesRequest) (response *driver.ListMachinesResponse, err error) {
+	defer instrument.DriverAPIMetricRecorderFn(listMachinesOperationLabel, &err)()
+
 	// Log messages to track start of request
 	klog.V(2).Infof("List machines request has been received")
 
 	// Check if the MachineClass is for the supported cloud provider
 	if req.MachineClass.Provider != ProviderGCP {
-		err := fmt.Errorf("Requested for Provider '%s', we only support '%s'", req.MachineClass.Provider, ProviderGCP)
+		err = fmt.Errorf("requested for Provider '%s', we only support '%s'", req.MachineClass.Provider, ProviderGCP)
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
@@ -252,7 +267,9 @@ func (ms *MachinePlugin) ListMachines(ctx context.Context, req *driver.ListMachi
 //
 // RESPONSE PARAMETERS (driver.GetVolumeIDsResponse)
 // VolumeIDs             repeated string     VolumeIDs is a repeated list of VolumeIDs.
-func (ms *MachinePlugin) GetVolumeIDs(_ context.Context, req *driver.GetVolumeIDsRequest) (*driver.GetVolumeIDsResponse, error) {
+func (ms *MachinePlugin) GetVolumeIDs(_ context.Context, req *driver.GetVolumeIDsRequest) (response *driver.GetVolumeIDsResponse, err error) {
+	defer instrument.DriverAPIMetricRecorderFn(getVolumeIDsOperationLabel, &err)()
+
 	// Log messages to track start of request
 	klog.V(2).Infof("GetVolumeIDs request has been received")
 	klog.V(4).Infof("PVSpecList = %q", req.PVSpecs)
@@ -272,7 +289,7 @@ func (ms *MachinePlugin) GetVolumeIDs(_ context.Context, req *driver.GetVolumeID
 	klog.V(2).Infof("GetVolumeIDs machines request has been processed successfully (%d/%d).", len(volumeIDs), len(req.PVSpecs))
 	klog.V(4).Infof("GetVolumeIDs volumneIDs: %v", volumeIDs)
 
-	response := &driver.GetVolumeIDsResponse{
+	response = &driver.GetVolumeIDsResponse{
 		VolumeIDs: volumeIDs,
 	}
 	return response, nil
