@@ -416,7 +416,7 @@ func prepareErrorf(err error, format string, args ...interface{}) error {
 
 // ExtractProject returns the name of the project which is extracted from the secret
 func ExtractProject(credentialsData map[string][]byte) (string, error) {
-	credentialsConfigJSON := extractCredentialsFromData(credentialsData, api.GCPServiceAccountJSON, api.GCPAlternativeServiceAccountJSON, api.GCPCredentialsConfig)
+	credentialsConfigJSON, _ := extractCredentialsFromData(credentialsData, api.GCPServiceAccountJSON, api.GCPAlternativeServiceAccountJSON, api.GCPCredentialsConfig)
 
 	var j struct {
 		Project string `json:"project_id"`
