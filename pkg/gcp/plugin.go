@@ -41,10 +41,10 @@ import (
 )
 
 var (
-	allowedTokenURL                             = "https://sts.googleapis.com/v1/token"
+	allowedTokenURL                             = "https://sts.googleapis.com/v1/token" // #nosec G101 (CWE-798) -- Constant value, not subject to change
 	allowedServiceAccountImpersonationURLRegExp = regexp.MustCompile(`^https://iamcredentials\.googleapis\.com/v1/projects/-/serviceAccounts/.+:generateAccessToken$`)
-	allowedSubjectTokenType                     = "urn:ietf:params:oauth:token-type:jwt"
-	allowedCredSourceFilePath                   = "/var/run/secrets/gardener.cloud/workload-identity/token"
+	allowedSubjectTokenType                     = "urn:ietf:params:oauth:token-type:jwt"                    // #nosec G101 (CWE-798) -- Constant value, not subject to change
+	allowedCredSourceFilePath                   = "/var/run/secrets/gardener.cloud/workload-identity/token" // #nosec G101 (CWE-798) -- Constant value, not subject to change
 )
 
 var serviceAccountAllowedFields = map[string]struct{}{
