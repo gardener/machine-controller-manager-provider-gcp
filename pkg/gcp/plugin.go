@@ -22,10 +22,13 @@ Modifications Copyright SAP SE or an SAP affiliate company and Gardener contribu
 package gcp
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"golang.org/x/oauth2/google/externalaccount"
 	"maps"
+	"os"
 	"regexp"
 	"slices"
 	"strings"
@@ -59,6 +62,21 @@ var serviceAccountAllowedFields = map[string]struct{}{
 	"private_key_id":              {},
 	"private_key":                 {},
 	"token_uri":                   {},
+}
+
+type tokenRetriever struct {
+	file string
+}
+
+var _ externalaccount.SubjectTokenSupplier = &tokenRetriever{}
+
+func (t *tokenRetriever) SubjectToken(_ context.Context, _ externalaccount.SupplierOptions) (string, error) {
+	token, err := os.ReadFile(t.file)
+	if err != nil {
+		return "", err
+	}
+
+	return string(bytes.TrimSpace(token)), nil
 }
 
 // PluginSPI provides an interface to deal with cloud provider session
@@ -114,16 +132,23 @@ func (spi *PluginSPIImpl) NewComputeService(secret *corev1.Secret) (context.Cont
 	} else if sa.Type == gcp.ExternalAccountCredentialType {
 		err := validateExtAccountFields(sa)
 		if err != nil {
-			return nil, nil, fmt.Errorf("invalid secret. Err: %w", err)
+			return nil, nil, fmt.Errorf("invalid credentials config: %w", err)
 		}
-		creds, err := google.CredentialsFromJSONWithParams(ctx, []byte(credentialsConfigJSON), google.CredentialsParams{
-			Scopes: []string{compute.CloudPlatformScope},
-		})
+		conf := externalaccount.Config{
+			Audience:                       sa.Audience,
+			SubjectTokenType:               sa.SubjectTokenType,
+			TokenURL:                       sa.TokenURL,
+			Scopes:                         []string{compute.CloudPlatformScope},
+			SubjectTokenSupplier:           &tokenRetriever{file: sa.TokenFilePath},
+			UniverseDomain:                 sa.UniverseDomain,
+			ServiceAccountImpersonationURL: sa.ServiceAccountImpersonationURL,
+		}
+		ts, err := externalaccount.NewTokenSource(ctx, conf)
 		if err != nil {
-			return nil, nil, fmt.Errorf("cannot parse serviceAccountJSON secret value: %w", err)
+			return nil, nil, err
 		}
-		clientOption := option.WithTokenSource(creds.TokenSource)
-		computeService, err := compute.NewService(ctx, clientOption)
+		computeService, err := compute.NewService(ctx, option.WithTokenSource(ts))
+
 		if err != nil {
 			return nil, nil, err
 		}
@@ -136,19 +161,19 @@ func (spi *PluginSPIImpl) NewComputeService(secret *corev1.Secret) (context.Cont
 
 func validateExtAccountFields(sa *gcp.CredentialsConfig) error {
 	if strings.TrimSpace(sa.TokenURL) != allowedTokenURL {
-		return fmt.Errorf("invalid token URL found")
+		return fmt.Errorf("invalid token_url: should equal %s", allowedTokenURL)
 	}
 
-	if !allowedServiceAccountImpersonationURLRegExp.MatchString(sa.ServiceAccountImpersonationURL) {
-		return fmt.Errorf("invalid service_account_impersonation_url found in secret")
+	if len(sa.ServiceAccountImpersonationURL) > 0 && !allowedServiceAccountImpersonationURLRegExp.MatchString(sa.ServiceAccountImpersonationURL) {
+		return fmt.Errorf("invalid service_account_impersonation_url: should match reg expression %s", allowedServiceAccountImpersonationURLRegExp.String())
 	}
 
 	if strings.TrimSpace(sa.SubjectTokenType) != allowedSubjectTokenType {
-		return fmt.Errorf("invalid subject_token_type found in secret")
+		return fmt.Errorf("invalid subject_token_type: should equal %s", allowedSubjectTokenType)
 	}
 
 	if strings.TrimSpace(sa.TokenFilePath) != allowedCredSourceFilePath {
-		return fmt.Errorf("invalid credential_source file path present")
+		return fmt.Errorf("invalid credential_source: should equal %s", allowedCredSourceFilePath)
 	}
 
 	return nil
