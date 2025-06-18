@@ -240,7 +240,8 @@ type GCPDisk struct {
 	// StoragePool in which the new disk is created.
 	// You can provide this as a partial or full URL to the resource. For example
 	// https://www.googleapis.com/compute/v1/projects/project/zones/zone
-	StoragePool string `json:"storagePool,omitempty"`
+	// +optional
+	StoragePool *string `json:"storagePool,omitempty"`
 }
 
 // GCPDiskEncryption holds references to encryption data

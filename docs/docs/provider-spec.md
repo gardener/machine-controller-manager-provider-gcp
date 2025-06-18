@@ -527,10 +527,11 @@ will not write any &ldquo;empty&rdquo; values to the request</p>
 </td>
 <td>
 <em>
-string
+*string
 </em>
 </td>
 <td>
+<em>(Optional)</em>
 <p>StoragePool in which the new disk is created.
 You can provide this as a partial or full URL to the resource. For example
 <a href="https://www.googleapis.com/compute/v1/projects/project/zones/zone">https://www.googleapis.com/compute/v1/projects/project/zones/zone</a></p>
