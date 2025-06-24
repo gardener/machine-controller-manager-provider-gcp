@@ -311,6 +311,62 @@ ShieldedInstanceConfiguration
 <p>ShieldedInstanceConfiguration is a shielded instance configuration</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>advancedMachineFeatures</code>
+</td>
+<td>
+<em>
+<a href="#settings.gardener.cloud/v1alpha1.AdvancedMachineFeatures">
+AdvancedMachineFeatures
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>AdvancedMachineFeatures specifies advanced options like BIOS or OS configuration.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br>
+<h3 id="settings.gardener.cloud/v1alpha1.AdvancedMachineFeatures">
+<b>AdvancedMachineFeatures</b>
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#settings.gardener.cloud/v1alpha1.GCPProviderSpec">GCPProviderSpec</a>)
+</p>
+<p>
+<p>AdvancedMachineFeatures: Specifies options for controlling advanced machine
+features. Options that would traditionally be configured in a BIOS belong
+here. Features that require operating system support may have corresponding
+entries in the GuestOsFeatures of an Image (e.g., whether or not the OS in
+the Image supports nested virtualization being enabled or disabled).</p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>enableNestedVirtualization</code>
+</td>
+<td>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>EnableNestedVirtualization: Whether to enable nested virtualization or not
+(default is false).</p>
+</td>
+</tr>
 </tbody>
 </table>
 <br>
