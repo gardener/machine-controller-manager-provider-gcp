@@ -96,6 +96,12 @@ func (ms *MachinePlugin) CreateMachineUtil(_ context.Context, machineName string
 		}
 	}
 
+	if providerSpec.AdvancedMachineFeatures != nil {
+		instance.AdvancedMachineFeatures = &compute.AdvancedMachineFeatures{
+			EnableNestedVirtualization: providerSpec.AdvancedMachineFeatures.EnableNestedVirtualization,
+		}
+	}
+
 	if providerSpec.Description != nil {
 		instance.Description = *providerSpec.Description
 	}
