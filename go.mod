@@ -6,7 +6,7 @@ toolchain go1.24.1
 
 require (
 	github.com/gardener/gardener-extension-provider-gcp v1.43.1
-	github.com/gardener/machine-controller-manager v0.58.0
+	github.com/gardener/machine-controller-manager v0.59.2
 	github.com/onsi/ginkgo/v2 v2.23.0
 	github.com/onsi/gomega v1.36.2
 	github.com/pkg/errors v0.9.1
