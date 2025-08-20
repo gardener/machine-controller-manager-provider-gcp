@@ -24,11 +24,11 @@ package gcp
 import (
 	"fmt"
 
+	"context"
 	"github.com/gardener/machine-controller-manager-provider-gcp/pkg/instrument"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
-	"golang.org/x/net/context"
 	"k8s.io/klog/v2"
 )
 
