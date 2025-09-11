@@ -13,11 +13,11 @@ import (
 
 	"k8s.io/utils/ptr"
 
+	"context"
 	"github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
 	"github.com/pkg/errors"
-	"golang.org/x/net/context"
 	"google.golang.org/api/compute/v1"
 	"google.golang.org/api/googleapi"
 	corev1 "k8s.io/api/core/v1"
