@@ -119,6 +119,10 @@ type GCPProviderSpec struct {
 	// ShieldedInstanceConfiguration is a shielded instance configuration
 	// +optional
 	ShieldedInstanceConfiguration *ShieldedInstanceConfiguration `json:"shieldedInstanceConfiguration,omitempty"`
+
+	// AdvancedMachineFeatures specifies advanced options like BIOS or OS configuration.
+	// +optional
+	AdvancedMachineFeatures *AdvancedMachineFeatures `json:"advancedMachineFeatures,omitempty"`
 }
 
 // ShieldedInstanceConfiguration describes the shielded instance configuration for GCE VMs
@@ -134,6 +138,17 @@ type ShieldedInstanceConfiguration struct {
 	// Vtpm enables vTPM
 	// +optional
 	Vtpm *bool `json:"vtpm,omitempty"`
+}
+
+// AdvancedMachineFeatures specifies options for controlling advanced machine
+// features. Options that would traditionally be configured in a BIOS belong
+// here. Features that require operating system support may have corresponding
+// entries in the GuestOsFeatures of an Image (e.g., whether or not the OS in
+// the Image supports nested virtualization being enabled or disabled).
+type AdvancedMachineFeatures struct {
+	// EnableNestedVirtualization: Whether to enable nested virtualization or not
+	// (default is false).
+	EnableNestedVirtualization bool `json:"enableNestedVirtualization,omitempty"`
 }
 
 // GCPDisk describes disks for GCP.
