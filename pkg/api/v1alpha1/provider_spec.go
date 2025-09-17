@@ -309,6 +309,9 @@ type GCPNetworkInterface struct {
 	// "INTERNAL" or "EXTERNAL", to control IPv6 connectivity.
 	Ipv6AccessType string `json:"ipv6accessType"`
 
+	// UseAliasIPs: Whether to assign alias IPs to the instance.
+	UseAliasIPs bool `json:"useAliasIPs"`
+
 	// IpCidrRange represents the mask size of the secondary range in a GCP subnet,
 	// which will be allocated and used by the virtual machines for internal networking.
 	IpCidrRange string `json:"ipCidrRange"`
