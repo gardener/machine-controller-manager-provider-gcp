@@ -136,7 +136,7 @@ func (ms *MachinePlugin) CreateMachineUtil(_ context.Context, machineName string
 			computeNIC.Subnetwork = fmt.Sprintf("regions/%s/subnetworks/%s", providerSpec.Region, nic.Subnetwork)
 		}
 
-		if nic.StackType == "IPV4_IPV6" {
+		if nic.StackType == "IPV4_IPV6" || nic.UseAliasIPs {
 			computeNIC.StackType = nic.StackType
 			computeNIC.Ipv6AccessType = nic.Ipv6AccessType
 			computeNIC.AliasIpRanges = []*compute.AliasIpRange{
