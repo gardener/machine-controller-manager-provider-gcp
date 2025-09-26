@@ -310,6 +310,7 @@ type GCPNetworkInterface struct {
 	Ipv6AccessType string `json:"ipv6accessType"`
 
 	// UseAliasIPs: Whether to assign alias IPs to the instance.
+	// This value is meant to be used and will only have an effect on single stack networks.
 	UseAliasIPs bool `json:"useAliasIPs"`
 
 	// IpCidrRange represents the mask size of the secondary range in a GCP subnet,
