@@ -251,6 +251,12 @@ type GCPDisk struct {
 	// the value zero will be omitted from the request because GCP client
 	// will not write any "empty" values to the request
 	ProvisionedThroughput int64 `json:"provisionedThroughput,omitempty"`
+
+	// StoragePool in which the new disk is created.
+	// You can provide this as a partial or full URL to the resource. For example
+	// https://www.googleapis.com/compute/v1/projects/project/zones/zone
+	// +optional
+	StoragePool *string `json:"storagePool,omitempty"`
 }
 
 // GCPDiskEncryption holds references to encryption data
