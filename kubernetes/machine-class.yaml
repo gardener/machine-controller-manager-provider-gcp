@@ -19,7 +19,7 @@ providerSpec:
 #       kmsKeyServiceAccount: "id@project.iam.gserviceaccount.com" # email of service account (optional)
 #     provisionedIops: 3000 # IOPS that the disk can handle (optional)
 #     provisionedThroughput: 140 # throughput unit in MB per sec (optional)
-#     storagePool: zones/zone/storagePools/storagePool # StoragePool where the new disk is created (optional)
+#     storagePool: projects/<projectName>/zones/<zoneName>/storagePools/<storagePoolName> # StoragePool where the new disk is created (optional). Can be passed as a partial or full URL to the resource
       labels:
         name: test-mc # Label assigned to the disk
   labels:
