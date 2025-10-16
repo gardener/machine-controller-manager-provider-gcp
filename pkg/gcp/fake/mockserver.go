@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 
 	compute "google.golang.org/api/compute/v1"
@@ -134,12 +135,16 @@ func handleList(w http.ResponseWriter, r *http.Request) {
 		pageToken := r.URL.Query().Get("pageToken")
 		maxResults := DefaultMockPageSize
 		if mr := r.URL.Query().Get("maxResults"); mr != "" {
-			fmt.Sscanf(mr, "%d", &maxResults)
+			if val, err := strconv.Atoi(mr); err == nil {
+				maxResults = val
+			}
 		}
 
 		startIndex := 0
 		if pageToken != "" {
-			fmt.Sscanf(pageToken, "%d", &startIndex)
+			if val, err := strconv.Atoi(pageToken); err == nil {
+				startIndex = val
+			}
 		}
 
 		endIndex := startIndex + maxResults
