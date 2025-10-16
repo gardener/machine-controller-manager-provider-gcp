@@ -565,20 +565,6 @@ var _ = Describe("#MachineController", func() {
 					errMessage:            UnsupportedProviderError,
 				},
 			}),
-
-			Entry("List machines across multiple pages", &data{
-				action: action{
-					createMachine: false,
-					listRequest: &driver.ListMachinesRequest{
-						MachineClass: newGCPMachineClass(gcpProviderSpec, ""),
-						Secret:       newSecret(gcpProviderSecret),
-					},
-				},
-				expect: expect{
-					errToHaveOccurred: false,
-					machineCount:      0,
-				},
-			}),
 		)
 
 		It("List all machines across multiple pages", func() {
