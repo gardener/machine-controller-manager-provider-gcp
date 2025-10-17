@@ -147,10 +147,7 @@ func handleList(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		endIndex := startIndex + maxResults
-		if endIndex > len(Instances) {
-			endIndex = len(Instances)
-		}
+		endIndex := min(startIndex+maxResults, len(Instances))
 
 		pageInstances := Instances[startIndex:endIndex]
 
