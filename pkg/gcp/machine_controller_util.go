@@ -14,6 +14,7 @@ import (
 	"k8s.io/utils/ptr"
 
 	"context"
+
 	"github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
@@ -328,7 +329,10 @@ func getVMs(ctx context.Context, machineID string, providerSpec *api.GCPProvider
 	zone := providerSpec.Zone
 
 	req := computeService.Instances.List(project, zone)
+	pageNumber := 0
 	if err := req.Pages(ctx, func(page *compute.InstanceList) error {
+		pageNumber++
+		klog.V(3).Infof("Processing page %d with %d instances", pageNumber, len(page.Items))
 		for _, server := range page.Items {
 			clusterName := ""
 			nodeRole := ""
@@ -357,6 +361,7 @@ func getVMs(ctx context.Context, machineID string, providerSpec *api.GCPProvider
 	}); err != nil {
 		return listOfVMs, err
 	}
+	klog.V(3).Infof("Completed processing %d pages", pageNumber)
 
 	return listOfVMs, nil
 }
