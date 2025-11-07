@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 
 	compute "google.golang.org/api/compute/v1"
@@ -19,6 +20,10 @@ import (
 
 // Instances stores and manages the instances during create,delete and list calls
 var Instances []*compute.Instance
+
+// DefaultMockPageSize is the default page size used by the mock server for pagination testing.
+// This can be modified in tests to simulate different pagination scenarios
+var DefaultMockPageSize = 500
 
 var singleConnHandler = make(chan struct{})
 
@@ -127,10 +132,34 @@ func handleList(w http.ResponseWriter, r *http.Request) {
 		}
 		_ = json.NewEncoder(w).Encode(operation)
 	} else { // this is the regular list call handling for VM
+		pageToken := r.URL.Query().Get("pageToken")
+		maxResults := DefaultMockPageSize
+		if mr := r.URL.Query().Get("maxResults"); mr != "" {
+			if val, err := strconv.Atoi(mr); err == nil {
+				maxResults = val
+			}
+		}
+
+		startIndex := 0
+		if pageToken != "" {
+			if val, err := strconv.Atoi(pageToken); err == nil {
+				startIndex = val
+			}
+		}
+
+		endIndex := min(startIndex+maxResults, len(Instances))
+
+		pageInstances := Instances[startIndex:endIndex]
 
 		instances := compute.InstanceList{
-			Items: Instances,
+			Items: pageInstances,
 		}
+
+		// Set NextPageToken if there are more items
+		if endIndex < len(Instances) {
+			instances.NextPageToken = fmt.Sprintf("%d", endIndex)
+		}
+
 		_ = json.NewEncoder(w).Encode(instances)
 
 	}

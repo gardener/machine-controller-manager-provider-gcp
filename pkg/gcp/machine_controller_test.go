@@ -6,6 +6,7 @@ package gcp
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	v1alpha1 "github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
@@ -565,6 +566,52 @@ var _ = Describe("#MachineController", func() {
 				},
 			}),
 		)
+
+		It("List all machines across multiple pages", func() {
+			ctx := context.Background()
+
+			fake.DefaultMockPageSize = 2
+
+			machineNames := []string{
+				"pagination-test-machine-1",
+				"pagination-test-machine-2",
+				"pagination-test-machine-3",
+				"pagination-test-machine-4",
+				"pagination-test-machine-5",
+				"pagination-test-machine-6",
+			}
+
+			for _, machineName := range machineNames {
+				createRequest := &driver.CreateMachineRequest{
+					Machine:      newMachine(machineName),
+					MachineClass: newGCPMachineClass(gcpProviderSpec, ""),
+					Secret:       newSecret(gcpProviderSecret),
+				}
+				_, err := ms.CreateMachine(ctx, createRequest)
+				Expect(err).ToNot(HaveOccurred())
+			}
+
+			listRequest := &driver.ListMachinesRequest{
+				MachineClass: newGCPMachineClass(gcpProviderSpec, ""),
+				Secret:       newSecret(gcpProviderSecret),
+			}
+			listResponse, err := ms.ListMachines(ctx, listRequest)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(listResponse).ToNot(BeNil())
+
+			Expect(len(listResponse.MachineList)).To(Equal(len(machineNames)))
+
+			for _, machineName := range machineNames {
+				found := false
+				for _, responseMachineName := range listResponse.MachineList {
+					if responseMachineName == machineName {
+						found = true
+						break
+					}
+				}
+				Expect(found).To(BeTrue(), fmt.Sprintf("Machine %s should be in the list", machineName))
+			} // Should return all created machines, not just those in the first page
+		})
 
 	})
 	Describe("##GetMachineStatus", func() {
