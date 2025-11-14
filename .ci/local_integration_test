@@ -157,14 +157,6 @@ then
     exit 1
 fi
 
-printf "\e[33mEnter the gardener-node-agent secret name. (If gardener-node-agent authorizer webhook is enabled, then this value is compulsory. Link to PR:https://github.com/gardener/gardener/pull/10535. The value can be found in machineClass.providerSpec.tags/labels. \e[0m\n"
-read GNA_SECRET_NAME
-if [ -z "$GNA_SECRET_NAME" ]
-then
-    printf "\e[31m GNA Secret name is empty\e[0m\n"
-fi
-export GNA_SECRET_NAME=$GNA_SECRET_NAME
-
 if [ "$IS_CONTROL_CLUSTER_SEED" = true ]
 then
     cd $MCM_REPO_PATH
@@ -238,6 +230,13 @@ fi
 
 set -o allexport
 source .env
+printf "\e[33mFetching the gardener-node-agent secret name. (If gardener-node-agent authorizer webhook is enabled, then this value is compulsory. Link to PR:https://github.com/gardener/gardener/pull/10535. The value can be found in machineClass.providerSpec.tags/labels. \e[0m\n"
+GNA_SECRET_NAME=$(kubectl --kubeconfig=$CONTROL_KUBECONFIG get mcc -n $CONTROL_CLUSTER_NAMESPACE -o jsonpath='{.items[0].providerSpec.labels.worker_gardener_cloud_gardener-node-agent-secret-name}')
+if [ -z "$GNA_SECRET_NAME" ]
+then
+    printf "\e[31m GNA Secret name is empty\e[0m\n"
+fi
+export GNA_SECRET_NAME=$GNA_SECRET_NAME
 set +o allexport
 
 CREDENTIALS_SECRET_NAME=shoot-operator-"$PROVIDER"-team
