@@ -29,7 +29,7 @@ func (ms *PluginSPIImpl) NewComputeService(secret *corev1.Secret) (context.Conte
 	_, serviceAccountJSONAlternative := secret.Data[api.GCPAlternativeServiceAccountJSON]
 	_, credentialsConfig := secret.Data[api.GCPCredentialsConfig]
 	if !serviceAccountJSON && !serviceAccountJSONAlternative && !credentialsConfig {
-		return nil, nil, errors.New("Missing secrets to connect to compute service")
+		return nil, nil, errors.New("missing secrets to connect to compute service")
 	}
 
 	// create a compute service using a mockclient work

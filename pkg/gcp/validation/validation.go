@@ -22,13 +22,13 @@ func ValidateProviderSpec(spec *api.GCPProviderSpec) []error {
 
 	allErrs = append(allErrs, validateGCPDisks(spec.Disks, fldPath.Child("disks"))...)
 
-	if "" == spec.MachineType {
+	if spec.MachineType == "" {
 		allErrs = append(allErrs, field.Required(fldPath.Child("machineType"), "machineType is required"))
 	}
-	if "" == spec.Region {
+	if spec.Region == "" {
 		allErrs = append(allErrs, field.Required(fldPath.Child("region"), "region is required"))
 	}
-	if "" == spec.Zone {
+	if spec.Zone == "" {
 		allErrs = append(allErrs, field.Required(fldPath.Child("zone"), "zone is required"))
 	}
 
@@ -74,7 +74,7 @@ func ValidateSecret(secret *corev1.Secret) []error {
 func validateGCPDisks(disks []*api.GCPDisk, fldPath *field.Path) []error {
 	var allErrs []error
 
-	if 0 == len(disks) {
+	if len(disks) == 0 {
 		allErrs = append(allErrs, field.Required(fldPath, "at least one disk is required"))
 	}
 
@@ -83,7 +83,7 @@ func validateGCPDisks(disks []*api.GCPDisk, fldPath *field.Path) []error {
 		if disk.Type == api.GCPDiskTypeScratch && (disk.Interface != api.GCPDiskInterfaceNVME && disk.Interface != api.GCPDiskInterfaceSCSI) {
 			allErrs = append(allErrs, field.NotSupported(idxPath.Child("interface"), disk.Interface, []string{api.GCPDiskInterfaceNVME, api.GCPDiskInterfaceSCSI}))
 		}
-		if disk.Boot && "" == disk.Image {
+		if disk.Boot && disk.Image == "" {
 			allErrs = append(allErrs, field.Required(idxPath.Child("image"), "image is required for boot disk"))
 		}
 		if disk.Encryption != nil {
@@ -105,7 +105,7 @@ func validateGCPDisks(disks []*api.GCPDisk, fldPath *field.Path) []error {
 func validateGCPNetworkInterfaces(interfaces []*api.GCPNetworkInterface, fldPath *field.Path) []error {
 	var allErrs []error
 
-	if 0 == len(interfaces) {
+	if len(interfaces) == 0 {
 		allErrs = append(allErrs, field.Required(fldPath.Child("networkInterfaces"), "at least one network interface is required"))
 	}
 
@@ -113,7 +113,7 @@ func validateGCPNetworkInterfaces(interfaces []*api.GCPNetworkInterface, fldPath
 		idxPath := fldPath.Index(i)
 
 		// Validate network and subnetwork
-		if "" == nic.Network && "" == nic.Subnetwork {
+		if nic.Network == "" && nic.Subnetwork == "" {
 			allErrs = append(allErrs, field.Required(idxPath, "either network or subnetwork or both is required"))
 		}
 
@@ -178,7 +178,7 @@ func validateGCPMetadata(metadata []*api.GCPMetadata, fldPath *field.Path) []err
 func validateGCPScheduling(scheduling api.GCPScheduling, gpu *api.GCPGpu, fldPath *field.Path) []error {
 	var allErrs []error
 
-	if "MIGRATE" != scheduling.OnHostMaintenance && "TERMINATE" != scheduling.OnHostMaintenance {
+	if scheduling.OnHostMaintenance != "MIGRATE" && scheduling.OnHostMaintenance != "TERMINATE" {
 		allErrs = append(allErrs, field.NotSupported(fldPath.Child("onHostMaintenance"), scheduling.OnHostMaintenance, []string{"MIGRATE", "TERMINATE"}))
 	}
 
