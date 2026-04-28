@@ -4,7 +4,7 @@ go 1.26.2
 
 require (
 	github.com/gardener/gardener-extension-provider-gcp v1.43.1
-	github.com/gardener/machine-controller-manager v0.61.3
+	github.com/gardener/machine-controller-manager v0.62.0
 	github.com/onsi/ginkgo/v2 v2.27.2
 	github.com/onsi/gomega v1.38.2
 	github.com/pkg/errors v0.9.1
@@ -118,7 +118,7 @@ require (
 	k8s.io/apiserver v0.35.1 // indirect
 	k8s.io/autoscaler/vertical-pod-autoscaler v1.2.2 // indirect
 	k8s.io/client-go v0.35.1 // indirect
-	k8s.io/cluster-bootstrap v0.32.2 // indirect
+	k8s.io/cluster-bootstrap v0.34.0 // indirect
 	k8s.io/kube-aggregator v0.32.2 // indirect
 	k8s.io/kube-openapi v0.0.0-20250910181357-589584f1c912 // indirect
 	k8s.io/kubelet v0.32.2 // indirect
