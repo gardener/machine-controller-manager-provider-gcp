@@ -26,12 +26,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"golang.org/x/oauth2/google/externalaccount"
 	"maps"
 	"os"
 	"regexp"
 	"slices"
 	"strings"
+
+	"golang.org/x/oauth2/google/externalaccount"
 
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/compute/v1"
@@ -106,8 +107,8 @@ func (spi *PluginSPIImpl) NewComputeService(secret *corev1.Secret) (context.Cont
 		return ctx, nil, fmt.Errorf("could not get service account from %q field: %w", credentialKey, err)
 	}
 
-	if sa.Type == gcp.ServiceAccountCredentialType {
-
+	switch sa.Type {
+	case gcp.ServiceAccountCredentialType:
 		fields := map[string]string{}
 		if err := json.Unmarshal([]byte(credentialsConfigJSON), &fields); err != nil {
 			return ctx, nil, fmt.Errorf("failed to unmarshal '%q' field: %w", credentialKey, err)
@@ -129,7 +130,7 @@ func (spi *PluginSPIImpl) NewComputeService(secret *corev1.Secret) (context.Cont
 		}
 		return ctx, computeService, nil
 
-	} else if sa.Type == gcp.ExternalAccountCredentialType {
+	case gcp.ExternalAccountCredentialType:
 		err := validateExtAccountFields(sa)
 		if err != nil {
 			return nil, nil, fmt.Errorf("invalid credentials config: %w", err)
@@ -154,7 +155,7 @@ func (spi *PluginSPIImpl) NewComputeService(secret *corev1.Secret) (context.Cont
 		}
 		return ctx, computeService, nil
 
-	} else {
+	default:
 		return ctx, nil, fmt.Errorf("forbidden credential type %q used. Only %q or %q is allowed", sa.Type, gcp.ServiceAccountCredentialType, gcp.ExternalAccountCredentialType)
 	}
 }
