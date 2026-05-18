@@ -88,7 +88,7 @@ func (r *ResourcesTrackerImpl) probeResources() ([]string, []string, []string, e
 
 	err = json.Unmarshal([]byte(r.MachineClass.ProviderSpec.Raw), &providerSpec)
 	if err != nil {
-		log.Printf("Error occured while performing unmarshal %s", err.Error())
+		log.Printf("Error occurred while performing unmarshal %s", err.Error())
 		return nil, nil, nil, err
 	}
 
