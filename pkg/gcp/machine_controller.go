@@ -154,7 +154,7 @@ func (ms *MachinePlugin) DeleteMachine(ctx context.Context, req *driver.DeleteMa
 		return nil, prepareErrorf(err, "Delete machine %q failed", req.Machine.Name)
 	}
 
-	klog.V(2).Infof("VM %q for Machine %q was terminated succesfully", providerID, req.Machine.Name)
+	klog.V(2).Infof("VM %q for Machine %q was terminated successfully", providerID, req.Machine.Name)
 
 	return &driver.DeleteMachineResponse{}, nil
 }
