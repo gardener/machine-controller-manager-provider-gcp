@@ -14,8 +14,10 @@ BINARY_PATH         := bin/
 IMAGE_REPOSITORY    := europe-docker.pkg.dev/gardener-project/public/gardener/machine-controller-manager-provider-gcp
 IMAGE_TAG           := $(shell cat VERSION)
 MACHINE_CONTROLLER_MANAGER_DEPLOYMENT_NAME := machine-controller-manager
-TAGS_ARE_STRINGS := true
-LEADER_ELECT := "true"
+TAGS_ARE_STRINGS 	:= true
+LEADER_ELECT 		:= "true"
+TARGET_PLATFORMS    ?= linux/$(shell go env GOARCH)
+
 #########################################
 # Rules for starting machine-controller locally
 #########################################
@@ -76,10 +78,9 @@ build-local:
 build:
 	@.ci/build
 
-PLATFORM ?= linux/amd64
 .PHONY: docker-image
 docker-image:
-	@docker  buildx build --platform $(PLATFORM) -t $(IMAGE_REPOSITORY):$(IMAGE_TAG) .
+	@docker  buildx build --platform $(TARGET_PLATFORMS) -t $(IMAGE_REPOSITORY):$(IMAGE_TAG) .
 
 .PHONY: docker-push
 docker-push:
