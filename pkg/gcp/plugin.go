@@ -16,7 +16,7 @@ limitations under the License.
 This file was copied and modified from the kubernetes-csi/drivers project
 https://github.com/kubernetes-csi/drivers/blob/release-1.0/pkg/nfs/plugin.go
 
-Modifications Copyright Copyright Contributors to the Gardener project
+Modifications Copyright Contributors to the Gardener project
 */
 
 package gcp
