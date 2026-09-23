@@ -4,7 +4,7 @@ go 1.26.2
 
 require (
 	github.com/gardener/gardener-extension-provider-gcp v1.43.1
-	github.com/gardener/machine-controller-manager v0.62.1
+	github.com/gardener/machine-controller-manager v0.63.0
 	github.com/onsi/ginkgo/v2 v2.28.1
 	github.com/onsi/gomega v1.40.0
 	github.com/pkg/errors v0.9.1
