@@ -338,7 +338,7 @@ AdvancedMachineFeatures
 <a href="#settings.gardener.cloud/v1alpha1.GCPProviderSpec">GCPProviderSpec</a>)
 </p>
 <p>
-<p>AdvancedMachineFeatures: Specifies options for controlling advanced machine
+<p>AdvancedMachineFeatures specifies options for controlling advanced machine
 features. Options that would traditionally be configured in a BIOS belong
 here. Features that require operating system support may have corresponding
 entries in the GuestOsFeatures of an Image (e.g., whether or not the OS in
@@ -854,6 +854,20 @@ string
 <td>
 <p>Ipv6AccessType defines the type of IPv6 access enabled, such as
 &ldquo;INTERNAL&rdquo; or &ldquo;EXTERNAL&rdquo;, to control IPv6 connectivity.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>useAliasIPs</code>
+</td>
+<td>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>UseAliasIPs: Whether to assign alias IPs to the instance.
+This value is meant to be used and will only have an effect on single stack networks.</p>
 </td>
 </tr>
 <tr>
